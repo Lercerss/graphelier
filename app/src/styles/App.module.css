@@ -19,10 +19,6 @@
   color: white;
 }
 
-.appLink {
-  color: #61dafb;
-}
-
 @keyframes appLogoSpin {
   from {
     transform: rotate(0deg);
