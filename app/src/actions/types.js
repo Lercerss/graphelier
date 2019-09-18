@@ -1,0 +1,1 @@
+export const SAVE_REACT_APP_NAME = 'SAVE_REACT_APP_NAME';

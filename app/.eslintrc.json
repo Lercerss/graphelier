@@ -1,0 +1,18 @@
+{
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true,
+            "experimentalObjectRestSpread": true
+        }
+    },
+    "rules": {
+        "semi": "error",
+        "indent": ["error", 4],
+        "camelcase": "error",
+        "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+        "no-template-curly-in-string": "error"
+    }
+}
