@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import styles from '../styles/WelcomeCard.module.css';
+import { withStyles } from '@material-ui/core/styles';
+
+import {Styles} from '../styles/WelcomeCard';
+import {Card} from '@material-ui/core';
 
 class WelcomeCard extends Component {
 
@@ -21,16 +24,19 @@ class WelcomeCard extends Component {
     }
 
     render() {
+        const {classes} = this.props;
         const {appName} = this.state;
 
         return (
-            <div>
+            <Card
+                className={classes.card}
+                raised={true}>
                 <a
-                    className={styles.appLink}
+                    className={classes.appLink}
                     href={'https://github.com/Lercerss/graphelier'}
                     target={'_blank'}>
                     Welcome to {appName}</a>
-            </div>
+            </Card>
         );
     }
 }
@@ -41,6 +47,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-)(WelcomeCard);
+export default withStyles(Styles)(connect(mapStateToProps,)(WelcomeCard));
