@@ -1,6 +1,12 @@
+# go
 *.test
 *.out
 vendor/
 
+# containers
 db/
 tmp/
+
+# python
+**/venv/
+**/__pycache__/
