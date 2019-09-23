@@ -3,7 +3,8 @@ export const Styles = {
     app: {
         textAlign: 'center',
         minWidth: '100%',
-        padding: 0
+        padding: 0,
+        backgroundColor: '#eceff1'
     },
     appLogo : {
         height: '40vmin',

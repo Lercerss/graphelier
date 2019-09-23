@@ -8,6 +8,7 @@ import {Styles} from './styles/App';
 
 import {saveReactAppName} from './actions/actions';
 import WelcomeCard from './components/WelcomeCard';
+import OrderBookSnapshot from './components/OrderBookSnapshot';
 import {Container} from '@material-ui/core';
 
 class App extends Component {
@@ -30,11 +31,12 @@ class App extends Component {
 
         return (
             <Container className={classes.app}>
-                <header className={classes.appHeader}>
-                    <img src={logo} className={classes.appLogo} alt={'logo'} />
-                    <p>{helloMessage}</p>
-                    <WelcomeCard/>
-                </header>
+                {/*<header className={classes.appHeader}>*/}
+                {/*    <img src={logo} className={classes.appLogo} alt={'logo'} />*/}
+                {/*    <p>{helloMessage}</p>*/}
+                {/*    <WelcomeCard/>*/}
+                <OrderBookSnapshot/>
+                {/*</header>*/}
             </Container>
         );
     }
