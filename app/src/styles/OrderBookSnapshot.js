@@ -21,5 +21,9 @@ export const Styles = {
     },
     NativeSelect: {
         margin: '1.5rem'
+    },
+    divTopBookBody: {
+        display: 'flex',
+        justifyContent: 'center'
     }
 };

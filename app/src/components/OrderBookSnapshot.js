@@ -52,12 +52,13 @@ class OrderBookSnapshot extends Component {
                         <NativeSelect
                             className={classes.NativeSelect}
                             value={time}
-                            onChange={this.handleChange}
-
-                        >
+                            onChange={this.handleChange}>
                             <option value={'placeholder'}>Please select a time</option>
                             <option value={defaultTimestamp}>{defaultTimestamp}</option>
                         </NativeSelect>
+                    </div>
+                    <div className={classes.divTopBookBody}>
+                        component will go here
                     </div>
                 </Typography>
             </Container>
