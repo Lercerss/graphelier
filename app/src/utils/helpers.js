@@ -1,5 +1,5 @@
-export default const getFormattedDate = () => {
-    let date = new Date();
+export const getFormattedDate = (date) => {
+    // let date = new Date();
 
     let month = date.getMonth() + 1;
     let day = date.getDate();
@@ -13,7 +13,7 @@ export default const getFormattedDate = () => {
     min = (min < 10 ? '0' : '') + min;
     // sec = (sec < 10 ? '0' : '') + sec;
 
-    let str = date.getFullYear() + '-' + month + '-' + day + '_' +  hour + ':' + min + ':' + sec;
+    let str = date.getFullYear() + '-' + month + '-' + day + ' ' +  hour + ':' + min + ':' + sec;
 
     /*alert(str);*/
 
