@@ -1,19 +1,12 @@
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
 import {withStyles} from '@material-ui/core/styles';
-
-import {Styles} from '../styles/PriceLevel';
-import {saveReactAppName} from '../actions/actions';
-import Order from './Order';
 import classNames from 'classnames';
 
+import {Styles} from '../styles/PriceLevel';
+
+import Order from './Order';
+
 class PriceLevel extends Component {
-
-    constructor(props) {
-        super(props);
-
-        this.state = {};
-    }
 
     render() {
         const {classes, key, type, price, orderQuantities} = this.props;
@@ -27,14 +20,4 @@ class PriceLevel extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {};
-};
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onAppMounted: (name) => dispatch(saveReactAppName(name)),
-    };
-};
-
-export default withStyles(Styles)(connect(mapStateToProps, mapDispatchToProps)(PriceLevel));
+export default withStyles(Styles)(PriceLevel);
