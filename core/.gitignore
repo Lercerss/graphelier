@@ -3,3 +3,4 @@
 vendor/
 
 db/
+tmp/

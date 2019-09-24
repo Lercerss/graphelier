@@ -2,8 +2,10 @@ FROM golang:1.13
 
 WORKDIR /go/src/graphelier-service
 
-COPY . .
+RUN go get github.com/pilu/fresh
+
+COPY graphelier-service .
 
 RUN go install ...
 
-CMD [ "graphelier-service" ]
+CMD [ "fresh" ]
