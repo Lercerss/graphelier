@@ -12,6 +12,8 @@ services:
   graphelier-service:
     build:
       context: ./core
+    volumes:
+      - ./core/graphelier-service:/go/src/graphelier-service
     depends_on:
       - "mongo"
   mongo:
