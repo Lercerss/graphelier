@@ -14,7 +14,11 @@ class PriceLevel extends Component {
         return (
             <div className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
                 <span className={classes.price}>{price}</span>
-                {orderQuantities.map(orderQuantity => <Order type={type} quantity={orderQuantity}/>)}
+                {orderQuantities.map(orderQuantity =>
+                    <Order
+                        type={type}
+                        quantity={orderQuantity}
+                    />)}
             </div>
         );
     }
