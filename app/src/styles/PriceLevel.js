@@ -9,9 +9,9 @@ export const Styles = {
         textAlign: 'left'
     },
     bid: {
-        borderTop: '0.5px solid grey'
+        borderTop: '0.5px solid #e0e0e0'
     },
     ask: {
-        borderBottom: '0.5px solid grey'
+        borderBottom: '0.5px solid #e0e0e0'
     }
 };
