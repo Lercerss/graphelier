@@ -31,12 +31,7 @@ class App extends Component {
 
         return (
             <Container className={classes.app}>
-                {/*<header className={classes.appHeader}>*/}
-                {/*    <img src={logo} className={classes.appLogo} alt={'logo'} />*/}
-                {/*    <p>{helloMessage}</p>*/}
-                {/*    <WelcomeCard/>*/}
                 <OrderBookSnapshot/>
-                {/*</header>*/}
             </Container>
         );
     }
