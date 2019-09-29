@@ -5,7 +5,7 @@ export const getFormattedDate = (date) => {
     let day = date.getDate();
     let hour = date.getHours();
     let min = date.getMinutes();
-    let sec = date.getMilliseconds()
+    let sec = date.getMilliseconds();
 
     month = (month < 10 ? '0' : '') + month;
     day = (day < 10 ? '0' : '') + day;
