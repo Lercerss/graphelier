@@ -13,6 +13,7 @@
         "indent": ["error", 4],
         "camelcase": "error",
         "quotes": ["error", "single", { "allowTemplateLiterals": true }],
-        "no-template-curly-in-string": "error"
+        "no-template-curly-in-string": "error",
+        "no-multi-spaces": "error"
     }
 }

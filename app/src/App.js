@@ -2,12 +2,9 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {withStyles} from '@material-ui/core/styles';
 
-import logo from './assets/logo.svg';
-
 import {Styles} from './styles/App';
 
 import {saveReactAppName} from './actions/actions';
-import WelcomeCard from './components/WelcomeCard';
 import OrderBookSnapshot from './components/OrderBookSnapshot';
 import {Container} from '@material-ui/core';
 
@@ -27,7 +24,6 @@ class App extends Component {
 
     render() {
         const {classes} = this.props;
-        const {helloMessage} = this.state;
 
         return (
             <Container className={classes.app}>
