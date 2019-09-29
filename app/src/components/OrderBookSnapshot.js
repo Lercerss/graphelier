@@ -24,6 +24,11 @@ class OrderBookSnapshot extends Component {
         }
     }
 
+    /**
+     * Handles the change for the timestamp select
+     *
+     * @param event The event object that caused the call
+     */
     handleChange = (event) => {
         const {selectedTimestamp} = this.state;
         const value = event.target.value;
