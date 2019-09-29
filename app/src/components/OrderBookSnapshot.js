@@ -35,9 +35,6 @@ class OrderBookSnapshot extends Component {
         if(value != selectedTimestamp) {
             this.setState({selectedTimestamp: value});
         }
-        else {
-            console.log('timestamp did not change');
-        }
     }
 
     render() {

@@ -11,7 +11,6 @@ export const getFormattedDate = (date) => {
     day = (day < 10 ? '0' : '') + day;
     hour = (hour < 10 ? '0' : '') + hour;
     min = (min < 10 ? '0' : '') + min;
-    // sec = (sec < 10 ? '0' : '') + sec;
 
     let str = date.getFullYear() + '-' + month + '-' + day + ' ' +  hour + ':' + min + ':' + sec;
 
