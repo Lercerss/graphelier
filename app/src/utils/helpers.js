@@ -15,7 +15,5 @@ export const getFormattedDate = (date) => {
 
     let str = date.getFullYear() + '-' + month + '-' + day + ' ' +  hour + ':' + min + ':' + sec;
 
-    /*alert(str);*/
-
     return str;
 }
