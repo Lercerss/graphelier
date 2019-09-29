@@ -1,0 +1,25 @@
+version: "3"
+services:
+  graphelier-app:
+    build:
+      context: ./app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app/src:/app/src
+    depends_on:
+      - "graphelier-service"
+  graphelier-service:
+    build:
+      context: ./core
+    volumes:
+      - ./core/graphelier-service:/go/src/graphelier-service
+    depends_on:
+      - "mongo"
+  mongo:
+    image: "mongo:4.2"
+    container_name: "graphelier-db"
+    ports:
+      - "27017:27017"
+    volumes:
+      - "./core/db:/data/db"

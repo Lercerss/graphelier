@@ -1,3 +1,6 @@
 *.test
 *.out
 vendor/
+
+db/
+tmp/
