@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
 import {withStyles, Container, Typography, Button, NativeSelect} from '@material-ui/core';
 import {Styles} from '../styles/OrderBookSnapshot';
 import {getFormattedDate} from '../utils/helpers';
+import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 
 
 class OrderBookSnapshot extends Component {
@@ -57,7 +57,7 @@ class OrderBookSnapshot extends Component {
                         </NativeSelect>
                     </div>
                     <div className={classes.divTopBookBody}>
-                        Component coming soon &trade;
+                        <TimestampOrderBookScroller/>
                     </div>
                 </Typography>
             </Container>
