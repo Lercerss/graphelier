@@ -68,12 +68,4 @@ class OrderBookSnapshot extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {};
-}
-
-const mapDispatchToProps = (dispatch) => {
-    return {};
-}
-
-export default withStyles(Styles)(connect(mapStateToProps,)(OrderBookSnapshot));
+export default withStyles(Styles)(OrderBookSnapshot);
