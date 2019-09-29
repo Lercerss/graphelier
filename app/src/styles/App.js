@@ -4,7 +4,7 @@ export const Styles = {
         textAlign: 'center',
         minWidth: '100%',
         padding: 0,
-        backgroundColor: '#eceff1'
+        backgroundColor: 'GainsBoro'
     },
     appLogo : {
         height: '40vmin',

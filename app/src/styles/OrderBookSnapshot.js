@@ -1,10 +1,13 @@
 
 export const Styles = {
     container: {
-        backgroundColor: '#e1bee7',
+        backgroundColor: '#2196f3',
         fontSize: '1.5rem',
         height: '100vh'
 
+    },
+    root:{
+        backgroundColor: 'GainsBoro'
     },
     topOfBook: {
         flex: 'right',
@@ -17,13 +20,15 @@ export const Styles = {
     },
     divTopBook: {
         display: 'flex',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        backgroundColor: 'GainsBoro'
     },
     NativeSelect: {
         margin: '1.5rem'
     },
     divTopBookBody: {
         display: 'flex',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: '1rem'
     }
 };

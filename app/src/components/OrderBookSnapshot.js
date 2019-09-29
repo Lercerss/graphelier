@@ -28,7 +28,6 @@ class OrderBookSnapshot extends Component {
         const {selectedTimestamp} = this.state;
         const value = event.target.value;
         if(value != selectedTimestamp) {
-            console.log('timestamp changed' + value);
             this.setState({selectedTimestamp: value});
         }
         else {
@@ -43,12 +42,10 @@ class OrderBookSnapshot extends Component {
         return (
             <Container
                 maxWidth={'lg'}
-                component={'div'}>
+                component={'div'}
+                className={classes.root}>
                 <Typography component="div" className={classes.container}>
                     <div id='ButtonHeader' className={classes.divTopBook}>
-                        {/*<Button className={classes.topOfBook}>*/}
-                        {/*    Top of the Book*/}
-                        {/*</Button>*/}
                         <NativeSelect
                             className={classes.NativeSelect}
                             value={time}
@@ -58,7 +55,7 @@ class OrderBookSnapshot extends Component {
                         </NativeSelect>
                     </div>
                     <div className={classes.divTopBookBody}>
-                        component will go here
+                        Component coming soon &trade;
                     </div>
                 </Typography>
             </Container>
