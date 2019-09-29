@@ -2,13 +2,11 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {withStyles} from '@material-ui/core/styles';
 
-import logo from './assets/logo.svg';
-
 import {Styles} from './styles/App';
 
 import {saveReactAppName} from './actions/actions';
-import WelcomeCard from './components/WelcomeCard';
 import {Container} from '@material-ui/core';
+import TimestampOrderBookScroller from './components/TimestampOrderBookScroller';
 
 class App extends Component {
 
@@ -26,15 +24,10 @@ class App extends Component {
 
     render() {
         const {classes} = this.props;
-        const {helloMessage} = this.state;
 
         return (
             <Container className={classes.app}>
-                <header className={classes.appHeader}>
-                    <img src={logo} className={classes.appLogo} alt={'logo'} />
-                    <p>{helloMessage}</p>
-                    <WelcomeCard/>
-                </header>
+                <TimestampOrderBookScroller/>
             </Container>
         );
     }
