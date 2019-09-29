@@ -5,6 +5,9 @@ export const Colors = {
 
 export const Styles = {
     app: {
+        textAlign: 'center',
+        minWidth: '100%',
+        backgroundColor: 'GainsBoro',
         display: 'flex',
         flexDirection: 'row',
         width: '100%',
