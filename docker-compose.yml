@@ -17,9 +17,10 @@ services:
     depends_on:
       - "mongo"
   mongo:
-    image: "mongo:4.2"
+    build:
+      context: ./core/db
     container_name: "graphelier-db"
     ports:
       - "27017:27017"
     volumes:
-      - "./core/db:/data/db"
+      - "./core/db/data:/data/db"

@@ -1,5 +1,7 @@
-from typing import Dict, List
 from collections import defaultdict
+from datetime import datetime
+from typing import Dict, List
+
 from models.message import Message, MessageType
 
 
@@ -15,13 +17,14 @@ class Order:
 
 
 class OrderBook:
-    def __init__(self):
+    def __init__(self, instrument):
+        self.instrument = instrument
         self.bid_book: Dict[float, List[Order]] = defaultdict(list)
         self.ask_book: Dict[float, List[Order]] = defaultdict(list)
         self.bid = 0.0
         self.ask = float('inf')
         self.id_map: Dict[int, Order] = {}
-        self.last_time = None
+        self.last_time = 0
         self.msg_handlers = {
             MessageType.NEW_ORDER: self._do_new,
             MessageType.MODIFY: self._do_modify,
@@ -90,5 +93,6 @@ class OrderBook:
                                                   for l in self.bid_book.values()), self.bid),
             asks='(count={}, best={})'.format(sum(len(l)
                                                   for l in self.ask_book.values()), self.ask),
-            time=self.last_time.strftime('%Y-%m-%d %H:%M:%S.%f')
+            time=datetime.fromtimestamp(
+                self.last_time // 10**9).strftime('%Y-%m-%d %H:%M:%S')
         )
