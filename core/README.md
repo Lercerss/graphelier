@@ -3,6 +3,7 @@
 ## Specifications
 
 - Go version: `1.13`
+- Python version: `3.5+`
 
 ## Runbook
 
@@ -26,4 +27,16 @@ $GOPATH/bin/graphelier-service
 
 ```bash
 go test ...
+```
+
+## Scripts
+
+All scripts should be run from the `core/scripts` directory.
+
+### Loading Data
+
+Load data from file containing messages
+
+```bash
+python -m importer <path_to_messages_file> <start_time>
 ```
