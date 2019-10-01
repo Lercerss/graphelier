@@ -1,9 +1,9 @@
 import enum
-from typing import Tuple, Dict, Callable
 from datetime import datetime, timedelta
+from typing import Callable, Dict, Tuple
 
 
-class MessageType(enum.Enum):
+class MessageType(enum.IntEnum):
     NEW_ORDER = 1
     MODIFY = 2
     DELETE = 3
@@ -21,7 +21,8 @@ class Message:
         self.direction = direction
 
     def __str__(self):
-        return '<Message id="{id}" time="{timef}" type="{message_type}" price="{price}" qty="{share_quantity}" direction="{direction}">'.format(**self.__dict__, timef=self.time.strftime('%Y-%m-%d %H:%M:%S.%f'))
+        return '<Message id="{id}" time="{timef}" type="{message_type}" price="{price}" qty="{share_quantity}" direction="{direction}">'.format(
+            **self.__dict__, timef=datetime.fromtimestamp(self.time // 10**9).strftime('%Y-%m-%d %H:%M:%S'))
 
 
 _lobster_msg_types = {
@@ -40,11 +41,11 @@ class LobsterMessageParser:
     See LOBSTER_SampleFiles_ReadMe.txt for official documentation
     """
 
-    def __init__(self, start_time: datetime):
+    def __init__(self, start_timestamp: datetime):
         self.line_parsers: Tuple[str, Callable] = (
             # Each index corresponds to an index in the line.
             # This maps indexes to object keys and the corresponding function to parse it from a string
-            ('time', lambda x: start_time.replace(hour=0, minute=0, second=0) + timedelta(seconds=float(x))),
+            ('time', lambda x: float(x) * 10**9 + start_timestamp),
             ('message_type', lambda x: _lobster_msg_types.get(x, MessageType.IGNORE)),
             ('id_', int),
             ('share_quantity', int),
@@ -53,5 +54,6 @@ class LobsterMessageParser:
         )
 
     def parse(self, line: Tuple[str, str, str, str, str, str]) -> Message:
-        kwargs = {key: parse_fun(line[index]) for index, (key, parse_fun) in enumerate(self.line_parsers)}
+        kwargs = {key: parse_fun(
+            line[index]) for index, (key, parse_fun) in enumerate(self.line_parsers)}
         return Message(**kwargs)
