@@ -26,8 +26,8 @@ type Keyframe struct {
 }
 
 // FindKeyframe : Finds the keyframe of an instrument based on the timeframe requested
-func FindKeyframe(instrument string, timestamp uint64, db *cnxn.DBConnection) (k *Keyframe) {
-	collection := db.C.Database("graphelier-db").Collection("keyframes")
+func FindKeyframe(instrument string, timestamp uint64) (k *Keyframe) { 
+	collection := cnxn.GetInstance().C.Database("graphelier-db").Collection("keyframes")
 
 	filter := bson.D{{"instrument", instrument}, {"timestamp", timestamp}}
 

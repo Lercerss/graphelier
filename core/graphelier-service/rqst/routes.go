@@ -23,9 +23,9 @@ func NewRouter() *mux.Router {
 
 	for _, route := range routes {
 		router.
+		Name(route.Name).
 		Methods(route.Method).
 		Path(route.Pattern).
-		Name(route.Name).
 		Handler(route.HandlerFunc)
 	}
 
@@ -42,7 +42,7 @@ var routes = Routes {
 	Route {
 		"JSON",
 		"GET",
-		"/json",
+		"/json/{instrument}&{timestamp}",
 		JSONResponse,
 	},
 }
