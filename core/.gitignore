@@ -10,3 +10,4 @@ tmp/
 # python
 **/venv/
 **/__pycache__/
+**/.vscode/
