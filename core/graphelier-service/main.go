@@ -1,9 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
+
+	"graphelier-service/rqst"
+	"graphelier-service/cnxn"
 )
 
 func main() {
-	fmt.Println("Hello World!")
+	db := cnxn.GetInstance()
+	db.Connect()
+	
+	r := rqst.NewRouter()
+	log.Fatal(http.ListenAndServe(":5050", r))
 }
