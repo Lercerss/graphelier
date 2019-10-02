@@ -40,9 +40,9 @@ var routes = Routes {
 		Hello,
 	},
 	Route {
-		"JSON",
+		"Orderbook",
 		"GET",
-		"/json/{instrument}&{timestamp}",
-		JSONResponse,
+		"/orderbook/{instrument}/{timestamp}",
+		JSONData,
 	},
 }

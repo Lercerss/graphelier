@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -16,17 +17,25 @@ func Hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, from graphelier-service :)")
 }
 
-// JSONResponse : A test sending json as a response
-func JSONResponse(w http.ResponseWriter, r *http.Request) {
+// JSONData : Sends a json data response depending on the timestamp requested
+func JSONData(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	w.WriteHeader(http.StatusOK)
 
-	timestamp, err := strconv.ParseUint(params["timestamp"], 10, 64)
+	timestamp, err := strconv.ParseFloat(params["timestamp"], 64)
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	// When timestamp is not perfectly divisible by 10*10^9, return all previous messages
+	if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
+		// TODO: implement messages return
+		// timestamp = timestamp + 1 * math.Pow10(9)
+		// m["messages"] = qrs.FindMessage(params["instrument"], timestamp)
+	}
 
+	// Always return orderbook
+	json.NewEncoder(w).Encode(qrs.FindOrderbook(params["instrument"], timestamp))
 
-	keyframe := qrs.FindKeyframe(params["instrument"], timestamp)
-	json.NewEncoder(w).Encode(keyframe)
+	
 }
