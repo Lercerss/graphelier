@@ -2,16 +2,16 @@ import math
 
 
 def order_book_to_dict(order_book):
-
-    flattened_ask_book = [
-        item for sublist in order_book.ask_book.values() for item in sublist]
-    flattened_bid_book = [
-        item for sublist in order_book.ask_book.values() for item in sublist]
-
     return {
         "instrument": order_book.instrument,
-        "bids": [order_to_dict(bid) for bid in sorted(flattened_bid_book, key=lambda x: -x.price)],
-        "asks": [order_to_dict(ask) for ask in sorted(flattened_ask_book, key=lambda x: x.price)],
+        "bids": [{
+            "price": price,
+            "orders": [order_to_dict(order) for order in orders]
+        } for price, orders in sorted(order_book.bid_book.items(), reverse=True)],
+        "asks": [{
+            "price": price,
+            "orders": [order_to_dict(order) for order in orders]
+        } for price, orders in sorted(order_book.ask_book.items())],
         "timestamp": _round_up(order_book.last_time, 9)
     }
 
@@ -19,8 +19,7 @@ def order_book_to_dict(order_book):
 def order_to_dict(order):
     return {
         "id": order.id,
-        "quantity": order.qty,
-        "price": order.price
+        "quantity": order.qty
     }
 
 
