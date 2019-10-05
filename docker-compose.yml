@@ -12,6 +12,8 @@ services:
   graphelier-service:
     build:
       context: ./core
+    ports: 
+      - "5050:5050"
     volumes:
       - ./core/graphelier-service:/go/src/graphelier-service
     depends_on:
