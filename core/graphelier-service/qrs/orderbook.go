@@ -15,7 +15,7 @@ type Orderbook struct {
 		Price float64 `json:"price"`
 		Orders []struct {
 			ID uint64 `json:"id" bson:"id"`
-			Qty uint64 `json:"quantity"`
+			Quantity uint64 `json:"quantity"`
 		} `json:"orders"`
 	} `json:"bids"`
 	Asks []struct {
