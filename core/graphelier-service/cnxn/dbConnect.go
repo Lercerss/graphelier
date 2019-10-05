@@ -21,7 +21,7 @@ var once sync.Once
 // GetInstance : A singleton that gets one and only one instance of the database connection 
 func GetInstance() *DBConnection {
     once.Do(func() {
-        instance = &DBConnection{}
+      instance = &DBConnection{}
     })
 		return instance
 }
