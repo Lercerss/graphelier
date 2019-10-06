@@ -1,3 +1,4 @@
+import {Colors} from './App';
 
 export const Styles = {
     rectangle:{
@@ -5,12 +6,12 @@ export const Styles = {
         paddingLeft: 3,
         paddingRight: 3,
         borderRadius: 3,
-        color: '#ffffff'
+        color: Colors.white,
     },
     bid:{
-        backgroundColor: '#159027'
+        backgroundColor: Colors.green
     },
     ask:{
-        backgroundColor: '#943e30'
+        backgroundColor: Colors.red
     }
 };

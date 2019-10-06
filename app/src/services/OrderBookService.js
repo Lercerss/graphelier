@@ -1,4 +1,8 @@
-import {axios} from 'axios';
-import {BACKEND_URL} from '../constants/Constants';
+import {httpClient} from './HttpClient';
 
-axios.get(`${BACKEND_URL}/someURL`);
+export default class OrderBookService {
+
+    static getOrderBookPrices = (instrument, timestamp) => {
+        return httpClient.get(`/orderbook/${instrument}/${timestamp}`);
+    };
+};

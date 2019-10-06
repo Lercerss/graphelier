@@ -1,27 +1,19 @@
+import {Colors} from './App';
 
 export const Styles = {
-    container: {
-        backgroundColor: '#2196f3',
-        fontSize: '1.5rem',
-        height: '100vh'
-
-    },
     root:{
-        backgroundColor: 'GainsBoro'
+        backgroundColor: Colors.empty,
+        minHeight: '100vh',
     },
-    topOfBook: {
-        flex: 'right',
-        padding: '0.75rem',
-        margin: '1.5rem',
-        backgroundColor: '#ba68c8',
-        '&:hover': {
-            backgroundColor: '#ab47bc'
-        }
+    container: {
+        backgroundColor: Colors.lightBlue,
+        fontSize: '1.5rem',
+        paddingBottom: 20,
     },
     divTopBook: {
         display: 'flex',
         justifyContent: 'flex-end',
-        backgroundColor: 'GainsBoro'
+        backgroundColor: Colors.empty
     },
     NativeSelect: {
         margin: '1.5rem'
@@ -30,5 +22,10 @@ export const Styles = {
         display: 'flex',
         justifyContent: 'center',
         padding: '1rem'
-    }
+    },
+    formControl: {
+        minWidth: 350,
+        marginTop: 20,
+        marginBottom: 20,
+    },
 };

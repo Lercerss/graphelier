@@ -4,6 +4,7 @@ import {withStyles} from '@material-ui/core/styles';
 
 import {Button, Box} from '@material-ui/core';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
+import PriceLevel from './PriceLevel';
 
 class TimestampOrderBookScroller extends Component {
 
@@ -13,13 +14,55 @@ class TimestampOrderBookScroller extends Component {
         super(props);
 
         this.state = {
-            listItems: [{
-                name: 'listItem1',
-                isMiddle: false
-            }, // ... }
-            ]
+            asks: [],
+            bids: [],
+            listItems: []
         };
     }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const {orderBook} = this.props;
+
+        if (prevProps.orderBook !== orderBook) {
+            this.setState({
+                asks: orderBook.asks,
+                bids: orderBook.bids,
+            }, () => {
+                this.processOrderBook();
+            });
+        }
+
+    }
+
+    /**
+     * @desc creates data structure for orderbook with asks on top and bids on bottom
+     */
+    processOrderBook = () => {
+        const {asks, bids} = this.state;
+
+        let listItems = [];
+        let firstBid = 0;
+
+        for (let i=asks.length-1; i>=0; i--) {
+            listItems.push({
+                ...asks[i],
+                type: 'ask',
+                isMiddle: false,
+            });
+        }
+
+        bids.map(bid => {
+            listItems.push({
+                ...bid,
+                type: 'bid',
+                isMiddle: firstBid++ === 0,
+            });
+        });
+
+        this.setState({listItems}, () => {
+            this.handleScrollToTopOfTheBook();
+        });
+    };
 
     /**
      * @desc handler for the event of hitting the bottom or top of the scroll list
@@ -35,7 +78,7 @@ class TimestampOrderBookScroller extends Component {
     handleScrollToTopOfTheBook = () => {
         this.middleReferenceItem && this.middleReferenceItem.current.scrollIntoView({
             behavior: 'smooth',
-            block: 'start',
+            block: 'center',
         });
     };
 
@@ -69,7 +112,11 @@ class TimestampOrderBookScroller extends Component {
                                     ref={listItem.isMiddle ? this.middleReferenceItem : null}
                                     className={classes.pricePoint}
                                 >
-                                    <a>{listItem.name}</a>
+                                    <PriceLevel
+                                        type={listItem.type}
+                                        price={listItem.price}
+                                        orders={listItem.orders}
+                                    />
                                 </Box>
                             );
                         })}
