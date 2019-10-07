@@ -6,6 +6,7 @@ import (
 
 	"graphelier-service/rqst"
 	"graphelier-service/cnxn"
+	"github.com/gorilla/handlers"
 )
 
 func main() {
@@ -13,5 +14,5 @@ func main() {
 	db.Connect()
 	
 	r := rqst.NewRouter()
-	log.Fatal(http.ListenAndServe(":5050", r))
+	log.Fatal(http.ListenAndServe(":5050", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 }

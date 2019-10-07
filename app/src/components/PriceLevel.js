@@ -5,21 +5,24 @@ import classNames from 'classnames';
 import {Styles} from '../styles/PriceLevel';
 
 import Order from './Order';
+import {Box} from '@material-ui/core';
 
 class PriceLevel extends Component {
 
     render() {
-        const {classes, key, type, price, orderQuantities} = this.props;
+        const {classes, type, price, orders} = this.props;
 
         return (
-            <div className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
+            <Box className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
                 <span className={classes.price}>{price}</span>
-                {orderQuantities.map(orderQuantity =>
-                    <Order
-                        type={type}
-                        quantity={orderQuantity}
-                    />)}
-            </div>
+                <Box className={classes.quantitiesBox}>
+                    {orders.map(order =>
+                        <Order
+                            type={type}
+                            quantity={order.quantity}
+                        />)}
+                </Box>
+            </Box>
         );
     }
 }

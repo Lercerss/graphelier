@@ -1,8 +1,6 @@
-import {Colors} from './App';
-
 export const Styles = {
     container: {
-        width: '70%',
+        width: '95%',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -14,10 +12,10 @@ export const Styles = {
     },
     scrollContainer: {
         width: '100%',
-        height: 500,
+        height: 700,
+        display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: Colors.navyBlue
+        justifyContent: 'flex-start',
     },
     header: {
         display: 'flex',
@@ -28,6 +26,7 @@ export const Styles = {
         paddingLeft: 50
     },
     pricePoint: {
-        padding: 100
-    }
+        display: 'flex',
+        flex: 1,
+    },
 };

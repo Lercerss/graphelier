@@ -1,30 +1,21 @@
 export const Colors = {
     navyBlue: '#282c34',
     white: '#FFFFFF',
+    empty: '#dcdcdc',
+    lightBlue: '#2196f3',
+    green: '#159027',
+    red: '#943e30'
 };
 
 export const Styles = {
     app: {
         textAlign: 'center',
         minWidth: '100%',
-        backgroundColor: 'GainsBoro',
-        display: 'flex',
-        flexDirection: 'row',
-        width: '100%',
-        justifyContent: 'center',
-        padding: 0
-    },
-    appLogo : {
-        height: '40vmin',
-    },
-    appHeader: {
-        backgroundColor: Colors.navyBlue,
-        minHeight: '100vh',
+        backgroundColor: Colors.empty,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        flex: 1,
+        width: '100%',
         justifyContent: 'center',
-        fontSize: 30,
-        color: 'white'
     },
 };
