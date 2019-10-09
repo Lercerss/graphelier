@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"graphelier/core/graphelier-service/qrs"
+
 	"github.com/gorilla/mux"
-	"graphelier-service/qrs"
 )
 
 // Hello : A temporary greeting message at the root route
@@ -26,7 +27,7 @@ func JSONData(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	// When timestamp is not perfectly divisible by 10*10^9, return all previous messages
 	if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
 		// TODO: implement messages return
@@ -37,5 +38,4 @@ func JSONData(w http.ResponseWriter, r *http.Request) {
 	// Always return orderbook
 	json.NewEncoder(w).Encode(qrs.FindOrderbook(params["instrument"], timestamp))
 
-	
 }

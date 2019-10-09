@@ -4,27 +4,28 @@ import (
 	"context"
 	"log"
 
+	"graphelier/core/graphelier-service/cnxn"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"graphelier-service/cnxn"
 )
 
 // Message : A struct to hold message data
 type Message struct {
-	Instrument string `json:"instrument"`
-	Timestamp float64 `json:"timestamp"`
-	MessageType uint64 `json:"message_type" bson:"message_type"`
-	OrderID uint64 `json:"order_id" bson:"order_id"`
-	ShareQuantity uint64 `json:"share_qty" bson:"share_quantity"`
-	Price float64 `json:"price"`
-	Direction int64 `json:"direction"`
+	Instrument    string  `json:"instrument"`
+	Timestamp     float64 `json:"timestamp"`
+	MessageType   uint64  `json:"message_type" bson:"message_type"`
+	OrderID       uint64  `json:"order_id" bson:"order_id"`
+	ShareQuantity uint64  `json:"share_qty" bson:"share_quantity"`
+	Price         float64 `json:"price"`
+	Direction     int64   `json:"direction"`
 }
 
 // FindMessage : Finds the Message of an instrument based on the timestamp requested
-func FindMessage(instrument string, timestamp float64) (*[] *Message) {
+func FindMessage(instrument string, timestamp float64) *[]*Message {
 	collection := cnxn.GetInstance().C.Database("graphelier-db").Collection("messages")
 	filter := bson.D{{
-		"timestamp", 
+		"timestamp",
 		bson.D{{
 			"$lt",
 			timestamp,
