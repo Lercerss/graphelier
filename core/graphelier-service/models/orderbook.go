@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"graphelier/core/graphelier-service/cnxn"
+	"graphelier/core/graphelier-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -30,8 +30,8 @@ type Orderbook struct {
 }
 
 // FindOrderbook : Finds the Orderbook of an instrument based on the timestamp requested
-func FindOrderbook(instrument string, timestamp float64) (result *Orderbook) {
-	collection := cnxn.GetInstance().C.Database("graphelier-db").Collection("orderbooks")
+func (db *DB) FindOrderbook(instrument string, timestamp float64) (result *Orderbook) {
+	collection := db.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{{Key: "instrument", Value: instrument}, {Key: "timestamp", Value: timestamp}}
 
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
