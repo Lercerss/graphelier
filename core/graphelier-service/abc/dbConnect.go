@@ -1,6 +1,6 @@
-package cnxn
+package abc
 
-import(
+import (
 	"context"
 	"fmt"
 	"log"
@@ -18,12 +18,12 @@ type DBConnection struct {
 var instance *DBConnection
 var once sync.Once
 
-// GetInstance : A singleton that gets one and only one instance of the database connection 
+// GetInstance : A singleton that gets one and only one instance of the database connection
 func GetInstance() *DBConnection {
-    once.Do(func() {
-      instance = &DBConnection{}
-    })
-		return instance
+	once.Do(func() {
+		instance = &DBConnection{}
+	})
+	return instance
 }
 
 // Connect : The connection to the database

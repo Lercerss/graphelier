@@ -1,4 +1,4 @@
-package models
+package cnxn
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Data : An interface with methods for the database
-type Data interface {
+// Queries : An interface with methods for the database
+type Queries interface {
 	FindOrderbook() (result *Orderbook)
 }
 
@@ -19,8 +19,8 @@ type DB struct {
 	*mongo.Client
 }
 
-// Connect : The database connection
-func Connect() (*DB, error) {
+// NewConnection : The database connection
+func NewConnection() (*DB, error) {
 	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017/graphelier-db")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
