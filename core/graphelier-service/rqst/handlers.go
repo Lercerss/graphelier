@@ -7,18 +7,28 @@ import (
 	"net/http"
 	"strconv"
 
-	"graphelier/core/graphelier-service/qrs"
+	"graphelier/core/graphelier-service/cnxn"
 
 	"github.com/gorilla/mux"
 )
 
+// ServiceHandler : A struct that wraps the handlers
+type ServiceHandler struct {
+	Handler func(db *cnxn.DB, w http.ResponseWriter, r *http.Request)
+	DB      *cnxn.DB
+}
+
+func (sh *ServiceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	sh.Handler(sh.DB, w, r)
+}
+
 // Hello : A temporary greeting message at the root route
-func Hello(w http.ResponseWriter, r *http.Request) {
+func Hello(db *cnxn.DB, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, from graphelier-service :)")
 }
 
 // JSONData : Sends a json data response depending on the timestamp requested
-func JSONData(w http.ResponseWriter, r *http.Request) {
+func JSONData(db *cnxn.DB, w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	w.WriteHeader(http.StatusOK)
 
@@ -29,15 +39,14 @@ func JSONData(w http.ResponseWriter, r *http.Request) {
 
 	// When timestamp is not perfectly divisible by 10*10^9, return all previous messages
 	// if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
-		// TODO: implement messages return
-		// timestamp = timestamp + 1 * math.Pow10(9)
-		// m["messages"] = qrs.FindMessage(params["instrument"], timestamp)
+	// TODO: implement messages return
+	// timestamp = timestamp + 1 * math.Pow10(9)
+	// m["messages"] = qrs.FindMessage(params["instrument"], timestamp)
 	// }
 
 	// Always return orderbook
-	err = json.NewEncoder(w).Encode(qrs.FindOrderbook(params["instrument"], timestamp))
-	if err != nil {
-		log.Fatal(err)
-	}
+	json.NewEncoder(w).Encode(db.FindOrderbook(params["instrument"], timestamp))
+
+	// Close db connection
 
 }

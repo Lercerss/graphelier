@@ -1,10 +1,9 @@
-package qrs
+package cnxn
 
 import (
 	"context"
+	"fmt"
 	"log"
-
-	"graphelier/core/graphelier-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -38,6 +37,12 @@ func (db *DB) FindOrderbook(instrument string, timestamp float64) (result *Order
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = db.Disconnect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Connection to MongoDB closed :)")
 
 	return result
 }
