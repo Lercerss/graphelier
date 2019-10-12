@@ -5,7 +5,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 FROM builder as lint
-CMD [ "pylint", "--exit-zero", "scripts" ]
+CMD [ "pylint", "scripts" ]
 
 FROM builder as test
-CMD [ "python", "-m", "unittest" ]
+CMD [ "python", "-m", "unittest", "-b" ]

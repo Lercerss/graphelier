@@ -51,11 +51,16 @@ class OrderBook:
         if not o:
             return
 
-        self._do_delete(Message(msg.time, MessageType.DELETE,
-                                o.id, o.qty, o.price, o.direction))
-        if o.qty > msg.share_quantity:
-            self._do_new(Message(msg.time, MessageType.NEW_ORDER, o.id,
-                                 o.qty - msg.share_quantity, o.price, o.direction))
+        if 0 <= msg.share_quantity < o.qty:
+            # Partial cancel, keep priority and reduce quantity
+            o.qty -= msg.share_quantity
+        else:
+            self._do_delete(Message(msg.time, MessageType.DELETE,
+                                    o.id, o.qty, o.price, o.direction))
+            if msg.share_quantity < 0:
+                # Increasing order size, reset its priority
+                self._do_new(Message(msg.time, MessageType.NEW_ORDER,
+                                     o.id, o.qty - msg.share_quantity, msg.price, msg.direction))
 
     def _do_delete(self, msg: Message):
         o = self.id_map.get(msg.id)
@@ -64,16 +69,21 @@ class OrderBook:
 
         if o.direction == -1:
             self.ask_book[o.price].remove(o)
+            del self.id_map[o.id]
             if len(self.ask_book[o.price]) == 0:
                 del self.ask_book[o.price]
                 self.ask = min(self.ask_book.keys()) if len(self.ask_book) > 0 else 0
         elif o.direction == 1:
             self.bid_book[o.price].remove(o)
+            del self.id_map[o.id]
             if len(self.bid_book[o.price]) == 0:
                 del self.bid_book[o.price]
                 self.bid = max(self.bid_book.keys()) if len(self.bid_book) > 0 else 0
 
     def _do_execute(self, msg: Message):
+        if msg.id == 0:
+            return
+
         o = self.id_map.get(msg.id)
         if not o:
             return

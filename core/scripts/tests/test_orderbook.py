@@ -47,10 +47,19 @@ class TestOrderbook(unittest.TestCase):
         orderbook.bid_book[10].append(order)
         self.assertEqual(len(orderbook.bid_book[10]), 2)
         self.assertEqual(orderbook.bid_book[10][0].id, 1)
+
         # Removing 8 shares from the order
         modify_message = Message(1, MessageType.MODIFY, 1, 8, 10, 1)
         orderbook.send(modify_message)
-        # Ordering has changed in the orderbook
-        modified_order = orderbook.bid_book[10][1]
+        # Ordering has not changed in the orderbook
+        modified_order = orderbook.bid_book[10][0]
         self.assertEqual(modified_order.id, 1)
         self.assertEqual(modified_order.qty, 2)
+
+        # Adding 8 shares to the order
+        modify_message = Message(2, MessageType.MODIFY, 1, -8, 10, 1)
+        orderbook.send(modify_message)
+        # Ordering has changed
+        modified_order = orderbook.bid_book[10][1]
+        self.assertEqual(modified_order.id, 1)
+        self.assertEqual(modified_order.qty, 10)
