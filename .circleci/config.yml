@@ -1,0 +1,44 @@
+version: 2
+jobs:
+    test_and_lint:
+        machine:
+            image: ubuntu-1604:201903-01
+        steps:
+            - checkout
+            - setup_remote_docker:
+                  docker_layer_caching: true
+            - run:
+                  name: Build docker image for frontend linting
+                  command: docker build --target=lint -t graphelier-app-lint ./app
+            - run:
+                  name: Build docker image for frontend testing
+                  command: docker build --target=test -t graphelier-app-test ./app
+
+            - run:
+                  name: Build docker image for backend linting
+                  command: docker build --target=lint -t graphelier-service-lint ./core
+
+            - run:
+                  name: Build docker image for scripts linting
+                  command: docker build --target=lint -t graphelier-scripts-lint ./core/scripts
+            - run:
+                  name: Build docker image for scripts testing
+                  command: docker build --target=test -t graphelier-scripts-test ./core/scripts
+
+            - run:
+                  name: Run the container for frontend linting
+                  command: docker run graphelier-app-lint
+            - run:
+                  name: Run the container for frontend testing
+                  command: docker run graphelier-app-test
+
+            - run:
+                  name: Run the container for backend linting
+                  command: docker run graphelier-service-lint
+
+            - run:
+                  name: Run the container for scripts linting
+                  command: docker run graphelier-scripts-lint
+            - run:
+                  name: Run the container for scripts testing
+                  command: docker run graphelier-scripts-test
