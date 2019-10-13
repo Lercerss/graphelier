@@ -76,7 +76,7 @@ class TimestampOrderBookScroller extends Component {
      * @desc handler for the event of scrolling to the top of the book entity
      */
     handleScrollToTopOfTheBook = () => {
-        this.middleReferenceItem && this.middleReferenceItem.current.scrollIntoView({
+        this.middleReferenceItem && this.middleReferenceItem.current && this.middleReferenceItem.current.scrollIntoView({
             behavior: 'smooth',
             block: 'center',
         });
