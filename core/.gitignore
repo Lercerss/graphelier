@@ -6,6 +6,7 @@ vendor/
 # containers
 db/data/
 tmp/
+**/.devcontainer/
 
 # python
 **/venv/
