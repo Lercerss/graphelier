@@ -2,10 +2,9 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"graphelier/core/graphelier-service/api/models"
+	"graphelier/core/graphelier-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,20 +28,64 @@ func NewConnection() (*Connector, error) {
 	if err = client.Ping(context.TODO(), nil); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Connected to MongoDB :)")
+	log.Println("Connected to MongoDB :)")
 
 	return &Connector{client}, nil
 }
 
-// FindOrderbook : Finds the Orderbook of an instrument based on the timestamp requested in the db
-func (c *Connector) FindOrderbook(instrument string, timestamp float64) (result *models.Orderbook) {
+// GetOrderbook : Finds the Orderbook of an instrument based on the timestamp requested in the db
+func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook) {
 	collection := c.Database("graphelier-db").Collection("orderbooks")
-	filter := bson.D{{Key: "instrument", Value: instrument}, {Key: "timestamp", Value: timestamp}}
+	filter := bson.D{
+		{"instrument", instrument},
+		{"timestamp", bson.D{
+			{"$lte", timestamp},
+		}},
+	}
+	option := options.FindOne()
+	option.SetSort(bson.D{{"timestamp", -1}})
 
-	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	err := collection.FindOne(context.TODO(), filter, option).Decode(&result) // TODO Change to find, sort, limit?
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return result
+}
+
+// GetMessages : Finds the Message of an instrument based on the timestamp requested
+func (c *Connector) GetMessages(instrument string, timestamp uint64, latestFullSnapshot uint64) (results []*models.Message) {
+	collection := c.Database("graphelier-db").Collection("messages")
+	filter := bson.D{
+		{"instrument", instrument},
+		{"timestamp", bson.D{
+			{"$lte", timestamp},
+			{"$gte", latestFullSnapshot},
+		}},
+	}
+
+	findOptions := options.Find()
+
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for cursor.Next(context.TODO()) {
+		var m models.Message
+		err := cursor.Decode(&m)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		results = append(results, &m)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	cursor.Close(context.TODO())
+
+	return results
 }
