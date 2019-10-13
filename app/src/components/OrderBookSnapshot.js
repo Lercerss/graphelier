@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
-import {withStyles, Container, Typography, Select, FormControl, InputLabel} from '@material-ui/core';
+import {withStyles, Container, Typography, Select, FormControl, InputLabel, TextField, Slider} from '@material-ui/core';
 import {Styles} from '../styles/OrderBookSnapshot';
-import {dateStringToEpoch, getFormattedDate} from '../utils/date-utils';
+import {dateStringToEpoch, getFormattedDate, nanosecondsToEpoch} from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 
 import OrderBookService from '../services/OrderBookService';
@@ -16,17 +16,26 @@ class OrderBookSnapshot extends Component {
         this.state = {
             defaultTimestamp: SNAPSHOT_TIMESTAMP,
             selectedTimestamp: null,
+            selectedDateNano: 0,
+            selectedTimeNano: 0,
+            selectedDateTimeString: 0,
+            selectedDateTimeNano: 0,
             asks: [],
             bids: [],
         };
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        const {selectedTimestamp} = this.state;
+    componentDidMount() {
+        
+    }
 
-        if(prevState.selectedTimestamp !== selectedTimestamp && selectedTimestamp !== ''){
-            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, dateStringToEpoch(selectedTimestamp))
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const {selectedDateTimeNano} = this.state;
+
+        if(prevState.selectedDateTimeNano !== selectedDateTimeNano){
+            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
+                    console.log(response.data);
                     this.setState({
                         asks: response.data.asks,
                         bids: response.data.bids,
@@ -51,10 +60,34 @@ class OrderBookSnapshot extends Component {
         }
     };
 
+    handleChangeDate = (event) => {
+        const {selectedTimeNano} = this.state;
+        var selectedDateString = event.target.value;
+        var selectedDateNano = parseInt(dateStringToEpoch(selectedDateString+" 00:00:000"));
+        var selectedDateTimeNano = selectedTimeNano + selectedDateNano;
+
+        this.setState({ 
+            selectedDateNano: selectedDateNano,
+            selectedDateTimeNano: selectedDateTimeNano,
+            selectedDateTimeString: nanosecondsToEpoch(selectedDateTimeNano)
+            });
+    }
+
+    handleChangeTime = (event, value) => {
+        const {selectedDateNano} = this.state;
+        var selectedTimeNano = parseInt(value);
+        var selectedDateTimeNano = selectedTimeNano + selectedDateNano;
+
+        this.setState({ 
+            selectedTimeNano: selectedTimeNano,
+            selectedDateTimeNano: selectedDateTimeNano,
+            selectedDateTimeString: nanosecondsToEpoch(selectedDateTimeNano) 
+        });
+    }
+
     render() {
         const {classes} = this.props;
-        const {defaultTimestamp, selectedTimestamp, asks, bids} = this.state;
-        let time = selectedTimestamp ? selectedTimestamp : 'Please select a time';
+        const {asks, bids} = this.state;
         return (
             <Container
                 maxWidth={'xl'}
@@ -62,22 +95,37 @@ class OrderBookSnapshot extends Component {
                 className={classes.root}>
                 <Typography component="div" className={classes.container}>
                     <div id='ButtonHeader' className={classes.divTopBook}>
-
                         <FormControl className={classes.formControl}>
-                            <InputLabel ref={this.timeSelector}>
-                                Select a time
-                            </InputLabel>
-                            <Select
-                                value={time}
-                                onChange={this.handleChange}>
-                                <option value="" disabled>
-                                    Select a time
-                                </option>
-                                <option value={''} />
-                                <option value={defaultTimestamp}>{getFormattedDate(defaultTimestamp)}</option>
-                            </Select>
+                            <TextField 
+                                className={classes.datePicker}
+                                id="time"
+                                label="Date"
+                                type="date"
+                                defaultValue={'2012-06-21'}
+                                onChange={this.handleChangeDate}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                            <Typography 
+                                variant="body1"
+                                className={classes.timestampDisplay}>
+                                Time: {this.state.selectedDateTimeString}
+                            </Typography>
+                            <Slider
+                                aria-labelledby="timestamp-slider"
+                                aria-label="Time"
+                                min={9.5*60*60*1000000000} // nanoseconds between 12am and 9:30am
+                                max={16*60*60*1000000000} // nanoseconds between 12am and 4pm
+                                step={1}
+                                className={classes.timestampSlider}
+                                defaultValue={0}
+                                onChange={this.handleChangeTime}
+                            />
+                            
                         </FormControl>
                     </div>
+                    
                     <div className={classes.divTopBookBody}>
                         <TimestampOrderBookScroller
                             orderBook={{asks, bids}}
