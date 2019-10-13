@@ -28,7 +28,10 @@
   "devDependencies": {
     "axios-logger": "^2.2.1",
     "babel-eslint": "10.0.2",
-    "eslint": "^6.4.0"
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.15.1",
+    "eslint": "^6.4.0",
+    "react-test-renderer": "^16.10.2"
   },
   "browserslist": {
     "production": [
