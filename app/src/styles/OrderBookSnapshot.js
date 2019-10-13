@@ -24,8 +24,25 @@ export const Styles = {
         padding: '1rem'
     },
     formControl: {
-        minWidth: 350,
+        display: 'flex',
+        width: '100%',
         marginTop: 20,
         marginBottom: 20,
+    },
+    datePicker: {
+        width: 'min-content',
+        alignSelf: 'flex-end',
+    },
+    timestampDisplay: {
+        marginTop: 20,
+        marginBottom: 10,
+        alignSelf: 'flex-end',
+    },
+    timestampSlider: {
+        marginTop: 0,
+        width: '100%',
+    },
+    timestampsliderLaberl: {
+        alignSelf: 'flex-end',
     },
 };

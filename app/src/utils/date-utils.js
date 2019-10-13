@@ -26,3 +26,15 @@ export const dateStringToEpoch = (date) => {
     const nanoDate = new NanoDate(dateObj.valueOf());
     return nanoDate.getTime();
 };
+
+/**
+ * @desc Given a epoch time in nanoseconds, returns date string in the format YYYY-MM-DD HH:mm:ssZ
+ * @param nanoseconds
+ * @returns {string}
+ */
+export const nanosecondsToEpoch = (nanoseconds) => {
+    const nanoDate = new NanoDate(nanoseconds.toString());
+    let entries = nanoDate.toString().split(' ');
+
+    return entries.slice(0, entries.length - 4).join(' ');
+};
