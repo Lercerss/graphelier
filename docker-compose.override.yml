@@ -1,0 +1,10 @@
+version: "3.4"
+services:
+  graphelier-app:
+    volumes:
+      - ./app/src:/app/src
+  graphelier-service:
+    build:
+      target: dev
+    volumes:
+      - ./core/graphelier-service:/go/src/graphelier/core/graphelier-service

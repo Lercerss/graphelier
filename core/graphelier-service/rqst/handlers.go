@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
 	"net/http"
 	"strconv"
 
@@ -29,13 +28,16 @@ func JSONData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// When timestamp is not perfectly divisible by 10*10^9, return all previous messages
-	if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
+	// if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
 		// TODO: implement messages return
 		// timestamp = timestamp + 1 * math.Pow10(9)
 		// m["messages"] = qrs.FindMessage(params["instrument"], timestamp)
-	}
+	// }
 
 	// Always return orderbook
-	json.NewEncoder(w).Encode(qrs.FindOrderbook(params["instrument"], timestamp))
+	err = json.NewEncoder(w).Encode(qrs.FindOrderbook(params["instrument"], timestamp))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
