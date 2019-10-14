@@ -8,7 +8,8 @@ class Order extends Component {
 
     render() {
         const {classes, type, quantity} = this.props;
-        const calculateQuantityBoxSize = quantity/3;
+        const minimumBoxWidth = 20;
+        const calculateQuantityBoxSize = minimumBoxWidth + (quantity/5);
 
         return (
             <span className={classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)} style={{ width:`${calculateQuantityBoxSize}px`}}>
