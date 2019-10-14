@@ -3,6 +3,8 @@ import {withStyles, Container, Typography, Select, FormControl, InputLabel, Text
 import {Styles} from '../styles/OrderBookSnapshot';
 import {dateStringToEpoch, getFormattedDate, nanosecondsToEpoch} from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
+import classNames from 'classnames';
+
 
 import OrderBookService from '../services/OrderBookService';
 import {SNAPSHOT_INSTRUMENT, SNAPSHOT_TIMESTAMP} from '../constants/Constants';
@@ -18,22 +20,16 @@ class OrderBookSnapshot extends Component {
             selectedTimestamp: null,
             selectedDateNano: 0,
             selectedTimeNano: 0,
-            selectedDateTimeString: 0,
             selectedDateTimeNano: 0,
+            selectedDateTimeString: 'select from slider',
             asks: [],
             bids: [],
         };
     }
 
-    componentDidMount() {
-        
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    updateTimestampOrderBookScroller = () => {
         const {selectedDateTimeNano} = this.state;
-
-        if(prevState.selectedDateTimeNano !== selectedDateTimeNano){
-            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
+        OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
                     console.log(response.data);
                     this.setState({
@@ -44,45 +40,49 @@ class OrderBookSnapshot extends Component {
                 .catch(err => {
                     console.log(err);
                 });
-        }
     }
-
-    /**
-     * Handles the change for the timestamp select
-     *
-     * @param event The event object that caused the call
-     */
-    handleChange = (event) => {
-        const {selectedTimestamp} = this.state;
-        const value = event.target.value;
-        if (value !== selectedTimestamp) {
-            this.setState({selectedTimestamp: value});
-        }
-    };
 
     handleChangeDate = (event) => {
         const {selectedTimeNano} = this.state;
-        var selectedDateString = event.target.value;
-        var selectedDateNano = parseInt(dateStringToEpoch(selectedDateString+" 00:00:000"));
-        var selectedDateTimeNano = selectedTimeNano + selectedDateNano;
+        var selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:000'));
 
         this.setState({ 
             selectedDateNano: selectedDateNano,
-            selectedDateTimeNano: selectedDateTimeNano,
-            selectedDateTimeString: nanosecondsToEpoch(selectedDateTimeNano)
-            });
+        });
+
+        if(selectedTimeNano != 0){
+            this.handleChangeDateTime();
+            this.updateTimestampOrderBookScroller();
+        }
     }
 
     handleChangeTime = (event, value) => {
         const {selectedDateNano} = this.state;
         var selectedTimeNano = parseInt(value);
-        var selectedDateTimeNano = selectedTimeNano + selectedDateNano;
 
         this.setState({ 
             selectedTimeNano: selectedTimeNano,
-            selectedDateTimeNano: selectedDateTimeNano,
-            selectedDateTimeString: nanosecondsToEpoch(selectedDateTimeNano) 
         });
+
+        if(selectedDateNano != 0)
+            this.handleChangeDateTime();
+    }
+
+    handleCommitTime = (event, value) => {
+        const {selectedDateNano} = this.state;
+        if(selectedDateNano != 0){
+            this.handleChangeDateTime();
+            this.updateTimestampOrderBookScroller();
+        }
+    }
+
+    handleChangeDateTime = () => {
+        const {selectedDateNano, selectedTimeNano} = this.state;
+        var selectedDateTimeNano = selectedTimeNano+selectedDateNano;
+            this.setState({ 
+                selectedDateTimeNano: selectedDateTimeNano,
+                selectedDateTimeString: nanosecondsToEpoch(selectedDateTimeNano) 
+            });
     }
 
     render() {
@@ -93,36 +93,63 @@ class OrderBookSnapshot extends Component {
                 maxWidth={'xl'}
                 component={'div'}
                 className={classes.root}>
-                <Typography component="div" className={classes.container}>
+                <Typography component='div' className={classes.container}>
                     <div id='ButtonHeader' className={classes.divTopBook}>
                         <FormControl className={classes.formControl}>
-                            <TextField 
-                                className={classes.datePicker}
-                                id="time"
-                                label="Date"
-                                type="date"
-                                defaultValue={'2012-06-21'}
-                                onChange={this.handleChangeDate}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                            <Typography 
-                                variant="body1"
-                                className={classes.timestampDisplay}>
-                                Time: {this.state.selectedDateTimeString}
-                            </Typography>
+                            <div className={classes.inline}>
+                                <Typography
+                                    variant='body1'
+                                    className={classNames(classes.inputLabel, classes.alignEnd)}
+                                    color='textSecondary'>
+                                    {'Date'}  
+                                </Typography>
+                                <TextField 
+                                    className={classes.datePicker}
+                                    id='time'
+                                    type='date'
+                                    onChange={this.handleChangeDate}
+                                />
+                            </div>
+                            <div className={classes.inline}>
+                                <Typography
+                                    variant='body1'
+                                    className={classes.inputLabel}
+                                    color='textSecondary'>
+                                    {'Time'}  
+                                </Typography>
+                                <Typography 
+                                    variant='body1'
+                                    className={classes.timestampDisplay}>
+                                    {this.state.selectedDateTimeString}
+                                </Typography>
+                            </div>
                             <Slider
-                                aria-labelledby="timestamp-slider"
-                                aria-label="Time"
+                                className={classes.timestampSlider}
                                 min={9.5*60*60*1000000000} // nanoseconds between 12am and 9:30am
                                 max={16*60*60*1000000000} // nanoseconds between 12am and 4pm
                                 step={1}
-                                className={classes.timestampSlider}
                                 defaultValue={0}
                                 onChange={this.handleChangeTime}
+                                marks={[
+                                    {
+                                        value: 9.5*60*60*1000000000,
+                                        label: '9:30 AM',
+                                    },
+                                    {
+                                        value: 16*60*60*1000000000,
+                                        label: '4:00 PM',
+                                    },
+                                ]}
+                                onChangeCommitted={this.handleCommitTime}
                             />
-                            
+                            {this.state.selectedDateTimeNano == 0 && 
+                                <Typography 
+                                    variant='body1'
+                                    color='error'
+                                    className={classes.selectMessage}>
+                                    Please select a date and time
+                                </Typography>
+                            }
                         </FormControl>
                     </div>
                     
