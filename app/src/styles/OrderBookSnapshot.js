@@ -58,5 +58,6 @@ export const Styles = {
         display: 'flex',
         justifyContent: 'flex-end',
         marginTop: 10,
+        alignItems: 'center',
     },
 };
