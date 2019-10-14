@@ -7,7 +7,7 @@ import classNames from 'classnames';
 
 
 import OrderBookService from '../services/OrderBookService';
-import {SNAPSHOT_INSTRUMENT, SNAPSHOT_TIMESTAMP} from '../constants/Constants';
+import {SNAPSHOT_INSTRUMENT} from '../constants/Constants';
 
 
 class OrderBookSnapshot extends Component {
@@ -16,7 +16,6 @@ class OrderBookSnapshot extends Component {
         super(props);
 
         this.state = {
-            defaultTimestamp: SNAPSHOT_TIMESTAMP,
             selectedTimestamp: null,
             selectedDateNano: 0,
             selectedTimeNano: 0,
@@ -133,11 +132,11 @@ class OrderBookSnapshot extends Component {
                                 marks={[
                                     {
                                         value: 9.5*60*60*1000000000,
-                                        label: '9:30 AM',
+                                        label: '9:30',
                                     },
                                     {
                                         value: 16*60*60*1000000000,
-                                        label: '4:00 PM',
+                                        label: '16:00',
                                     },
                                 ]}
                                 onChangeCommitted={this.handleCommitTime}
