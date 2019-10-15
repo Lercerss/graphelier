@@ -1,35 +1,34 @@
-package rqst
+package api
 
 import (
-	"graphelier/core/graphelier-service/cnxn"
-	"net/http"
+	"graphelier/core/graphelier-service/api/hndlrs"
+	"graphelier/core/graphelier-service/config"
 
 	"github.com/gorilla/mux"
 )
 
 // Route : a struct representing one route
 type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc ServiceHandler
+	Name          string
+	Method        string
+	Pattern       string
+	CustomHandler hndlrs.CustomHandler
 }
 
 // Routes : An array of Route structs
 type Routes []Route
 
 // NewRouter : Creates a new router instance
-func NewRouter(db *cnxn.DB) *mux.Router {
-	router := mux.NewRouter().Get(http.HandleFunc())
+func NewRouter(env *config.Env) *mux.Router {
+	router := mux.NewRouter()
 
 	for _, route := range routes {
-		service := ServiceHandler{route.HandlerFunc.Handler, db}
-		handler := service.ServeHTTP
+		route.CustomHandler.E = env
 		router.
 			Name(route.Name).
 			Methods(route.Method).
 			Path(route.Pattern).
-			Handler(handler.(http.HandlerFunc))
+			Handler(route.CustomHandler)
 	}
 
 	return router
@@ -40,12 +39,12 @@ var routes = Routes{
 		"Root",
 		"GET",
 		"/",
-		ServiceHandler{Hello, nil},
+		hndlrs.CustomHandler{H: hndlrs.Hello},
 	},
 	Route{
 		"Orderbook",
 		"GET",
 		"/orderbook/{instrument}/{timestamp}",
-		ServiceHandler{JSONData, nil},
+		hndlrs.CustomHandler{H: hndlrs.JSONOrderbook},
 	},
 }
