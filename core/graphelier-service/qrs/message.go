@@ -25,10 +25,10 @@ type Message struct {
 func FindMessage(instrument string, timestamp float64) *[]*Message {
 	collection := cnxn.GetInstance().C.Database("graphelier-db").Collection("messages")
 	filter := bson.D{{
-		"timestamp",
-		bson.D{{
-			"$lt",
-			timestamp,
+		Key: "timestamp",
+		Value: bson.D{{
+			Key: "$lt",
+			Value: timestamp,
 		}},
 	}}
 

@@ -66,12 +66,12 @@ class OrderBook:
             self.ask_book[o.price].remove(o)
             if len(self.ask_book[o.price]) == 0:
                 del self.ask_book[o.price]
-                self.ask = min(self.ask_book.keys())
+                self.ask = min(self.ask_book.keys()) if len(self.ask_book) > 0 else 0
         elif o.direction == 1:
             self.bid_book[o.price].remove(o)
             if len(self.bid_book[o.price]) == 0:
                 del self.bid_book[o.price]
-                self.bid = min(self.bid_book.keys())
+                self.bid = max(self.bid_book.keys()) if len(self.bid_book) > 0 else 0
 
     def _do_execute(self, msg: Message):
         o = self.id_map.get(msg.id)

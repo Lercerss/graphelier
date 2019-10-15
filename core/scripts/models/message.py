@@ -1,6 +1,6 @@
 import enum
-from datetime import datetime, timedelta
-from typing import Callable, Dict, Tuple
+from datetime import datetime
+from typing import Callable, Tuple
 
 
 class MessageType(enum.IntEnum):
@@ -21,8 +21,10 @@ class Message:
         self.direction = direction
 
     def __str__(self):
-        return '<Message id="{id}" time="{timef}" type="{message_type}" price="{price}" qty="{share_quantity}" direction="{direction}">'.format(
-            **self.__dict__, timef=datetime.fromtimestamp(self.time // 10**9).strftime('%Y-%m-%d %H:%M:%S'))
+        return ('<Message id="{id}" time="{timef}" type="{message_type}" ' +
+                'price="{price}" qty="{share_quantity}" direction="{direction}">').format(
+            **self.__dict__, timef=datetime.fromtimestamp(
+                self.time // 10**9).strftime('%Y-%m-%d %H:%M:%S'))
 
 
 _lobster_msg_types = {
@@ -44,7 +46,8 @@ class LobsterMessageParser:
     def __init__(self, start_timestamp: datetime):
         self.line_parsers: Tuple[str, Callable] = (
             # Each index corresponds to an index in the line.
-            # This maps indexes to object keys and the corresponding function to parse it from a string
+            # This maps indexes to object keys and the
+            # corresponding function to parse it from a string
             ('time', lambda x: float(x) * 10**9 + start_timestamp),
             ('message_type', lambda x: _lobster_msg_types.get(x, MessageType.IGNORE)),
             ('id_', int),
