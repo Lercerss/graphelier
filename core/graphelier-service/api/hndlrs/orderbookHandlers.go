@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"math"
 	"net/http"
 	"strconv"
 
@@ -38,15 +37,19 @@ func JSONOrderbook(env *config.Env, w http.ResponseWriter, r *http.Request) erro
 		log.Fatal(err)
 	}
 
+	// TODO: implement messages return
+
 	// When timestamp is not perfectly divisible by 10*10^9, return all previous messages
-	if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
-		// TODO: implement messages return
-		// timestamp = timestamp + 1 * math.Pow10(9)
-		// m["messages"] = qrs.FindMessage(params["instrument"], timestamp)
-	}
+	// if divisor := 10 * math.Pow10(9); math.Mod(timestamp, divisor) != 0 {
+	// timestamp = timestamp + 1 * math.Pow10(9)
+	// m["messages"] = qrs.FindMessage(params["instrument"], timestamp)
+	// }
 
 	// Always return orderbook
-	json.NewEncoder(w).Encode(FindOrderbook(env, params["instrument"], timestamp))
+	err = json.NewEncoder(w).Encode(FindOrderbook(env, params["instrument"], timestamp))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return nil
 }
