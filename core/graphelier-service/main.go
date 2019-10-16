@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	env := &hndlrs.Env{db}
+	env := &hndlrs.Env{Connector: db}
 	router := api.NewRouter(env)
 
 	log.Fatal(http.ListenAndServe(":5050", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router)))
