@@ -96,9 +96,9 @@ class OrderBookSnapshot extends Component {
         const {selectedDateNano, selectedTimeNano} = this.state;
         let selectedDateTimeNano = selectedTimeNano+selectedDateNano;
 
-            this.setState({ 
-                selectedDateTimeNano: selectedDateTimeNano,
-            });
+        this.setState({ 
+            selectedDateTimeNano: selectedDateTimeNano,
+        });
     }
 
     render() {
