@@ -1,12 +1,10 @@
 package hndlrs
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"net/http"
 
-	"graphelier/core/graphelier-service/config"
+	"graphelier/core/graphelier-service/db"
 )
 
 // Error : An interface that represents a handler error
@@ -31,10 +29,15 @@ func (se StatusError) Status() int {
 	return se.Code
 }
 
+// Env : A struct that represents the database configuration
+type Env struct {
+	Connector *db.Connector
+}
+
 // CustomHandler : A struct that links Env with a function matching http.HandlerFunc
 type CustomHandler struct {
-	E *config.Env
-	H func(e *config.Env, w http.ResponseWriter, r *http.Request) error
+	E *Env
+	H func(e *Env, w http.ResponseWriter, r *http.Request) error
 }
 
 // ServeHTTP : A function that links CustomHandler with http.Handler
@@ -50,16 +53,4 @@ func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Fatal(err)
 	}
-}
-
-// Hello : A temporary greeting message at the root route
-func Hello(env *config.Env, w http.ResponseWriter, r *http.Request) error {
-	fmt.Fprintf(w, "Hello, from graphelier-service :)")
-	err := env.DB.Disconnect(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Connection to MongoDB closed :)")
-
-	return nil
 }

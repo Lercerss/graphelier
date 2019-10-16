@@ -2,7 +2,6 @@ package api
 
 import (
 	"graphelier/core/graphelier-service/api/hndlrs"
-	"graphelier/core/graphelier-service/config"
 
 	"github.com/gorilla/mux"
 )
@@ -19,7 +18,7 @@ type Route struct {
 type Routes []Route
 
 // NewRouter : Creates a new router instance
-func NewRouter(env *config.Env) *mux.Router {
+func NewRouter(env *hndlrs.Env) *mux.Router {
 	router := mux.NewRouter()
 
 	for _, route := range routes {
@@ -35,12 +34,6 @@ func NewRouter(env *config.Env) *mux.Router {
 }
 
 var routes = Routes{
-	Route{
-		"Root",
-		"GET",
-		"/",
-		hndlrs.CustomHandler{H: hndlrs.Hello},
-	},
 	Route{
 		"Orderbook",
 		"GET",
