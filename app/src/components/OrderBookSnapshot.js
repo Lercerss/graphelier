@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {withStyles, Container, Typography, FormControl, TextField, Slider} from '@material-ui/core';
 import {Styles} from '../styles/OrderBookSnapshot';
-import {dateStringToEpoch, nanosecondsToEpochTime} from '../utils/date-utils';
+import {dateStringToEpoch, nanosecondsToString} from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 import classNames from 'classnames';
 
@@ -29,7 +29,7 @@ class OrderBookSnapshot extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         const {selectedDateTimeNano, selectedTimeNano, selectedDateNano} = this.state;
 
-        if(prevState.selectedDateTimeNano !== selectedDateTimeNano && selectedDateNano !== 0 && 
+        if(prevState.selectedDateTimeNano !== selectedDateTimeNano && selectedDateNano !== 0 &&
             selectedTimeNano !== 0 && selectedDateTimeNano !== 0){
             OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
@@ -53,7 +53,7 @@ class OrderBookSnapshot extends Component {
     handleChangeDate = (event) => {
         let selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:00'));
 
-        this.setState({ 
+        this.setState({
             selectedDateNano: selectedDateNano,
         }, () => {this.handleChangeDateTime();});
     }
@@ -62,15 +62,15 @@ class OrderBookSnapshot extends Component {
      * Handles the time change when sliding the time Slider
      *
      * @param event The event object that caused the call
-     * 
+     *
      * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day.
      */
     handleChangeTime = (event, value) => {
         let selectedTimeNano = parseInt(value);
 
-        this.setState({ 
+        this.setState({
             selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToEpochTime(selectedTimeNano),
+            selectedTimeString: nanosecondsToString(selectedTimeNano),
         });
     }
 
@@ -83,9 +83,9 @@ class OrderBookSnapshot extends Component {
     handleCommitTime = (event, value) => {
         let selectedTimeNano = parseInt(value);
 
-        this.setState({ 
+        this.setState({
             selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToEpochTime(selectedTimeNano),
+            selectedTimeString: nanosecondsToString(selectedTimeNano),
         }, () => {this.handleChangeDateTime();});
     }
 
@@ -96,7 +96,7 @@ class OrderBookSnapshot extends Component {
         const {selectedDateNano, selectedTimeNano} = this.state;
         let selectedDateTimeNano = selectedTimeNano+selectedDateNano;
 
-        this.setState({ 
+        this.setState({
             selectedDateTimeNano: selectedDateTimeNano,
         });
     }
@@ -117,9 +117,9 @@ class OrderBookSnapshot extends Component {
                                     variant={'body1'}
                                     className={classNames(classes.inputLabel, classes.alignEnd)}
                                     color={'textSecondary'}>
-                                    {'Date'}  
+                                    {'Date'}
                                 </Typography>
-                                <TextField 
+                                <TextField
                                     className={classes.datePicker}
                                     type={'date'}
                                     onChange={this.handleChangeDate}
@@ -130,9 +130,9 @@ class OrderBookSnapshot extends Component {
                                     variant={'body1'}
                                     className={classes.inputLabel}
                                     color={'textSecondary'}>
-                                    {'Time'}  
+                                    {'Time'}
                                 </Typography>
-                                <Typography 
+                                <Typography
                                     variant={'body1'}
                                     className={classes.timestampDisplay}>
                                     {this.state.selectedTimeString}
@@ -157,8 +157,8 @@ class OrderBookSnapshot extends Component {
                                 ]}
                                 onChangeCommitted={this.handleCommitTime}
                             />
-                            {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0 ) && 
-                                <Typography 
+                            {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0 ) &&
+                                <Typography
                                     variant={'body1'}
                                     color={'error'}
                                     className={classes.selectMessage}>
@@ -167,7 +167,7 @@ class OrderBookSnapshot extends Component {
                             }
                         </FormControl>
                     </div>
-                    
+
                     <div className={classes.divTopBookBody}>
                         <TimestampOrderBookScroller
                             orderBook={{asks, bids}}
