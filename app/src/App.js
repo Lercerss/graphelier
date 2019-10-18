@@ -5,8 +5,7 @@ import {withStyles} from '@material-ui/core/styles';
 import {Styles} from './styles/App';
 
 import {saveReactAppName} from './actions/actions';
-import OrderBookSnapshot from './components/OrderBookSnapshot';
-import {Container} from '@material-ui/core';
+import Dashboard from './components/template/Dashboard';
 
 class App extends Component {
 
@@ -26,9 +25,7 @@ class App extends Component {
         const {classes} = this.props;
 
         return (
-            <Container className={classes.app}>
-                <OrderBookSnapshot/>
-            </Container>
+                <Dashboard/>
         );
     }
 }
