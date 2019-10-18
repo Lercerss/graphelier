@@ -1,106 +1,18 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
+// import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container, Link} from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { mainListItems } from './listItems';
-import {Styles} from '../../styles/OrderBookSnapshot';
+import {Styles as OBStyles} from '../../styles/OrderBookSnapshot';
 import OrderBookSnapshot from '../OrderBookSnapshot';
-import {Colors} from '../../styles/App'
-
-const drawerWidth = 240;
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-  },
-  toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
-  },
-  toolbarIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
-    ...theme.mixins.toolbar,
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    backgroundColor: `${Colors.lightBlue} !important`
-  },
-  appBarShift: {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  menuButton: {
-    marginRight: 36,
-  },
-  menuButtonHidden: {
-    display: 'none',
-  },
-  title: {
-    flexGrow: 1,
-  },
-  drawerPaper: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  drawerPaperClose: {
-    overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    width: theme.spacing(7),
-    [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(9),
-    },
-  },
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
-    flexGrow: 1,
-    height: '100vh',
-    overflow: 'auto',
-  },
-  container: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: 0,
-    paddingLeft: '0px !important',
-    paddingRight: '0px !important'
-  },
-  paper: {
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
-  },
-  fixedHeight: {
-    height: 240,
-  },
-  maxHeight: {
-    height: '100%'
-  },
-  paddingCopyright: {
-    paddingBottom: theme.spacing(1),
-  }
-}));
+// import {Colors} from '../../styles/App'
+import {Styles} from '../../styles/Dashboard';
 
 function Copyright() {
-  const classes = useStyles();
+  const classes = Styles();
   return (
     <Typography variant="body2" color="textSecondary" align="center" className={classes.paddingCopyright}>
       {'Copyright © '}
@@ -114,7 +26,7 @@ function Copyright() {
 }
 
 export default function Dashboard() {
-  const classes = useStyles();
+  const classes = Styles();
   const [open, setOpen] = React.useState(false);
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -126,7 +38,7 @@ export default function Dashboard() {
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)} theme={Styles.themeBackground}>
+      <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)} theme={OBStyles.themeBackground}>
         <Toolbar className={classes.toolbar}>
           <IconButton
             edge="start"
