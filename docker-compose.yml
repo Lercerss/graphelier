@@ -23,4 +23,8 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - "./core/db/data:/data/db"
+      - type: "volume"
+        source: "mongodata"
+        target: "/data/db"
+volumes:
+  mongodata:
