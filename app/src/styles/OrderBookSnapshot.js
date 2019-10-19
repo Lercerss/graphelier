@@ -3,12 +3,11 @@ import {Colors} from './App';
 export const Styles = {
     root:{
         backgroundColor: 'transparent',
-        minHeight: '100vh',
+        padding: '0px !important'
     },
     container: {
         backgroundColor: 'transparent',
-        fontSize: '1.5rem',
-        paddingBottom: 20,
+        fontSize: '1.5rem'
     },
     divTopBook: {
         display: 'flex',

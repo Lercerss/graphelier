@@ -74,7 +74,6 @@ export default function Dashboard() {
         <Container maxWidth="lg" className={classes.container}>
             <OrderBookSnapshot />
         </Container>
-        <Copyright />
       </main>
     </div>
   );
