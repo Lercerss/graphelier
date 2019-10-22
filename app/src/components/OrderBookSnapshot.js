@@ -8,7 +8,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 
 import OrderBookService from '../services/OrderBookService';
-import {SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS} from '../constants/Constants';
+import { SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, CURRENT_TIME_PLACEHOLDER } from '../constants/Constants';
 
 
 class OrderBookSnapshot extends Component {
