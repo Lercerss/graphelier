@@ -1,7 +1,7 @@
 import React from 'react';
 import OrderBookSnapshot from '../../components/OrderBookSnapshot';
 import {createMount, createShallow} from '@material-ui/core/test-utils';
-import { TextField } from '@material-ui/core';
+import { TextField, Slider } from '@material-ui/core';
 import {DATE_STRING, TIME_VALUE, TIME_STRING, DATE_VALUE} from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
 
@@ -29,12 +29,18 @@ describe('date and time picker functionality', () => {
         wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
         expect(orderBookServiceSpy).toHaveBeenCalledTimes(0);
 
+        wrapper.find(Slider).simulate('change', TIME_VALUE);
+        expect(orderBookServiceSpy).toHaveBeenCalledTimes(0);
+
         wrapper.instance().handleCommitTime('change', TIME_VALUE);
         expect(orderBookServiceSpy).toHaveBeenCalledTimes(1);
     });
 
     it('makes database call once a time and date are selected, in order', () => {
         const wrapper = shallow(<OrderBookSnapshot/>);
+
+        wrapper.find(Slider).simulate('change', TIME_VALUE);
+        expect(orderBookServiceSpy).toHaveBeenCalledTimes(0);
 
         wrapper.instance().handleCommitTime('change', TIME_VALUE);
         expect(orderBookServiceSpy).toHaveBeenCalledTimes(0);
