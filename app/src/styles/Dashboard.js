@@ -72,7 +72,8 @@ export const Styles = makeStyles(theme => ({
       paddingTop: theme.spacing(2),
       paddingBottom: 0,
       paddingLeft: '0px !important',
-      paddingRight: '0px !important'
+      paddingRight: '0px !important',
+      maxWidth: '90%'
     },
     paper: {
       display: 'flex',

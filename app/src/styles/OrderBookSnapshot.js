@@ -2,8 +2,7 @@ import {Colors} from './App';
 
 export const Styles = {
     root:{
-        backgroundColor: 'transparent',
-        padding: '0px !important'
+        backgroundColor: 'transparent'
     },
     container: {
         backgroundColor: 'transparent',
