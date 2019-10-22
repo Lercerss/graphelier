@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles, Container, Typography, FormControl, TextField, Slider, Collapse, IconButton } from '@material-ui/core';
-import {Styles} from '../styles/OrderBookSnapshot';
-import {dateStringToEpoch, nanosecondsToString} from '../utils/date-utils';
+import { Styles } from '../styles/OrderBookSnapshot';
+import { dateStringToEpoch, nanosecondsToString } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 import classNames from 'classnames';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -29,10 +29,10 @@ class OrderBookSnapshot extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const {selectedDateTimeNano, selectedTimeNano, selectedDateNano} = this.state;
+        const { selectedDateTimeNano, selectedTimeNano, selectedDateNano } = this.state;
 
-        if(prevState.selectedDateTimeNano !== selectedDateTimeNano && selectedDateNano !== 0 &&
-            selectedTimeNano !== 0 && selectedDateTimeNano !== 0){
+        if (prevState.selectedDateTimeNano !== selectedDateTimeNano && selectedDateNano !== 0 &&
+            selectedTimeNano !== 0 && selectedDateTimeNano !== 0) {
             OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
                     this.setState({
@@ -57,7 +57,7 @@ class OrderBookSnapshot extends Component {
 
         this.setState({
             selectedDateNano: selectedDateNano,
-        }, () => {this.handleChangeDateTime();});
+        }, () => { this.handleChangeDateTime(); });
     }
 
     /**
@@ -88,15 +88,15 @@ class OrderBookSnapshot extends Component {
         this.setState({
             selectedTimeNano: selectedTimeNano,
             selectedTimeString: nanosecondsToString(selectedTimeNano),
-        }, () => {this.handleChangeDateTime();});
+        }, () => { this.handleChangeDateTime(); });
     }
 
     /**
      * Updates the selectedDateTimeNano state variable when there is a change in the date or when the user stops sliding the time Slider
      */
     handleChangeDateTime = () => {
-        const {selectedDateNano, selectedTimeNano} = this.state;
-        let selectedDateTimeNano = selectedTimeNano+selectedDateNano;
+        const { selectedDateNano, selectedTimeNano } = this.state;
+        let selectedDateTimeNano = selectedTimeNano + selectedDateNano;
 
         this.setState({
             selectedDateTimeNano: selectedDateTimeNano,
@@ -104,12 +104,12 @@ class OrderBookSnapshot extends Component {
     }
 
     handleExpandClick = () => {
-        this.setState({ expanded: !this.state.expanded })
+        this.setState({ expanded: !this.state.expanded });
     }
 
     render() {
-        const {classes} = this.props;
-        const {asks, bids, expanded} = this.state;
+        const { classes } = this.props;
+        const { asks, bids, expanded } = this.state;
         return (
             <Typography component={'div'} className={classes.container}>
                 {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
@@ -117,7 +117,7 @@ class OrderBookSnapshot extends Component {
                         variant={'body1'}
                         color={'error'}
                         className={classes.pleaseSelectMessage}>
-                       Please select Date and Time
+                        Please select Date and Time
                     </Typography>
                     : <Typography
                         variant={'body1'}
@@ -185,12 +185,12 @@ class OrderBookSnapshot extends Component {
                         </FormControl>
                     </div>
                 </Collapse>
-                    <div className={classes.divTopBookBody}>
-                        <TimestampOrderBookScroller
-                            orderBook={{asks, bids}}
-                        />
-                    </div>
-                </Typography>
+                <div className={classes.divTopBookBody}>
+                    <TimestampOrderBookScroller
+                        orderBook={{ asks, bids }}
+                    />
+                </div>
+            </Typography>
         );
     }
 }

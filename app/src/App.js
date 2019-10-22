@@ -25,7 +25,7 @@ class App extends Component {
         const {classes} = this.props;
 
         return (
-                <Dashboard/>
+            <Dashboard/>
         );
     }
 }

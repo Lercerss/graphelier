@@ -9,36 +9,36 @@ import LayersIcon from '@material-ui/icons/Layers';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 
 export const mainListItems = (
-  <div>
-    <ListItem button>
-      <ListItemIcon>
-        <DashboardIcon />
-      </ListItemIcon>
-      <ListItemText primary="Home" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="OrderBook Snapshot" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <Message />
-      </ListItemIcon>
-      <ListItemText primary="Message List" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <BarChartIcon />
-      </ListItemIcon>
-      <ListItemText primary="Squarepoint Orders" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <LayersIcon />
-      </ListItemIcon>
-      <ListItemText primary="TBD" />
-    </ListItem>
-  </div>
+    <div>
+        <ListItem button>
+            <ListItemIcon>
+                <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+        </ListItem>
+        <ListItem button>
+            <ListItemIcon>
+                <AssignmentIcon />
+            </ListItemIcon>
+            <ListItemText primary="OrderBook Snapshot" />
+        </ListItem>
+        <ListItem button>
+            <ListItemIcon>
+                <Message />
+            </ListItemIcon>
+            <ListItemText primary="Message List" />
+        </ListItem>
+        <ListItem button>
+            <ListItemIcon>
+                <BarChartIcon />
+            </ListItemIcon>
+            <ListItemText primary="Squarepoint Orders" />
+        </ListItem>
+        <ListItem button>
+            <ListItemIcon>
+                <LayersIcon />
+            </ListItemIcon>
+            <ListItemText primary="TBD" />
+        </ListItem>
+    </div>
 );
