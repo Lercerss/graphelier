@@ -5,8 +5,7 @@ export const Styles = {
         backgroundColor: 'transparent'
     },
     container: {
-        backgroundColor: 'transparent',
-        fontSize: '1.5rem'
+        backgroundColor: 'transparent'
     },
     divTopBook: {
         display: 'flex',
@@ -26,7 +25,6 @@ export const Styles = {
         minWidth: 350,
         display: 'flex',
         width: '100%',
-        marginTop: 20,
         marginBottom: 20,
         justifyContent: 'flex-end',
     },
@@ -36,16 +34,21 @@ export const Styles = {
         display: 'inline',
     },
     timestampSlider: {
-        marginTop: 20,
-        width: '100%',
+        marginTop: '1rem !important',
+        width: '97%',
+        margin: 'auto',
+
     },
-    selectMessage: {
+    pleaseSelectMessage: {
+        display: 'inline',
         alignSelf: 'flex-end',
         color: '#9F6000',
         backgroundColor: '#FEEFB3',
         borderRadius: '5px',
-        padding: '2px',
-        marginTop: 15
+        padding: '2px'
+    },
+    selectMessage: {
+        display: 'inline',
     },
     inputLabel: {
         display: 'inline',
@@ -62,5 +65,14 @@ export const Styles = {
     },
     transparentBackground: {
         backgroundColor: 'transparent'
-    }
+    },
+    expand: {
+        transform: 'rotate(0deg)',
+        marginLeft: 'auto',
+        transition: 'transform 0.25s',
+        fontSize: '1rem'
+    },
+    expandOpen: {
+        transform: 'rotate(180deg)',
+    },
 };

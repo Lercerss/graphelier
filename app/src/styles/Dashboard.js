@@ -69,8 +69,8 @@ export const Styles = makeStyles(theme => ({
       overflow: 'auto',
     },
     container: {
-      paddingTop: theme.spacing(2),
-      paddingBottom: 0,
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
       paddingLeft: '0px !important',
       paddingRight: '0px !important',
       maxWidth: '90%'
