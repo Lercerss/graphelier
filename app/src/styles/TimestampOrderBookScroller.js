@@ -8,8 +8,6 @@ export const Styles = {
         backgroundColor: '#ffffff',
     },
     topOfTheBookButton: {
-        marginTop: 20,
-        marginBottom: 20,
         color: 'white',
     },
     scrollContainer: {
@@ -23,13 +21,25 @@ export const Styles = {
         display: 'flex',
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
         borderBottom: '0.5px solid #cacaca',
-        paddingRight: 50,
-        paddingLeft: 50,
+        paddingRight: 30,
+        paddingLeft: 30,
+        paddingTop: 10,
+        paddingBottom: 20,
     },
     pricePoint: {
         display: 'flex',
         flex: 1,
+    },
+    messagesText: {
+        display: 'inline',
+        marginBottom: 5,
+    },
+    messagesDiv: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
 };

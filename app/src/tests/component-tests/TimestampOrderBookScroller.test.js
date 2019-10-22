@@ -2,9 +2,13 @@ import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { Box } from '@material-ui/core';
 import TimestampOrderBookScroller from '../../components/TimestampOrderBookScroller';
-import { ORDER_BOOK_FROM_BACKEND, ORDER_BOOK_LIST_ITEMS } from '../utils/mock-data';
+import {
+    ORDER_BOOK_FROM_BACKEND,
+    ORDER_BOOK_LIST_ITEMS,
+} from '../utils/mock-data';
 import MultiDirectionalScroll from '../../components/MultiDirectionalScroll';
 import PriceLevel from '../../components/PriceLevel';
+import OrderBookService from '../../services/OrderBookService';
 
 describe('TimestampOrderbookScroller functionality', () => {
     let mount, shallow;
@@ -74,5 +78,47 @@ describe('TimestampOrderbookScroller functionality', () => {
 
         wrapper.setProps({ listItems: ORDER_BOOK_LIST_ITEMS });
         expect(scrollSpy).toHaveBeenCalled();
+    });
+});
+
+describe('navigating by message functionality', () => {
+    let mount, shallow;
+    const timeOrDateIsNotSet = false;
+    const handleUpdateWithDeltas = jest.fn();
+    const getOrderBookPricesByMessageOffsetSpy = jest.spyOn(OrderBookService, 'getPriceLevelsByMessageOffset')
+        .mockImplementation((instrument, timestamp, offset) => Promise.resolve(
+            {
+                data: {
+                    asks: [],
+                    bids: [],
+                },
+            },
+        ));
+
+    beforeEach(() => {
+        mount = createMount();
+        shallow = createShallow({ dive: true });
+    });
+
+    afterEach(() => {
+        getOrderBookPricesByMessageOffsetSpy.mockClear();
+        mount.cleanUp();
+    });
+
+    it('makes appropriate database call when the previous and next message arrows are clicked', () => {
+        const wrapper = shallow(<TimestampOrderBookScroller
+            timeOrDateIsNotSet={timeOrDateIsNotSet}
+            handleUpdateWithDeltas={handleUpdateWithDeltas}
+        />);
+
+        expect(getOrderBookPricesByMessageOffsetSpy).toHaveBeenCalledTimes(0);
+
+        wrapper.find('#previousMessage').simulate('click');
+        expect(getOrderBookPricesByMessageOffsetSpy).toHaveBeenCalledTimes(1);
+        expect(getOrderBookPricesByMessageOffsetSpy.mock.calls[0][2]).toEqual(-1);
+
+        wrapper.find('#nextMessage').simulate('click');
+        expect(getOrderBookPricesByMessageOffsetSpy).toHaveBeenCalledTimes(2);
+        expect(getOrderBookPricesByMessageOffsetSpy.mock.calls[1][2]).toEqual(1);
     });
 });

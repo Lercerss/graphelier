@@ -38,7 +38,6 @@ export const Styles = {
     },
     pleaseSelectMessage: {
         display: 'inline',
-        alignSelf: 'flex-end',
         color: '#9F6000',
         backgroundColor: '#FEEFB3',
         borderRadius: '5px',
@@ -46,6 +45,7 @@ export const Styles = {
     },
     selectMessage: {
         display: 'inline',
+        padding: '2px',
     },
     inputLabel: {
         display: 'inline',
@@ -72,10 +72,12 @@ export const Styles = {
     expandOpen: {
         transform: 'rotate(180deg)',
     },
-    spaceBetween: {
-        justifyContent: 'space-between',
-    },
     flex: {
         display: 'flex',
+    },
+    expandRow: {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '10px',
     },
 };

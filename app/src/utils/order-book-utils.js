@@ -94,3 +94,51 @@ export const ordersEquals = (ordersArray1, ordersArray2) => {
         return order.id === ordersArray2[index].id && order.quantity === ordersArray2[index].quantity;
     });
 };
+
+export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) => {
+    const listItems = currentListItems;
+    let firstBid = 0;
+    let maxQuantity = 0;
+
+    newAsks.forEach(ask => {
+        const { price, orders } = ask;
+        if (orders.length === 0) delete listItems[price]; // Remove price level
+        else if (listItems[price]) {
+            listItems[price].orders = orders; // Modify price level
+        } else {
+            listItems[price] = { // Add price level
+                price,
+                orders,
+                type: 'ask',
+            };
+        }
+    });
+
+    newBids.forEach(bid => {
+        const { price, orders } = bid;
+        if (orders.length === 0) delete listItems[price]; // Remove price level
+        else if (listItems[price]) {
+            listItems[price].orders = orders; // Modify price level
+        } else {
+            listItems[price] = { // Add price level
+                price,
+                orders,
+                type: 'bid',
+            };
+        }
+    });
+
+    Object.keys(listItems).forEach(key => {
+        const priceLevel = key;
+        const sum = listItems[priceLevel].orders.reduce(
+            (totalQuantity, order) => (totalQuantity + parseInt(order.quantity)), 0,
+        );
+        if (sum > maxQuantity) maxQuantity = sum; // Compute max quantity
+
+        if (listItems[priceLevel].type === 'bid') { // Determine middle element
+            listItems[priceLevel].isMiddle = firstBid++ === 0;
+        } else listItems[priceLevel].isMiddle = false;
+    });
+
+    return { newListItems: listItems, newMaxQuantity: maxQuantity };
+};
