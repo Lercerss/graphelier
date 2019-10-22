@@ -18,7 +18,7 @@ function Copyright() {
             {'Copyright © '}
             <Link color="inherit" href="https://github.com/Lercerss/graphelier">
                 TFBAG
-      </Link>{' '}
+            </Link>{' '}
             {new Date().getFullYear()}
             {'.'}
         </Typography>
@@ -51,7 +51,7 @@ export default function Dashboard() {
                     </IconButton>
                     <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
                         Graphelier
-          </Typography>
+                    </Typography>
                 </Toolbar>
             </AppBar>
             <Drawer
