@@ -14,6 +14,8 @@ services:
       target: prod
     ports:
       - "5050:5050"
+    volumes:
+      - ./core/graphelier-service:/go/src/graphelier/core/graphelier-service
     depends_on:
       - "mongo"
   mongo:
