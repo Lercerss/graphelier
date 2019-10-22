@@ -56,7 +56,7 @@ class OrderBookSnapshot extends Component {
         this.setState({
             selectedDateNano: selectedDateNano,
         }, () => {this.handleChangeDateTime();});
-    }
+    };
 
     /**
      * Handles the time change when sliding the time Slider
@@ -72,7 +72,7 @@ class OrderBookSnapshot extends Component {
             selectedTimeNano: selectedTimeNano,
             selectedTimeString: nanosecondsToString(selectedTimeNano),
         });
-    }
+    };
 
     /**
      * Handles the time change when the user stops sliding the time Slider
@@ -87,7 +87,7 @@ class OrderBookSnapshot extends Component {
             selectedTimeNano: selectedTimeNano,
             selectedTimeString: nanosecondsToString(selectedTimeNano),
         }, () => {this.handleChangeDateTime();});
-    }
+    };
 
     /**
      * Updates the selectedDateTimeNano state variable when there is a change in the date or when the user stops sliding the time Slider
@@ -99,7 +99,7 @@ class OrderBookSnapshot extends Component {
         this.setState({
             selectedDateTimeNano: selectedDateTimeNano,
         });
-    }
+    };
 
     render() {
         const {classes} = this.props;
