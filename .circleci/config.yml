@@ -1,6 +1,6 @@
 version: 2
 jobs:
-    build:
+    build_app:
         machine:
             image: ubuntu-1604:201903-01
         steps:
@@ -11,18 +11,6 @@ jobs:
             - run:
                   name: Build docker image for frontend testing
                   command: docker build --target=test -t graphelier-app-test ./app
-
-            - run:
-                  name: Build docker image for backend linting
-                  command: docker build --target=lint -t graphelier-service-lint ./core
-
-            - run:
-                  name: Build docker image for scripts linting
-                  command: docker build --target=lint -t graphelier-scripts-lint ./core/scripts
-            - run:
-                  name: Build docker image for scripts testing
-                  command: docker build --target=test -t graphelier-scripts-test ./core/scripts
-
             - run:
                   name: Run the container for frontend linting
                   command: docker run graphelier-app-lint
@@ -30,13 +18,40 @@ jobs:
                   name: Run the container for frontend testing
                   command: docker run graphelier-app-test
 
+    build_service:
+        machine:
+            image: ubuntu-1604:201903-01
+        steps:
+            - checkout
             - run:
-                  name: Run the container for backend linting
-                  command: docker run graphelier-service-lint
+                  name: Build docker image for backend testing
+                  command: docker build --target=test -t graphelier-service-test ./core
+            - run:
+                  name: Run the container for backend testing
+                  command: docker run graphelier-service-test
 
+    build_scripts:
+        machine:
+            image: ubuntu-1604:201903-01
+        steps:
+            - checkout
+            - run:
+                  name: Build docker image for scripts linting
+                  command: docker build --target=lint -t graphelier-scripts-lint ./core/scripts
+            - run:
+                  name: Build docker image for scripts testing
+                  command: docker build --target=test -t graphelier-scripts-test ./core/scripts
             - run:
                   name: Run the container for scripts linting
                   command: docker run graphelier-scripts-lint
             - run:
                   name: Run the container for scripts testing
                   command: docker run graphelier-scripts-test
+
+workflows:
+    version: 2
+    build_and_test:
+        jobs:
+            - build_app
+            - build_service
+            - build_scripts

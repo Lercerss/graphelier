@@ -1,0 +1,10 @@
+# https://github.com/golangci/golangci/wiki/Configuration
+
+# Paths here are very specific: the build process will copy the source into `/go/src/{project-path}`
+# All commands are run from that directory
+service:
+  project-path: graphelier/
+  analyzed-paths:
+    - core/graphelier-service/...
+  prepare:
+    - go get graphelier/core/graphelier-service
