@@ -60,16 +60,16 @@ class TimestampOrderBookScroller extends Component {
             });
         });
 
-        if (listItems.length === asks.length + bids.length){
-            for (let i=0; i < listItems.length; i++){
+        if (listItems.length > 0){
+            listItems.map(listItem =>{
                 let sum = 0;
-                for (let j=0; j <listItems[i].orders.length; j++) {
-                    sum += listItems[i].orders[j].quantity;
-                }
+                listItem.orders.map( order => {
+                    sum += order.quantity;
+                });
                 if (sum > maxQuantitySum){
                     maxQuantitySum = sum;
                 }
-            }
+            });
         }
 
         this.setState({listItems, maxQuantitySum}, () => {
@@ -97,6 +97,7 @@ class TimestampOrderBookScroller extends Component {
 
     render() {
         const {listItems, maxQuantitySum} = this.state;
+        const leeway = maxQuantitySum + maxQuantitySum*(35/100);
         const {classes} = this.props;
 
         return (
@@ -128,7 +129,7 @@ class TimestampOrderBookScroller extends Component {
                                         type={listItem.type}
                                         price={listItem.price}
                                         orders={listItem.orders}
-                                        maxQuantitySum={maxQuantitySum}
+                                        maxQuantitySum={leeway}
                                     />
                                 </Box>
                             );
