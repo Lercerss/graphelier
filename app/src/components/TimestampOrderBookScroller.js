@@ -6,6 +6,8 @@ import {Button, Box} from '@material-ui/core';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
 
+const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
+
 class TimestampOrderBookScroller extends Component {
 
     middleReferenceItem = null;
@@ -20,26 +22,28 @@ class TimestampOrderBookScroller extends Component {
         };
     }
 
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        const {orderBook} = this.props;
+        const {asks, bids} = this.state;
+
+        return asks.length === 0|| bids.length === 0 ||
+            (orderBook ? orderBook.asks !== nextProps.orderBook.asks || orderBook.bids !== nextProps.orderBook.bids : true);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         const {orderBook} = this.props;
 
-        if (prevProps.orderBook !== orderBook) {
-            this.setState({
-                asks: orderBook.asks,
-                bids: orderBook.bids,
-            }, () => {
-                this.processOrderBook();
-            });
+        if (!prevProps.orderBook || (prevProps.orderBook.asks !== orderBook.asks || prevProps.orderBook.bids !== orderBook.bids)) {
+            this.processOrderBook(orderBook.asks, orderBook.bids);
         }
-
     }
 
     /**
      * @desc creates data structure for orderbook with asks on top and bids on bottom
+     * @param asks
+     * @param bids
      */
-    processOrderBook = () => {
-        const {asks, bids} = this.state;
-
+    processOrderBook = (asks, bids) => {
         let listItems = [];
         let firstBid = 0;
         let maxQuantitySum = 0;
@@ -74,7 +78,7 @@ class TimestampOrderBookScroller extends Component {
             });
         });
 
-        this.setState({listItems, maxQuantitySum}, () => {
+        this.setState({listItems, asks, bids, maxQuantitySum}, () => {
             this.handleScrollToTopOfTheBook();
         });
     };
@@ -99,8 +103,7 @@ class TimestampOrderBookScroller extends Component {
 
     render() {
         const {listItems, maxQuantitySum} = this.state;
-        const minQuantitySize = 35/100;
-        const quantityBoxSize = maxQuantitySum + maxQuantitySum*(minQuantitySize);
+        const quantityBoxSize = maxQuantitySum + maxQuantitySum*(MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
         const {classes} = this.props;
 
         return (
