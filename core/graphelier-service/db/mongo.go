@@ -37,13 +37,13 @@ func NewConnection() (*Connector, error) {
 func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook) {
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
-		{"instrument", instrument},
-		{"timestamp", bson.D{
-			{"$lte", timestamp},
+		{Key: "instrument", Value: instrument},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "$lte", Value: timestamp},
 		}},
 	}
 	option := options.FindOne()
-	option.SetSort(bson.D{{"timestamp", -1}})
+	option.SetSort(bson.D{{Key: "timestamp", Value: -1}})
 
 	err := collection.FindOne(context.TODO(), filter, option).Decode(&result) // TODO Change to find, sort, limit?
 	if err != nil {
@@ -57,10 +57,10 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 func (c *Connector) GetMessages(instrument string, timestamp uint64, latestFullSnapshot uint64) (results []*models.Message) {
 	collection := c.Database("graphelier-db").Collection("messages")
 	filter := bson.D{
-		{"instrument", instrument},
-		{"timestamp", bson.D{
-			{"$lte", timestamp},
-			{"$gte", latestFullSnapshot},
+		{Key: "instrument", Value: instrument},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "$lte", Value: timestamp},
+			{Key: "$gte", Value: latestFullSnapshot},
 		}},
 	}
 

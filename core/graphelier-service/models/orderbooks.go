@@ -23,7 +23,7 @@ type Orderbook struct {
 // ApplyMessagesToOrderbook : Applies each individual message to the orderbook
 func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Orderbook {
 	for _, message := range messages {
-		if message.OrderID <= 0 {
+		if message.OrderID == 0 {
 			continue
 		}
 		switch MessageHandlers(message.MessageType) {
@@ -76,14 +76,12 @@ func (orderbook *Orderbook) applyModify(message *Message) {
 	}
 
 	o := (*orders)[orderIndex]
-	if 0 <= message.ShareQuantity && message.ShareQuantity < o.Quantity {
+	if message.ShareQuantity < o.Quantity {
 		o.Quantity -= message.ShareQuantity
 	} else {
 		orderbook.applyDelete(message)
-		if message.ShareQuantity < 0 {
-			message.ShareQuantity = o.Quantity - message.ShareQuantity
-			orderbook.applyNewOrder(message)
-		}
+		message.ShareQuantity = o.Quantity - message.ShareQuantity
+		orderbook.applyNewOrder(message)
 	}
 }
 
@@ -114,10 +112,10 @@ func (orderbook *Orderbook) applyExecute(message *Message) {
 
 func (orderbook *Orderbook) removeEmptyLevels(message *Message) {
 	index := 0
-	found := true
+	var found bool
 	if message.Direction == -1 {
 		index, found = getLevelIndex(orderbook.Asks, message)
-		if found != true {
+		if !found {
 			return
 		}
 		copy(orderbook.Asks[index:], orderbook.Asks[index+1:])
@@ -125,7 +123,7 @@ func (orderbook *Orderbook) removeEmptyLevels(message *Message) {
 		orderbook.Asks = orderbook.Asks[:len(orderbook.Asks)-1]
 	} else if message.Direction == 1 {
 		index, found = getLevelIndex(orderbook.Bids, message)
-		if found != true {
+		if !found {
 			return
 		}
 		copy(orderbook.Bids[index:], orderbook.Bids[index+1:])

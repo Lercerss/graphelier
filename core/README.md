@@ -35,6 +35,12 @@ go test graphelier/core/graphelier-service/...
 go fmt graphelier/core/graphelier-service/...
 ```
 
+### Golang ci bot
+Run this command in the project's `root`
+```bash
+docker run --rm -v $(pwd):/goapp -e RUN=1 -e REPO=github.com/Lercerss/graphelier golangci/build-runner goenvbuild
+```
+
 ## Scripts
 
 All scripts should be run from the `core/scripts` directory.
