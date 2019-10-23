@@ -50,6 +50,13 @@ class TimestampOrderBookScroller extends Component {
                 type: 'ask',
                 isMiddle: false,
             });
+            let sum = 0;
+            asks[i].orders.map(order =>{
+                sum += order.quantity;
+                if (sum > maxQuantitySum){
+                    maxQuantitySum = sum;
+                }
+            });
         }
 
         bids.map(bid => {
@@ -58,19 +65,14 @@ class TimestampOrderBookScroller extends Component {
                 type: 'bid',
                 isMiddle: firstBid++ === 0,
             });
-        });
-
-        if (listItems.length > 0){
-            listItems.map(listItem =>{
-                let sum = 0;
-                listItem.orders.map( order => {
-                    sum += order.quantity;
-                });
+            let sum = 0;
+            bid.orders.map(order =>{
+                sum += order.quantity;
                 if (sum > maxQuantitySum){
                     maxQuantitySum = sum;
                 }
             });
-        }
+        });
 
         this.setState({listItems, maxQuantitySum}, () => {
             this.handleScrollToTopOfTheBook();
@@ -97,7 +99,8 @@ class TimestampOrderBookScroller extends Component {
 
     render() {
         const {listItems, maxQuantitySum} = this.state;
-        const leeway = maxQuantitySum + maxQuantitySum*(35/100);
+        const minQuantitySize = 35/100;
+        const quantityBoxSize = maxQuantitySum + maxQuantitySum*(minQuantitySize);
         const {classes} = this.props;
 
         return (
@@ -129,7 +132,7 @@ class TimestampOrderBookScroller extends Component {
                                         type={listItem.type}
                                         price={listItem.price}
                                         orders={listItem.orders}
-                                        maxQuantitySum={leeway}
+                                        maxQuantitySum={quantityBoxSize}
                                     />
                                 </Box>
                             );

@@ -21,5 +21,9 @@ export const Styles = {
     text: {
         color: Colors.white,
         fontSize: 13,
-    }
+    },
+    quantity: {
+        width: '100%',
+        height: '100%',
+    },
 };

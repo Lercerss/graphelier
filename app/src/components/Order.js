@@ -10,14 +10,15 @@ class Order extends Component {
     render() {
         const {classes, type, quantity, maxQuantitySum} = this.props;
         const quantityBoxSize = (quantity / maxQuantitySum) * 100;
+        const minQuantityTextSize = 1.5;
 
         return (
             <Box className={classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)} style={{minWidth:`${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%`}}>
-                {quantityBoxSize > 1.5 ?
+                {quantityBoxSize > minQuantityTextSize ?
                     (
                         <Typography className={classes.text}>{quantity}</Typography>
                     ) : (
-                        <Tooltip title={quantity} placement='cursor'><span style={{width: '100%', height: '100%'}}/></Tooltip>
+                        <Tooltip title={quantity} placement='cursor'><span className={classes.quantity}/></Tooltip>
                     )
                 }
             </Box>
