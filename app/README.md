@@ -24,6 +24,20 @@ The page will reload if you make edits.
 #### `npm test`
 Launches the test runner in the interactive watch mode. See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
+## Running the frontend linter with docker
+
+```sh
+docker build --target=lint -t graphelier-app-lint ./app
+docker run graphelier-app-lint
+```
+
+## Running the frontend tests with docker
+
+```sh
+docker build --target=test -t graphelier-app-test ./app
+docker run graphelier-app-test
+```
+
 ###  Development
 
 #### Coding Standards
