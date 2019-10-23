@@ -42,12 +42,20 @@ class TimestampOrderBookScroller extends Component {
 
         let listItems = [];
         let firstBid = 0;
+        let maxQuantitySum = 0;
 
         for (let i=asks.length-1; i>=0; i--) {
             listItems.push({
                 ...asks[i],
                 type: 'ask',
                 isMiddle: false,
+            });
+            let sum = 0;
+            asks[i].orders.map(order =>{
+                sum += order.quantity;
+                if (sum > maxQuantitySum){
+                    maxQuantitySum = sum;
+                }
             });
         }
 
@@ -57,9 +65,16 @@ class TimestampOrderBookScroller extends Component {
                 type: 'bid',
                 isMiddle: firstBid++ === 0,
             });
+            let sum = 0;
+            bid.orders.map(order =>{
+                sum += order.quantity;
+                if (sum > maxQuantitySum){
+                    maxQuantitySum = sum;
+                }
+            });
         });
 
-        this.setState({listItems}, () => {
+        this.setState({listItems, maxQuantitySum}, () => {
             this.handleScrollToTopOfTheBook();
         });
     };
@@ -83,7 +98,9 @@ class TimestampOrderBookScroller extends Component {
     };
 
     render() {
-        const {listItems} = this.state;
+        const {listItems, maxQuantitySum} = this.state;
+        const minQuantitySize = 35/100;
+        const quantityBoxSize = maxQuantitySum + maxQuantitySum*(minQuantitySize);
         const {classes} = this.props;
 
         return (
@@ -106,7 +123,6 @@ class TimestampOrderBookScroller extends Component {
                     >
                         {listItems.map(listItem => {
                             if (listItem.isMiddle) {this.middleReferenceItem = createRef();}
-
                             return (
                                 <Box
                                     ref={listItem.isMiddle ? this.middleReferenceItem : null}
@@ -116,6 +132,7 @@ class TimestampOrderBookScroller extends Component {
                                         type={listItem.type}
                                         price={listItem.price}
                                         orders={listItem.orders}
+                                        maxQuantitySum={quantityBoxSize}
                                     />
                                 </Box>
                             );

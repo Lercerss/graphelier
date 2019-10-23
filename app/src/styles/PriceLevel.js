@@ -2,7 +2,6 @@
 export const Styles = {
     row: {
         flex: 1,
-        display: 'flex',
         flexDirection: 'row',
         alignContent: 'flex-start',
         padding: 5,
@@ -24,6 +23,7 @@ export const Styles = {
         borderBottom: '0.5px solid #e0e0e0'
     },
     quantitiesBox: {
+        flex: 1,
         display: 'flex',
         flexDirection: 'row',
         paddingLeft: 30
