@@ -42,6 +42,7 @@ class TimestampOrderBookScroller extends Component {
 
         let listItems = [];
         let firstBid = 0;
+        let maxQuantitySum = 0;
 
         for (let i=asks.length-1; i>=0; i--) {
             listItems.push({
@@ -59,7 +60,19 @@ class TimestampOrderBookScroller extends Component {
             });
         });
 
-        this.setState({listItems}, () => {
+        if (listItems.length === asks.length + bids.length){
+            for (let i=0; i < listItems.length; i++){
+                let sum = 0;
+                for (let j=0; j <listItems[i].orders.length; j++) {
+                    sum += listItems[i].orders[j].quantity;
+                }
+                if (sum > maxQuantitySum){
+                    maxQuantitySum = sum;
+                }
+            }
+        }
+
+        this.setState({listItems, maxQuantitySum}, () => {
             this.handleScrollToTopOfTheBook();
         });
     };
@@ -83,7 +96,7 @@ class TimestampOrderBookScroller extends Component {
     };
 
     render() {
-        const {listItems} = this.state;
+        const {listItems, maxQuantitySum} = this.state;
         const {classes} = this.props;
 
         return (
@@ -106,7 +119,6 @@ class TimestampOrderBookScroller extends Component {
                     >
                         {listItems.map(listItem => {
                             if (listItem.isMiddle) {this.middleReferenceItem = createRef();}
-
                             return (
                                 <Box
                                     ref={listItem.isMiddle ? this.middleReferenceItem : null}
@@ -116,6 +128,7 @@ class TimestampOrderBookScroller extends Component {
                                         type={listItem.type}
                                         price={listItem.price}
                                         orders={listItem.orders}
+                                        maxQuantitySum={maxQuantitySum}
                                     />
                                 </Box>
                             );

@@ -7,7 +7,7 @@ export const Styles = {
     },
     container: {
         backgroundColor: Colors.lightBlue,
-        fontSize: '1.5rem',
+        fontSize: '1.25rem',
         paddingBottom: 20,
     },
     divTopBook: {

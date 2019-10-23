@@ -2,7 +2,6 @@
 export const Styles = {
     row: {
         flex: 1,
-        display: 'flex',
         flexDirection: 'row',
         alignContent: 'flex-start',
         padding: 5,

@@ -7,6 +7,7 @@ export const Styles = {
         paddingRight: 3,
         borderRadius: 3,
         color: Colors.white,
+        fontSize: '1.20em',
     },
     bid:{
         backgroundColor: Colors.green
