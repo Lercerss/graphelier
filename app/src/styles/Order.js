@@ -6,13 +6,20 @@ export const Styles = {
         paddingLeft: 3,
         paddingRight: 3,
         borderRadius: 3,
-        color: Colors.white,
-        fontSize: '1.20em',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%'
     },
     bid:{
         backgroundColor: Colors.green
     },
     ask:{
         backgroundColor: Colors.red
+    },
+    text: {
+        color: Colors.white,
+        fontSize: 13,
     }
 };
