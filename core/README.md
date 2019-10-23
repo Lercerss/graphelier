@@ -14,7 +14,7 @@ All commands should be run from the `core/` directory. This repo should be place
 Build and install the service executable inside your go `bin` directory:
 
 ```bash
-go install ...
+go get graphelier/core/graphelier-service
 ```
 
 ### Launching graphelier-service
@@ -26,7 +26,13 @@ $GOPATH/bin/graphelier-service
 ### Testing
 
 ```bash
-go test ...
+go test graphelier/core/graphelier-service/...
+```
+
+### Linting
+
+```bash
+go fmt graphelier/core/graphelier-service/...
 ```
 
 ## Scripts
@@ -39,4 +45,18 @@ Load data from file containing messages
 
 ```bash
 python -m importer <path_to_messages_file> <start_time>
+```
+
+### Linting with docker
+
+```sh
+docker build --target=lint -t graphelier-scripts-lint ./core/scripts
+docker run graphelier-scripts-lint
+```
+
+### Running tests with docker
+
+```sh
+docker build --target=test -t graphelier-scripts-test ./core/scripts
+docker run graphelier-scripts-test
 ```
