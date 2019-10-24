@@ -23,7 +23,7 @@ class TimestampOrderBookScroller extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         const {orderBook} = this.props;
 
-        if (prevProps.orderBook !== orderBook) {
+        if (prevProps.orderBook.asks !== orderBook.asks && prevProps.orderBook.bids !== orderBook.bids) {
             this.setState({
                 asks: orderBook.asks,
                 bids: orderBook.bids,
