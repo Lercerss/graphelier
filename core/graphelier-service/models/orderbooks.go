@@ -26,7 +26,7 @@ func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Order
 		if message.OrderID == 0 {
 			continue
 		}
-		switch MessageHandlers(message.MessageType) {
+		switch MessageType(message.MessageType) {
 		case NewOrder:
 			orderbook.applyNewOrder(message)
 		case Modify:
@@ -94,7 +94,7 @@ func (orderbook *Orderbook) applyDelete(message *Message) {
 	(*orders)[len(*orders)-1] = nil
 	*orders = (*orders)[:len(*orders)-1]
 	if len(*orders) == 0 {
-		orderbook.removeEmptyLevels(message)
+		orderbook.removeEmptyLevel(message)
 	}
 }
 
@@ -110,7 +110,7 @@ func (orderbook *Orderbook) applyExecute(message *Message) {
 	}
 }
 
-func (orderbook *Orderbook) removeEmptyLevels(message *Message) {
+func (orderbook *Orderbook) removeEmptyLevel(message *Message) {
 	index := 0
 	var found bool
 	if message.Direction == -1 {

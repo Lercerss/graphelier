@@ -11,14 +11,14 @@ type Message struct {
 	Direction     int64   `json:"direction"`
 }
 
-// MessageHandlers : Enum for message types
-type MessageHandlers int
+// MessageType : Enum for message types
+type MessageType int
 
 // Values for enum
 const (
-	NewOrder MessageHandlers = 1
-	Modify   MessageHandlers = 2
-	Delete   MessageHandlers = 3
-	Execute  MessageHandlers = 4
-	Ignore   MessageHandlers = 5
+	NewOrder MessageType = 1
+	Modify   MessageType = 2
+	Delete   MessageType = 3
+	Execute  MessageType = 4
+	Ignore   MessageType = 5
 )

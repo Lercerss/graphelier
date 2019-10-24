@@ -45,7 +45,7 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 	option := options.FindOne()
 	option.SetSort(bson.D{{Key: "timestamp", Value: -1}})
 
-	err := collection.FindOne(context.TODO(), filter, option).Decode(&result) // TODO Change to find, sort, limit?
+	err := collection.FindOne(context.TODO(), filter, option).Decode(&result)
 	if err != nil {
 		log.Fatal(err)
 	}
