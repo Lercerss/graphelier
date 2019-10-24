@@ -5,6 +5,7 @@ export const Styles = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#417dff'
     },
     topOfTheBookButton: {
         marginTop: 20,

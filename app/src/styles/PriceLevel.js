@@ -11,17 +11,18 @@ export const Styles = {
         float: 'left',
         width: '50px',
         textAlign: 'left',
-        paddingRight: 15
+        paddingRight: 15,
+        color: 'white'
     },
     bid: {
         display: 'flex',
         flex: 1,
-        borderTop: '0.5px solid #000'
+        borderTop: '0.5px solid #cacaca'
     },
     ask: {
         display: 'flex',
         flex: 1,
-        borderBottom: '0.5px solid #000'
+        borderBottom: '0.5px solid #cacaca'
     },
     quantitiesBox: {
         display: 'flex',
