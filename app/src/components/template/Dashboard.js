@@ -24,7 +24,7 @@ const Copyright = () => {
             {'.'}
         </Typography>
     );
-}
+};
 
 /**
  * Returns main componenet for the template
@@ -89,6 +89,6 @@ const Dashboard = () => {
             </main>
         </div>
     );
-}
+};
 
 export default Dashboard;
