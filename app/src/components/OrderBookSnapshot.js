@@ -5,7 +5,6 @@ import {dateStringToEpoch, nanosecondsToString} from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 import classNames from 'classnames';
 
-
 import OrderBookService from '../services/OrderBookService';
 import {SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS} from '../constants/Constants';
 
@@ -16,53 +15,30 @@ class OrderBookSnapshot extends Component {
         super(props);
 
         this.state = {
-            selectedTimestamp: null,
             selectedDateNano: 0,
             selectedTimeNano: 0,
             selectedDateTimeNano: 0,
-            selectedTimeString: 'select from slider',
+            selectedTimeString: 'Select from slider',
             asks: [],
             bids: [],
         };
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        const {selectedDateTimeNano, selectedTimeNano, selectedDateNano} = this.state;
-
-        if(prevState.selectedDateTimeNano !== selectedDateTimeNano && selectedDateNano !== 0 &&
-            selectedTimeNano !== 0 && selectedDateTimeNano !== 0){
-            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
-                .then(response => {
-                    this.setState({
-                        asks: response.data.asks,
-                        bids: response.data.bids,
-                    });
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        }
-    }
-
-
     /**
-     * Handles the date change for the TextField date picker
-     *
+     * @desc Handles the date change for the TextField date picker
      * @param event The event object that caused the call
      */
     handleChangeDate = (event) => {
         let selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:00'));
 
         this.setState({
-            selectedDateNano: selectedDateNano,
+            selectedDateNano,
         }, () => {this.handleChangeDateTime();});
     };
 
     /**
-     * Handles the time change when sliding the time Slider
-     *
+     * @desc Handles the time change when sliding the time Slider
      * @param event The event object that caused the call
-     *
      * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day.
      */
     handleChangeTime = (event, value) => {
@@ -75,35 +51,48 @@ class OrderBookSnapshot extends Component {
     };
 
     /**
-     * Handles the time change when the user stops sliding the time Slider
-     *
+     * @desc Handles the time change when the user stops sliding the time Slider
      * @param event The event object that caused the call
      * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day
      */
     handleCommitTime = (event, value) => {
+        const {selectedDateNano} = this.state;
+
         let selectedTimeNano = parseInt(value);
-
-        this.setState({
-            selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToString(selectedTimeNano),
-        }, () => {this.handleChangeDateTime();});
-    };
-
-    /**
-     * Updates the selectedDateTimeNano state variable when there is a change in the date or when the user stops sliding the time Slider
-     */
-    handleChangeDateTime = () => {
-        const {selectedDateNano, selectedTimeNano} = this.state;
         let selectedDateTimeNano = selectedTimeNano+selectedDateNano;
 
         this.setState({
-            selectedDateTimeNano: selectedDateTimeNano,
-        });
+            selectedTimeNano,
+            selectedTimeString: nanosecondsToString(selectedTimeNano),
+            selectedDateTimeNano
+        }, () => this.handleChangeDateTime());
+    };
+
+    /**
+     *  @desc Updates the selectedDateTimeNano state variable when there is a
+     *  change in the date or when the user stops sliding the time Slider
+     */
+    handleChangeDateTime = () => {
+        const {selectedDateTimeNano, selectedDateNano} = this.state;
+
+        if (selectedDateTimeNano !== 0 && selectedDateNano !== 0) {
+            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
+                .then(response => {
+                    this.setState({
+                        asks: response.data.asks,
+                        bids: response.data.bids,
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
     };
 
     render() {
         const {classes} = this.props;
         const {asks, bids} = this.state;
+
         return (
             <Container
                 maxWidth={'xl'}
@@ -144,7 +133,6 @@ class OrderBookSnapshot extends Component {
                                 max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm
                                 step={1}
                                 defaultValue={0}
-                                onChange={this.handleChangeTime}
                                 marks={[
                                     {
                                         value: NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
@@ -155,6 +143,7 @@ class OrderBookSnapshot extends Component {
                                         label: '4:00PM',
                                     },
                                 ]}
+                                onChange={this.handleChangeTime}
                                 onChangeCommitted={this.handleCommitTime}
                             />
                             {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0 ) &&
