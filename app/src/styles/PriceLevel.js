@@ -27,6 +27,7 @@ export const Styles = {
     quantitiesBox: {
         display: 'flex',
         flexDirection: 'row',
-        paddingLeft: 30
+        paddingLeft: 30,
+        width: '100%'
     }
 };
