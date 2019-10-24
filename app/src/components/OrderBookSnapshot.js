@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles, Container, Typography, FormControl, TextField, Slider, Collapse, IconButton } from '@material-ui/core';
+import { withStyles, Container, Typography, FormControl, TextField, Slider, Collapse, IconButton, Card } from '@material-ui/core';
 import { Styles } from '../styles/OrderBookSnapshot';
 import { dateStringToEpoch, nanosecondsToString } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
@@ -102,7 +102,9 @@ class OrderBookSnapshot extends Component {
             selectedDateTimeNano: selectedDateTimeNano,
         });
     }
-
+    /**
+     * Handles the expand button for showing or hiding the time settings for the orderbook
+     */
     handleExpandClick = () => {
         this.setState({ expanded: !this.state.expanded });
     }
@@ -112,28 +114,30 @@ class OrderBookSnapshot extends Component {
         const { asks, bids, expanded } = this.state;
         return (
             <Typography component={'div'} className={classes.container}>
-                {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
-                    <Typography
-                        variant={'body1'}
-                        color={'error'}
-                        className={classes.pleaseSelectMessage}>
-                        Please select Date and Time
+                <div className={classes.spaceBetween, classes.flex}>
+                    {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
+                        <Typography
+                            variant={'body1'}
+                            color={'error'}
+                            className={classes.pleaseSelectMessage, classes.flex}>
+                            Please select Date and Time
                     </Typography>
-                    : <Typography
-                        variant={'body1'}
-                        color={'textPrimary'}
-                        className={classes.selectMessage}>
-                        Select Date and Time
+                        : <Typography
+                            variant={'body1'}
+                            color={'textPrimary'}
+                            className={classes.selectMessage, classes.flex}>
+                            Select Date and Time
                     </Typography>
-                }
-                <IconButton
-                    className={`${classes.expand} ${expanded ? classes.expandOpen : ''}`}
-                    onClick={this.handleExpandClick}
-                    aria-expanded={expanded}
-                    aria-label="show more"
-                >
-                    <ExpandMoreIcon />
-                </IconButton>
+                    }
+                    <IconButton
+                        className={`${classes.expand} ${expanded ? classes.expandOpen : ''}`}
+                        onClick={this.handleExpandClick}
+                        aria-expanded={expanded}
+                        aria-label="show more"
+                    >
+                        <ExpandMoreIcon />
+                    </IconButton>
+                </div>
                 <Collapse in={expanded}>
                     <div id={'ButtonHeader'} className={classes.divTopBook}>
                         <FormControl className={classes.formControl}>
@@ -185,11 +189,11 @@ class OrderBookSnapshot extends Component {
                         </FormControl>
                     </div>
                 </Collapse>
-                <div className={classes.divTopBookBody}>
+                <Card>
                     <TimestampOrderBookScroller
                         orderBook={{ asks, bids }}
                     />
-                </div>
+                </Card>
             </Typography>
         );
     }

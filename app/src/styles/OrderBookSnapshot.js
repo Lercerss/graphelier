@@ -16,7 +16,7 @@ export const Styles = {
         margin: '1.5rem'
     },
     divTopBookBody: {
-        backgroundColor: `${Colors.lightBlue} !important`,
+        backgroundColor: `#41aeff !important`,
         display: 'flex',
         justifyContent: 'center',
         padding: '1rem'
@@ -75,4 +75,10 @@ export const Styles = {
     expandOpen: {
         transform: 'rotate(180deg)',
     },
+    spaceBetween: {
+        justifyContent: 'space-between',
+    },
+    flex: {
+        display: 'flex'
+    }
 };

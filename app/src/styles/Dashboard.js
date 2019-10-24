@@ -23,7 +23,7 @@ export const Styles = makeStyles(theme => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
-        backgroundColor: `${Colors.lightBlue} !important`
+        backgroundColor: `#41aeff !important`
     },
     appBarShift: {
         marginLeft: drawerWidth,

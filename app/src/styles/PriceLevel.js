@@ -5,7 +5,8 @@ export const Styles = {
         display: 'flex',
         flexDirection: 'row',
         alignContent: 'flex-start',
-        padding: 5,
+        padding: '5px 0px',
+        margin: '0px 10px'
     },
     price: {
         float: 'left',
@@ -16,12 +17,12 @@ export const Styles = {
     bid: {
         display: 'flex',
         flex: 1,
-        borderTop: '0.5px solid #e0e0e0'
+        borderTop: '0.5px solid #000'
     },
     ask: {
         display: 'flex',
         flex: 1,
-        borderBottom: '0.5px solid #e0e0e0'
+        borderBottom: '0.5px solid #000'
     },
     quantitiesBox: {
         display: 'flex',

@@ -11,10 +11,10 @@ class PriceLevel extends Component {
 
     render() {
         const {classes, type, price, orders} = this.props;
-        const p = price.toFixed(2);
+        const formattedPrice = price.toFixed(2);
         return (
             <Box className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
-                <span className={classes.price}>{p}</span>
+                <span className={classes.price}>{formattedPrice}</span>
                 <Box className={classes.quantitiesBox}>
                     {orders.map(order =>
                         <Order
