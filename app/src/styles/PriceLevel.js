@@ -1,4 +1,3 @@
-
 export const Styles = {
     row: {
         flex: 1,

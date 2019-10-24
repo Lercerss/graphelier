@@ -17,22 +17,68 @@ class OrderBookSnapshot extends Component {
         super(props);
 
         this.state = {
-            selectedTimestamp: null,
             selectedDateNano: 0,
             selectedTimeNano: 0,
             selectedDateTimeNano: 0,
-            selectedTimeString: 'select from slider',
+            selectedTimeString: 'Select from slider',
             asks: [],
             bids: [],
             expanded: true
         };
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        const { selectedDateTimeNano, selectedTimeNano, selectedDateNano } = this.state;
+    /**
+     * @desc Handles the date change for the TextField date picker
+     * @param event The event object that caused the call
+     */
+    handleChangeDate = (event) => {
+        let selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:00'));
 
-        if (prevState.selectedDateTimeNano !== selectedDateTimeNano && selectedDateNano !== 0 &&
-            selectedTimeNano !== 0 && selectedDateTimeNano !== 0) {
+        this.setState({
+            selectedDateNano,
+        }, () => { this.handleChangeDateTime(); });
+    };
+
+    /**
+     * @desc Handles the time change when sliding the time Slider
+     * @param event The event object that caused the call
+     * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day.
+     */
+    handleChangeTime = (event, value) => {
+        let selectedTimeNano = parseInt(value);
+
+        this.setState({
+            selectedTimeNano: selectedTimeNano,
+            selectedTimeString: nanosecondsToString(selectedTimeNano),
+        });
+    };
+
+    /**
+     * @desc Handles the time change when the user stops sliding the time Slider
+     * @param event The event object that caused the call
+     * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day
+     */
+    handleCommitTime = (event, value) => {
+        const { selectedDateNano } = this.state;
+
+        let selectedTimeNano = parseInt(value);
+        let selectedDateTimeNano = selectedTimeNano + selectedDateNano;
+
+        this.setState({
+            selectedTimeNano,
+            selectedTimeString: nanosecondsToString(selectedTimeNano),
+            selectedDateTimeNano
+        }, () => this.handleChangeDateTime());
+    };
+
+    /**
+     *  @desc Updates the selectedDateTimeNano state variable when there is a
+     *  change in the date or when the user stops sliding the time Slider
+     */
+    handleChangeDateTime = () => {
+        const { selectedDateTimeNano, selectedDateNano } = this.state;
+
+        if (selectedDateTimeNano !== 0 && selectedDateNano !== 0) {
             OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
                     this.setState({
@@ -44,70 +90,14 @@ class OrderBookSnapshot extends Component {
                     console.log(err);
                 });
         }
-    }
-
-
-    /**
-     * Handles the date change for the TextField date picker
-     *
-     * @param event The event object that caused the call
-     */
-    handleChangeDate = (event) => {
-        let selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:00'));
-
-        this.setState({
-            selectedDateNano: selectedDateNano,
-        }, () => { this.handleChangeDateTime(); });
-    }
+    };
 
     /**
-     * Handles the time change when sliding the time Slider
-     *
-     * @param event The event object that caused the call
-     *
-     * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day.
-     */
-    handleChangeTime = (event, value) => {
-        let selectedTimeNano = parseInt(value);
-
-        this.setState({
-            selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToString(selectedTimeNano),
-        });
-    }
-
-    /**
-     * Handles the time change when the user stops sliding the time Slider
-     *
-     * @param event The event object that caused the call
-     * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day
-     */
-    handleCommitTime = (event, value) => {
-        let selectedTimeNano = parseInt(value);
-
-        this.setState({
-            selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToString(selectedTimeNano),
-        }, () => { this.handleChangeDateTime(); });
-    }
-
-    /**
-     * Updates the selectedDateTimeNano state variable when there is a change in the date or when the user stops sliding the time Slider
-     */
-    handleChangeDateTime = () => {
-        const { selectedDateNano, selectedTimeNano } = this.state;
-        let selectedDateTimeNano = selectedTimeNano + selectedDateNano;
-
-        this.setState({
-            selectedDateTimeNano: selectedDateTimeNano,
-        });
-    }
-    /**
-     * Handles the expand button for showing or hiding the time settings for the orderbook
+     * @desc Handles the expand button for showing or hiding the time settings for the orderbook
      */
     handleExpandClick = () => {
         this.setState({ expanded: !this.state.expanded });
-    }
+    };
 
     render() {
         const { classes } = this.props;

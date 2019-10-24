@@ -10,7 +10,7 @@ import {Box} from '@material-ui/core';
 class PriceLevel extends Component {
 
     render() {
-        const {classes, type, price, orders} = this.props;
+        const { classes, type, price, orders, maxQuantitySum } = this.props;
         const formattedPrice = price.toFixed(2);
         return (
             <Box className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
@@ -20,6 +20,7 @@ class PriceLevel extends Component {
                         <Order
                             type={type}
                             quantity={order.quantity}
+                            maxQuantitySum={maxQuantitySum}
                         />)}
                 </Box>
             </Box>

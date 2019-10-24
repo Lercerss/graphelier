@@ -6,6 +6,8 @@ import {Button, Box} from '@material-ui/core';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
 
+const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
+
 class TimestampOrderBookScroller extends Component {
 
     middleReferenceItem = null;
@@ -20,34 +22,44 @@ class TimestampOrderBookScroller extends Component {
         };
     }
 
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        const {orderBook} = this.props;
+        const {asks, bids} = this.state;
+
+        return asks.length === 0|| bids.length === 0 ||
+            (orderBook ? orderBook.asks !== nextProps.orderBook.asks || orderBook.bids !== nextProps.orderBook.bids : true);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { orderBook } = this.props;
-        if (prevProps.orderBook && orderBook) {
-            if (prevProps.orderBook.asks !== orderBook.asks && prevProps.orderBook.bids !== orderBook.bids) {
-                this.setState({
-                    asks: orderBook.asks,
-                    bids: orderBook.bids,
-                }, () => {
-                    this.processOrderBook();
-                });
-            }
+        const {orderBook} = this.props;
+
+        if (!prevProps.orderBook || (prevProps.orderBook.asks !== orderBook.asks || prevProps.orderBook.bids !== orderBook.bids)) {
+            this.processOrderBook(orderBook.asks, orderBook.bids);
         }
     }
 
     /**
      * @desc creates data structure for orderbook with asks on top and bids on bottom
+     * @param asks
+     * @param bids
      */
-    processOrderBook = () => {
-        const {asks, bids} = this.state;
-
+    processOrderBook = (asks, bids) => {
         let listItems = [];
         let firstBid = 0;
+        let maxQuantitySum = 0;
 
         for (let i=asks.length-1; i>=0; i--) {
             listItems.push({
                 ...asks[i],
                 type: 'ask',
                 isMiddle: false,
+            });
+            let sum = 0;
+            asks[i].orders.map(order =>{
+                sum += order.quantity;
+                if (sum > maxQuantitySum){
+                    maxQuantitySum = sum;
+                }
             });
         }
 
@@ -57,9 +69,16 @@ class TimestampOrderBookScroller extends Component {
                 type: 'bid',
                 isMiddle: firstBid++ === 0,
             });
+            let sum = 0;
+            bid.orders.map(order =>{
+                sum += order.quantity;
+                if (sum > maxQuantitySum){
+                    maxQuantitySum = sum;
+                }
+            });
         });
 
-        this.setState({listItems}, () => {
+        this.setState({listItems, asks, bids, maxQuantitySum}, () => {
             this.handleScrollToTopOfTheBook();
         });
     };
@@ -83,7 +102,8 @@ class TimestampOrderBookScroller extends Component {
     };
 
     render() {
-        const {listItems} = this.state;
+        const {listItems, maxQuantitySum} = this.state;
+        const quantityBoxSize = maxQuantitySum + maxQuantitySum*(MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
         const {classes} = this.props;
 
         return (
@@ -106,7 +126,6 @@ class TimestampOrderBookScroller extends Component {
                     >
                         {listItems.map(listItem => {
                             if (listItem.isMiddle) {this.middleReferenceItem = createRef();}
-
                             return (
                                 <Box
                                     ref={listItem.isMiddle ? this.middleReferenceItem : null}
@@ -116,6 +135,7 @@ class TimestampOrderBookScroller extends Component {
                                         type={listItem.type}
                                         price={listItem.price}
                                         orders={listItem.orders}
+                                        maxQuantitySum={quantityBoxSize}
                                     />
                                 </Box>
                             );
