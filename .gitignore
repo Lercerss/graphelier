@@ -1,3 +1,5 @@
-
+#windows docker compose file
 docker-compose_windows.yml
+
+#Visual studio folder
 .vs/*
