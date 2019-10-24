@@ -121,13 +121,13 @@ class OrderBookSnapshot extends Component {
                             color={'error'}
                             className={classes.pleaseSelectMessage, classes.flex}>
                             Please select Date and Time
-                    </Typography>
-                        : <Typography
+                        </Typography> :
+                        <Typography
                             variant={'body1'}
                             color={'textPrimary'}
                             className={classes.selectMessage, classes.flex}>
                             Select Date and Time
-                    </Typography>
+                        </Typography>
                     }
                     <IconButton
                         className={`${classes.expand} ${expanded ? classes.expandOpen : ''}`}
