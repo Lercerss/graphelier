@@ -10,12 +10,12 @@ import OrderBookSnapshot from '../OrderBookSnapshot';
 import { Styles } from '../../styles/Dashboard';
 
 /**
- * Returns copyright component for footer
+ * @description Returns copyright component for footer
  */
 const Copyright = () => {
     const classes = Styles();
     return (
-        <Typography variant="body2" color="textSecondary" align="center" className={classes.paddingCopyright}>
+        <Typography variant={'body2'} color={'textSecondary'} align={'center'} className={classes.paddingCopyright}>
             {'Copyright © '}
             <Link color="inherit" href="https://github.com/Lercerss/graphelier">
                 TFBAG
@@ -27,21 +27,21 @@ const Copyright = () => {
 };
 
 /**
- * Returns main componenet for the template
+ * @description Returns main componenet for the template
  */
 const Dashboard = () => {
     const classes = Styles();
     const [open, setOpen] = React.useState(false);
 
     /**
-     * Handles opening the left menu drawer 
+     * @description Handles opening the left menu drawer 
      */
     const handleDrawerOpen = () => {
         setOpen(true);
     };
 
     /**
-     * Handles closing the left menu drawer 
+     * @description Handles closing the left menu drawer 
      */
     const handleDrawerClose = () => {
         setOpen(false);
@@ -50,24 +50,24 @@ const Dashboard = () => {
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)} theme={OBStyles.themeBackground}>
+            <AppBar position={'absolute'} className={clsx(classes.appBar, open && classes.appBarShift)} theme={OBStyles.themeBackground}>
                 <Toolbar className={classes.toolbar}>
                     <IconButton
-                        edge="start"
-                        color="inherit"
-                        aria-label="open drawer"
+                        edge={'start'}
+                        color={'inherit'}
+                        aria-label={'open drawer'}
                         onClick={handleDrawerOpen}
                         className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                    <Typography component={'h1'} variant={'h6'} color={'inherit'} noWrap className={classes.title}>
                         Graphelier
                     </Typography>
                 </Toolbar>
             </AppBar>
             <Drawer
-                variant="permanent"
+                variant={'permanent'}
                 classes={{
                     paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
                 }}

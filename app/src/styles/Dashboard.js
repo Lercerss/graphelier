@@ -1,7 +1,7 @@
 import { Colors } from './App';
 import { makeStyles } from '@material-ui/core/styles';
 
-const drawerWidth = 240;
+const DRAWER_WIDTH = 240;
 
 export const Styles = makeStyles(theme => ({
     root: {
@@ -26,8 +26,8 @@ export const Styles = makeStyles(theme => ({
         backgroundColor: `#41aeff !important`
     },
     appBarShift: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
+        marginLeft: DRAWER_WIDTH,
+        width: `calc(100% - ${DRAWER_WIDTH}px)`,
         transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
@@ -45,7 +45,7 @@ export const Styles = makeStyles(theme => ({
     drawerPaper: {
         position: 'relative',
         whiteSpace: 'nowrap',
-        width: drawerWidth,
+        width: DRAWER_WIDTH,
         transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
