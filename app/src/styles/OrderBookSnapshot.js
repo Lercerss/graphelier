@@ -2,31 +2,29 @@ import {Colors} from './App';
 
 export const Styles = {
     root:{
-        backgroundColor: Colors.empty,
-        minHeight: '100vh',
+        backgroundColor: 'transparent'
     },
     container: {
-        backgroundColor: Colors.lightBlue,
-        fontSize: '1.25rem',
-        paddingBottom: 20,
+        backgroundColor: 'transparent'
     },
     divTopBook: {
         display: 'flex',
         justifyContent: 'flex-end',
-        backgroundColor: Colors.empty
+        backgroundColor: 'transparent'
     },
     NativeSelect: {
         margin: '1.5rem'
     },
     divTopBookBody: {
+        backgroundColor: `#41aeff !important`,
         display: 'flex',
         justifyContent: 'center',
         padding: '1rem'
     },
     formControl: {
+        minWidth: 350,
         display: 'flex',
         width: '100%',
-        marginTop: 20,
         marginBottom: 20,
         justifyContent: 'flex-end',
     },
@@ -36,16 +34,21 @@ export const Styles = {
         display: 'inline',
     },
     timestampSlider: {
-        marginTop: 20,
-        width: '100%',
+        marginTop: '1rem !important',
+        width: '97%',
+        margin: 'auto',
+
     },
-    selectMessage: {
+    pleaseSelectMessage: {
+        display: 'inline',
         alignSelf: 'flex-end',
         color: '#9F6000',
         backgroundColor: '#FEEFB3',
         borderRadius: '5px',
-        padding: '2px',
-        marginTop: 15
+        padding: '2px'
+    },
+    selectMessage: {
+        display: 'inline',
     },
     inputLabel: {
         display: 'inline',
@@ -60,4 +63,22 @@ export const Styles = {
         marginTop: 10,
         alignItems: 'center',
     },
+    transparentBackground: {
+        backgroundColor: 'transparent'
+    },
+    expand: {
+        transform: 'rotate(0deg)',
+        marginLeft: 'auto',
+        transition: 'transform 0.25s',
+        fontSize: '1rem'
+    },
+    expandOpen: {
+        transform: 'rotate(180deg)',
+    },
+    spaceBetween: {
+        justifyContent: 'space-between',
+    },
+    flex: {
+        display: 'flex'
+    }
 };

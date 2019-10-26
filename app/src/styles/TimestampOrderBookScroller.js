@@ -1,14 +1,20 @@
 export const Styles = {
     container: {
-        width: '95%',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#417dff'
     },
     topOfTheBookButton: {
         marginTop: 20,
         marginBottom: 20,
+        backgroundColor: '#41aeff',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#417dff'
+        }
     },
     scrollContainer: {
         width: '100%',
