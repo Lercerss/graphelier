@@ -6,6 +6,7 @@ jobs:
         working_directory: ~/graphelier
         steps:
             - checkout
+            - run: rm -rf .git/
             - persist_to_workspace:
                   root: ~/graphelier
                   paths:
@@ -42,26 +43,23 @@ jobs:
     build_service:
         docker:
             - image: circleci/golang:1.13-buster
-        working_directory: ~/graphelier/core
+        working_directory: /go/src/graphelier
         steps:
-            - attach_workspace:
-                  at: ~/graphelier
             - restore_cache:
                   keys:
-                      - v1-service-{{ .Branch }}
-                      - v1-service-master
-                      - v1-service-
-            - run:
-                  name: Setup directory structure
-                  command: |
-                      ln -sfn ~/graphelier /go/src/graphelier
+                      - v2-service-{{ .Branch }}
+                      - v2-service-master
+                      - v2-service-
+            - attach_workspace:
+                  at: /go/src/graphelier
             - run:
                   name: Build service executable
                   command: go get graphelier/core/graphelier-service
             - save_cache:
-                  key: v1-service-{{ .Branch }}
+                  key: v2-service-{{ .Branch }}
                   paths:
-                      - /go/src
+                      - /go/src/github.com
+                      - /go/src/go.mongodb.org
                       - /go/pkg
                       - ~/.cache/go-build
             - run:
