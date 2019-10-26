@@ -8,8 +8,8 @@ import {Typography, Box, Tooltip} from '@material-ui/core';
 class Order extends Component {
 
     render() {
-        const {classes, type, quantity, maxQuantitySum} = this.props;
-        const quantityBoxSize = (quantity / maxQuantitySum) * 100;
+        const {classes, type, quantity, maxQuantity} = this.props;
+        const quantityBoxSize = (quantity / maxQuantity) * 100;
         const minQuantityTextSize = 1.5;
 
         return (

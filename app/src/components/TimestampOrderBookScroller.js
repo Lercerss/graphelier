@@ -5,8 +5,8 @@ import {withStyles} from '@material-ui/core/styles';
 import {Button, Box} from '@material-ui/core';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
-
-const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
+import {connect} from 'react-redux';
+import {getOrderBookListItemsAsArray, listItemsEquals} from '../utils/order-book-utils';
 
 class TimestampOrderBookScroller extends Component {
 
@@ -16,80 +16,46 @@ class TimestampOrderBookScroller extends Component {
         super(props);
 
         this.state = {
-            asks: [],
-            bids: [],
-            listItems: []
+            listItems: {},
         };
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         const {orderBook} = this.props;
-        const {asks, bids} = this.state;
+        const {listItems, maxQuantity} = this.state;
 
-        return asks.length === 0|| bids.length === 0 ||
-            (orderBook ? orderBook.asks !== nextProps.orderBook.asks || orderBook.bids !== nextProps.orderBook.bids : true);
+        const currentListItems = orderBook ? orderBook.listItems : {};
+        const newListItems = nextProps.orderBook ? nextProps.orderBook.listItems : {};
+
+
+        if (!listItemsEquals(currentListItems, newListItems)) {
+            return true;
+        } else {
+            const shouldReRender = (!listItemsEquals(listItems, nextState.listItems) || maxQuantity !== nextState.maxQuantity);
+            console.log('TimestampOrderBookScroller::shouldComponentUpdate - New listItems differ: ', shouldReRender);
+            return shouldReRender;
+        }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const {orderBook} = this.props;
 
-        if (!prevProps.orderBook || (prevProps.orderBook.asks !== orderBook.asks || prevProps.orderBook.bids !== orderBook.bids)) {
-            this.processOrderBook(orderBook.asks, orderBook.bids);
+        const currentListItems = prevProps.orderBook ? prevProps.orderBook.listItems : {};
+        const newListItems = orderBook ? orderBook.listItems : {};
+
+        if (!listItemsEquals(currentListItems, newListItems)) {
+
+            console.log('TimestampOrderBookScroller::componentDidUpdate - current listItems: ', currentListItems);
+            console.log('TimestampOrderBookScroller::componentDidUpdate - new listItems: ', newListItems);
+
+            this.setState({
+                listItems : newListItems,
+                maxQuantity: orderBook.maxQuantity
+            }, () => {
+                this.handleScrollToTopOfTheBook();
+            });
         }
     }
-
-    /**
-     * @desc creates data structure for orderbook with asks on top and bids on bottom
-     * @param asks
-     * @param bids
-     */
-    processOrderBook = (asks, bids) => {
-        let listItems = [];
-        let firstBid = 0;
-        let maxQuantitySum = 0;
-
-        for (let i=asks.length-1; i>=0; i--) {
-            listItems.push({
-                ...asks[i],
-                type: 'ask',
-                isMiddle: false,
-            });
-            let sum = 0;
-            asks[i].orders.map(order =>{
-                sum += order.quantity;
-                if (sum > maxQuantitySum){
-                    maxQuantitySum = sum;
-                }
-            });
-        }
-
-        bids.map(bid => {
-            listItems.push({
-                ...bid,
-                type: 'bid',
-                isMiddle: firstBid++ === 0,
-            });
-            let sum = 0;
-            bid.orders.map(order =>{
-                sum += order.quantity;
-                if (sum > maxQuantitySum){
-                    maxQuantitySum = sum;
-                }
-            });
-        });
-
-        this.setState({listItems, asks, bids, maxQuantitySum}, () => {
-            this.handleScrollToTopOfTheBook();
-        });
-    };
-
-    /**
-     * @desc handler for the event of hitting the bottom or top of the scroll list
-     * @param direction
-     */
-    handleHitEdge = (direction) => {
-        //TODO: implement the necessary async calls for paging
-    };
 
     /**
      * @desc handler for the event of scrolling to the top of the book entity
@@ -102,9 +68,8 @@ class TimestampOrderBookScroller extends Component {
     };
 
     render() {
-        const {listItems, maxQuantitySum} = this.state;
-        const quantityBoxSize = maxQuantitySum + maxQuantitySum*(MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
-        const {classes} = this.props;
+        const {listItems} = this.state;
+        const {classes, orderBook} = this.props;
 
         return (
             <Box className={classes.container}>
@@ -119,32 +84,36 @@ class TimestampOrderBookScroller extends Component {
                 </Box>
 
                 <Box className={classes.scrollContainer}>
-                    <MultiDirectionalScroll
-                        onReachBottom={() => this.handleHitEdge('bottom')}
-                        onReachTop={() => this.handleHitEdge('top')}
-                        position={50}
-                    >
-                        {listItems.map(listItem => {
-                            if (listItem.isMiddle) {this.middleReferenceItem = createRef();}
-                            return (
-                                <Box
-                                    ref={listItem.isMiddle ? this.middleReferenceItem : null}
-                                    className={classes.pricePoint}
-                                >
-                                    <PriceLevel
-                                        type={listItem.type}
-                                        price={listItem.price}
-                                        orders={listItem.orders}
-                                        maxQuantitySum={quantityBoxSize}
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </MultiDirectionalScroll>
+                    {orderBook &&
+                        <MultiDirectionalScroll
+                            position={50}
+                        >
+                            {getOrderBookListItemsAsArray(listItems).map(listItem => {
+                                if (listItem.isMiddle) {this.middleReferenceItem = createRef();}
+                                return (
+                                    <Box
+                                        ref={listItem.isMiddle ? this.middleReferenceItem : null}
+                                        className={classes.pricePoint}
+                                    >
+                                        <PriceLevel
+                                            type={listItem.type}
+                                            price={listItem.price}
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </MultiDirectionalScroll>
+                    }
                 </Box>
             </Box>
         );
     }
 }
 
-export default withStyles(Styles)(TimestampOrderBookScroller);
+const mapStateToProps = (state) => {
+    return {
+        orderBook: state.orderBook
+    };
+};
+
+export default connect(mapStateToProps)(withStyles(Styles)(TimestampOrderBookScroller));

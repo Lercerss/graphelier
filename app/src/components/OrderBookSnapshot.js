@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles, Container, Typography, FormControl, TextField, Slider, Collapse, IconButton, Card } from '@material-ui/core';
+import { withStyles, Typography, FormControl, TextField, Slider, Collapse, IconButton, Card } from '@material-ui/core';
 import { Styles } from '../styles/OrderBookSnapshot';
 import { dateStringToEpoch, nanosecondsToString } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
@@ -8,7 +8,10 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 
 import OrderBookService from '../services/OrderBookService';
-import { SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, CURRENT_TIME_PLACEHOLDER } from '../constants/Constants';
+import { SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS } from '../constants/Constants';
+import * as actions from '../actions/actions';
+import {connect} from 'react-redux';
+import {processOrderBookFromScratch} from '../utils/order-book-utils';
 
 
 class OrderBookSnapshot extends Component {
@@ -21,8 +24,6 @@ class OrderBookSnapshot extends Component {
             selectedTimeNano: 0,
             selectedDateTimeNano: 0,
             selectedTimeString: 'Select from slider',
-            asks: [],
-            bids: [],
             expanded: true
         };
     }
@@ -81,10 +82,8 @@ class OrderBookSnapshot extends Component {
         if (selectedDateTimeNano !== 0 && selectedDateNano !== 0) {
             OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
-                    this.setState({
-                        asks: response.data.asks,
-                        bids: response.data.bids,
-                    });
+                    let orderBook = processOrderBookFromScratch(response.data.asks, response.data.bids);
+                    this.props.saveOrderBook(orderBook);
                 })
                 .catch(err => {
                     console.log(err);
@@ -101,21 +100,22 @@ class OrderBookSnapshot extends Component {
 
     render() {
         const { classes } = this.props;
-        const { asks, bids, expanded } = this.state;
+        const { expanded } = this.state;
+
         return (
             <Typography component={'div'} className={classes.container}>
-                <div className={classes.spaceBetween, classes.flex}>
+                <div className={classNames(classes.spaceBetween, classes.flex)}>
                     {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
                         <Typography
                             variant={'body1'}
                             color={'error'}
-                            className={classes.pleaseSelectMessage, classes.flex}>
+                            className={classNames(classes.pleaseSelectMessage, classes.flex)}>
                             Please select Date and Time
                         </Typography> :
                         <Typography
                             variant={'body1'}
                             color={'textPrimary'}
-                            className={classes.selectMessage, classes.flex}>
+                            className={classNames(classes.selectMessage, classes.flex)}>
                             Select Date and Time
                         </Typography>
                     }
@@ -180,13 +180,21 @@ class OrderBookSnapshot extends Component {
                     </div>
                 </Collapse>
                 <Card>
-                    <TimestampOrderBookScroller
-                        orderBook={{ asks, bids }}
-                    />
+                    <TimestampOrderBookScroller />
                 </Card>
             </Typography>
         );
     }
 }
 
-export default withStyles(Styles)(OrderBookSnapshot);
+const mapStateToProps = (state) => {
+    return {};
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        saveOrderBook: (orderBook) => dispatch(actions.saveOrderBook(orderBook))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(Styles)(OrderBookSnapshot));

@@ -14,15 +14,10 @@ export const Styles = {
         paddingRight: 15,
         color: 'white'
     },
-    bid: {
+    bidsAndAsks: {
         display: 'flex',
         flex: 1,
         borderTop: '0.5px solid #cacaca'
-    },
-    ask: {
-        display: 'flex',
-        flex: 1,
-        borderBottom: '0.5px solid #cacaca'
     },
     quantitiesBox: {
         display: 'flex',
