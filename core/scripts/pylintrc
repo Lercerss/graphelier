@@ -1,0 +1,5 @@
+[MESSAGES CONTROL]
+
+# Only keep warnings and errors, disable refactor and convention levels
+# Also disable a few classes we don't mind
+disable=R,C,fixme
