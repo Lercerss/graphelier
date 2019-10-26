@@ -25,4 +25,4 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - "./core/db/data:/data/db"
+      - "graphelier-db:/data/db"

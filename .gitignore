@@ -2,4 +2,4 @@
 docker-compose_windows.yml
 
 #Visual studio folder
-.vs/*
+**/.vs
