@@ -55,6 +55,7 @@ class TimestampOrderBookScroller extends Component {
                 isMiddle: false,
             });
             let sum = 0;
+            // eslint-disable-next-line
             asks[i].orders.map(order =>{
                 sum += order.quantity;
                 if (sum > maxQuantitySum){
@@ -63,6 +64,7 @@ class TimestampOrderBookScroller extends Component {
             });
         }
 
+        // eslint-disable-next-line
         bids.map(bid => {
             listItems.push({
                 ...bid,
@@ -70,6 +72,7 @@ class TimestampOrderBookScroller extends Component {
                 isMiddle: firstBid++ === 0,
             });
             let sum = 0;
+            // eslint-disable-next-line
             bid.orders.map(order =>{
                 sum += order.quantity;
                 if (sum > maxQuantitySum){

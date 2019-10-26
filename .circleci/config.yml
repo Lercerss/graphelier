@@ -21,13 +21,13 @@ jobs:
                   at: ~/graphelier
             - restore_cache:
                   keys:
-                      - v1-app-{{ checksum "package-lock.json" }}
-                      - v1-app-
+                      - v0-app-{{ checksum "package-lock.json" }}
+                      - v0-app-
             - run:
                   name: Install frontend dependencies
                   command: npm install --quiet
             - save_cache:
-                  key: v1-app-{{ checksum "package-lock.json" }}
+                  key: v0-app-{{ checksum "package-lock.json" }}
                   paths:
                       - ~/graphelier/app/node_modules
             - run:
@@ -47,9 +47,8 @@ jobs:
         steps:
             - restore_cache:
                   keys:
-                      - v2-service-{{ .Branch }}
-                      - v2-service-master
-                      - v2-service-
+                      - v0-service-{{ .Branch }}
+                      - v0-service-master
             - attach_workspace:
                   at: /go/src/graphelier
             - run:
@@ -75,8 +74,8 @@ jobs:
                   at: ~/graphelier
             - restore_cache:
                   keys:
-                      - v1-scripts-{{ checksum "requirements.txt" }}
-                      - v1-scripts-
+                      - v0-scripts-{{ checksum "requirements.txt" }}
+                      - v0-scripts-
             - run:
                   name: Install scripts dependencies
                   command: |
@@ -84,7 +83,7 @@ jobs:
                       source venv/bin/activate
                       pip install -r requirements.txt
             - save_cache:
-                  key: v1-scripts-{{ checksum "requirements.txt" }}
+                  key: v0-scripts-{{ checksum "requirements.txt" }}
                   paths:
                       - venv
             - run:

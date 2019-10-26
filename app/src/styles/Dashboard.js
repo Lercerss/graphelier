@@ -1,4 +1,3 @@
-import { Colors } from './App';
 import { makeStyles } from '@material-ui/core/styles';
 
 const DRAWER_WIDTH = 240;
