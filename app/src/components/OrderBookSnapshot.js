@@ -119,7 +119,7 @@ class OrderBookSnapshot extends Component {
                         </Typography>
                     }
                     <IconButton
-                        className={`${classes.expand} ${expanded ? classes.expandOpen : ''}`}
+                        className={classNames(classes.expand, expanded && classes.expandOpen)}
                         onClick={this.handleExpandClick}
                         aria-expanded={expanded}
                         aria-label={'show more'}
@@ -133,7 +133,7 @@ class OrderBookSnapshot extends Component {
                             <div className={classes.inline}>
                                 <Typography
                                     variant={'body1'}
-                                    className={classNames(classes.inputLabel, classes.alignEnd)}
+                                    className={classNames(classes.inputLabel)}
                                     color={'textSecondary'}>
                                     {'Date'}
                                 </Typography>
