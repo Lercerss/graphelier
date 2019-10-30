@@ -104,18 +104,17 @@ class OrderBookSnapshot extends Component {
         const { asks, bids, expanded } = this.state;
         return (
             <Typography component={'div'} className={classes.container}>
-                <div className={[classes.spaceBetween, classes.flex]}>
+                <div className={classNames(classes.spaceBetween, classes.flex)}>
                     {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
                         <Typography
                             variant={'body1'}
-                            color={'error'}
-                            className={[classes.pleaseSelectMessage, classes.flex]}>
+                            className={classNames(classes.pleaseSelectMessage, classes.flex)}>
                             Please select Date and Time
                         </Typography> :
                         <Typography
                             variant={'body1'}
                             color={'textPrimary'}
-                            className={[classes.selectMessage, classes.flex]}>
+                            className={classNames(classes.selectMessage, classes.flex)}>
                             Select Date and Time
                         </Typography>
                     }
@@ -123,7 +122,7 @@ class OrderBookSnapshot extends Component {
                         className={`${classes.expand} ${expanded ? classes.expandOpen : ''}`}
                         onClick={this.handleExpandClick}
                         aria-expanded={expanded}
-                        aria-label="show more"
+                        aria-label={'show more'}
                     >
                         <ExpandMoreIcon />
                     </IconButton>
@@ -157,25 +156,27 @@ class OrderBookSnapshot extends Component {
                                     {this.state.selectedTimeString}
                                 </Typography>
                             </div>
-                            <Slider
-                                className={classes.timestampSlider}
-                                min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am
-                                max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm
-                                step={1}
-                                defaultValue={0}
-                                onChange={this.handleChangeTime}
-                                marks={[
-                                    {
-                                        value: NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
-                                        label: '9:30AM',
-                                    },
-                                    {
-                                        value: NANOSECONDS_IN_SIXTEEN_HOURS,
-                                        label: '4:00PM',
-                                    },
-                                ]}
-                                onChangeCommitted={this.handleCommitTime}
-                            />
+                            <div className={classes.inline}>
+                                <Typography
+                                    variant={'body1'}
+                                    color={'textSecondary'}>
+                                    9:30
+                                </Typography>
+                                <Slider
+                                    className={classes.timestampSlider}
+                                    min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am
+                                    max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm
+                                    step={1}
+                                    defaultValue={0}
+                                    onChange={this.handleChangeTime}
+                                    onChangeCommitted={this.handleCommitTime}
+                                />
+                                <Typography
+                                    variant={'body1'}
+                                    color={'textSecondary'}>
+                                    16:00
+                                </Typography>
+                            </div>
                         </FormControl>
                     </div>
                 </Collapse>

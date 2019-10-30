@@ -115,6 +115,7 @@ class TimestampOrderBookScroller extends Component {
                     <Button
                         variant={'contained'}
                         className={classes.topOfTheBookButton}
+                        color={'primary'}
                         onClick={this.handleScrollToTopOfTheBook}
                     >
                         Top of the book
