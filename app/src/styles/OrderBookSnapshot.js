@@ -1,5 +1,3 @@
-import {Colors} from './App';
-
 export const Styles = {
     root:{
         backgroundColor: 'transparent'

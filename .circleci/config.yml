@@ -1,57 +1,113 @@
 version: 2
 jobs:
-    build_app:
-        machine:
-            image: ubuntu-1604:201903-01
+    prepare:
+        docker:
+            - image: circleci/python:3.7-buster
+        working_directory: ~/graphelier
         steps:
             - checkout
+            - run: rm -rf .git/
+            - persist_to_workspace:
+                  root: ~/graphelier
+                  paths:
+                      - .
+
+    build_app:
+        docker:
+            - image: circleci/node:10.16.3-buster
+        working_directory: ~/graphelier/app
+        steps:
+            - attach_workspace:
+                  at: ~/graphelier
+            - restore_cache:
+                  keys:
+                      - v0-app-{{ checksum "package-lock.json" }}
+                      - v0-app-
             - run:
-                  name: Build docker image for frontend linting
-                  command: docker build --target=lint -t graphelier-app-lint ./app
+                  name: Install frontend dependencies
+                  command: npm install --quiet
+            - save_cache:
+                  key: v0-app-{{ checksum "package-lock.json" }}
+                  paths:
+                      - ~/graphelier/app/node_modules
             - run:
-                  name: Build docker image for frontend testing
-                  command: docker build --target=test -t graphelier-app-test ./app
+                  name: Build frontend app
+                  command: npm run build
             - run:
-                  name: Run the container for frontend linting
-                  command: docker run graphelier-app-lint
+                  name: Test frontend
+                  command: npm test
             - run:
-                  name: Run the container for frontend testing
-                  command: docker run graphelier-app-test
+                  name: Lint frontend
+                  command: npm run lint src/
 
     build_service:
-        machine:
-            image: ubuntu-1604:201903-01
+        docker:
+            - image: circleci/golang:1.13-buster
+        working_directory: /go/src/graphelier
         steps:
-            - checkout
+            - restore_cache:
+                  keys:
+                      - v0-service-{{ .Branch }}
+                      - v0-service-master
+            - attach_workspace:
+                  at: /go/src/graphelier
             - run:
-                  name: Build docker image for backend testing
-                  command: docker build --target=test -t graphelier-service-test ./core
+                  name: Build service executable
+                  command: go get graphelier/core/graphelier-service
+            - save_cache:
+                  key: v2-service-{{ .Branch }}
+                  paths:
+                      - /go/src/github.com
+                      - /go/src/go.mongodb.org
+                      - /go/pkg
+                      - ~/.cache/go-build
             - run:
-                  name: Run the container for backend testing
-                  command: docker run graphelier-service-test
+                  name: Test service
+                  command: go test graphelier/core/graphelier-service/...
 
     build_scripts:
-        machine:
-            image: ubuntu-1604:201903-01
+        docker:
+            - image: circleci/python:3.7-buster
+        working_directory: ~/graphelier/core/scripts
         steps:
-            - checkout
+            - attach_workspace:
+                  at: ~/graphelier
+            - restore_cache:
+                  keys:
+                      - v0-scripts-{{ checksum "requirements.txt" }}
+                      - v0-scripts-
             - run:
-                  name: Build docker image for scripts linting
-                  command: docker build --target=lint -t graphelier-scripts-lint ./core/scripts
+                  name: Install scripts dependencies
+                  command: |
+                      python -m venv venv
+                      source venv/bin/activate
+                      pip install -r requirements.txt
+            - save_cache:
+                  key: v0-scripts-{{ checksum "requirements.txt" }}
+                  paths:
+                      - venv
             - run:
-                  name: Build docker image for scripts testing
-                  command: docker build --target=test -t graphelier-scripts-test ./core/scripts
+                  name: Test scripts
+                  command: |
+                      source venv/bin/activate
+                      python -m unittest
             - run:
-                  name: Run the container for scripts linting
-                  command: docker run graphelier-scripts-lint
-            - run:
-                  name: Run the container for scripts testing
-                  command: docker run graphelier-scripts-test
+                  name: Lint scripts
+                  command: |
+                      source venv/bin/activate
+                      pylint scripts
 
 workflows:
     version: 2
     build_and_test:
         jobs:
-            - build_app
-            - build_service
-            - build_scripts
+            - prepare
+            - build_app:
+                  requires:
+                      - prepare
+            - build_service:
+                  requires:
+                      - prepare
+            - build_scripts:
+                  requires:
+                      - prepare

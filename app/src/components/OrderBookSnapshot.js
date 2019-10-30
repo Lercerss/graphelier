@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles, Container, Typography, FormControl, TextField, Slider, Collapse, IconButton, Card } from '@material-ui/core';
+import { withStyles, Typography, FormControl, TextField, Slider, Collapse, IconButton, Card } from '@material-ui/core';
 import { Styles } from '../styles/OrderBookSnapshot';
 import { dateStringToEpoch, nanosecondsToString } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
@@ -8,7 +8,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 
 import OrderBookService from '../services/OrderBookService';
-import { SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, CURRENT_TIME_PLACEHOLDER } from '../constants/Constants';
+import { SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS } from '../constants/Constants';
 
 
 class OrderBookSnapshot extends Component {
@@ -104,18 +104,18 @@ class OrderBookSnapshot extends Component {
         const { asks, bids, expanded } = this.state;
         return (
             <Typography component={'div'} className={classes.container}>
-                <div className={classes.spaceBetween, classes.flex}>
+                <div className={[classes.spaceBetween, classes.flex]}>
                     {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
                         <Typography
                             variant={'body1'}
                             color={'error'}
-                            className={classes.pleaseSelectMessage, classes.flex}>
+                            className={[classes.pleaseSelectMessage, classes.flex]}>
                             Please select Date and Time
                         </Typography> :
                         <Typography
                             variant={'body1'}
                             color={'textPrimary'}
-                            className={classes.selectMessage, classes.flex}>
+                            className={[classes.selectMessage, classes.flex]}>
                             Select Date and Time
                         </Typography>
                     }

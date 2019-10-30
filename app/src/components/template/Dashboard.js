@@ -1,30 +1,13 @@
 import React from 'react';
 import clsx from 'clsx';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container, Link } from '@material-ui/core';
+import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container} from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { mainListItems } from './listItems';
 import { Styles as OBStyles } from '../../styles/OrderBookSnapshot';
 import OrderBookSnapshot from '../OrderBookSnapshot';
 import { Styles } from '../../styles/Dashboard';
-
-/**
- * @description Returns copyright component for footer
- */
-const Copyright = () => {
-    const classes = Styles();
-    return (
-        <Typography variant={'body2'} color={'textSecondary'} align={'center'} className={classes.paddingCopyright}>
-            {'Copyright © '}
-            <Link color="inherit" href="https://github.com/Lercerss/graphelier">
-                TFBAG
-            </Link>{' '}
-            {new Date().getFullYear()}
-            {'.'}
-        </Typography>
-    );
-};
 
 /**
  * @description Returns main componenet for the template

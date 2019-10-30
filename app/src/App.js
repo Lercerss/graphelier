@@ -22,15 +22,13 @@ class App extends Component {
     }
 
     render() {
-        const {classes} = this.props;
-
         return (
             <Dashboard/>
         );
     }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = () => {
     return {};
 };
 
