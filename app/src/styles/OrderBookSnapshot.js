@@ -32,10 +32,9 @@ export const Styles = {
         display: 'inline',
     },
     timestampSlider: {
-        marginTop: '1rem !important',
-        width: '97%',
-        margin: 'auto',
-
+        width: '100%',
+        marginRight: 20,
+        marginLeft: 20,
     },
     pleaseSelectMessage: {
         display: 'inline',
@@ -58,7 +57,7 @@ export const Styles = {
     inline: {
         display: 'flex',
         justifyContent: 'flex-end',
-        marginTop: 10,
+        marginTop: 15,
         alignItems: 'center',
     },
     transparentBackground: {

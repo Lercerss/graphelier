@@ -5,16 +5,12 @@ export const Styles = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#417dff'
+        backgroundColor: '#ffffff'
     },
     topOfTheBookButton: {
         marginTop: 20,
         marginBottom: 20,
-        backgroundColor: '#41aeff',
         color: 'white',
-        '&:hover': {
-            backgroundColor: '#417dff'
-        }
     },
     scrollContainer: {
         width: '100%',
@@ -28,6 +24,7 @@ export const Styles = {
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'flex-end',
+        borderBottom: '0.5px solid #cacaca',
         paddingRight: 50,
         paddingLeft: 50
     },

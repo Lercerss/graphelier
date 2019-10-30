@@ -7,6 +7,14 @@ export const Colors = {
     red: '#943e30'
 };
 
+export const LightThemeColors = {
+    palette: {
+        primary: {
+            main: '#41aeff'
+        },
+    }
+};
+
 export const Styles = {
     app: {
         textAlign: 'center',

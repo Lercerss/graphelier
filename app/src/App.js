@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {withStyles} from '@material-ui/core/styles';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
-import {Styles} from './styles/App';
+import {Styles, LightThemeColors} from './styles/App';
 
 import {saveReactAppName} from './actions/actions';
 import Dashboard from './components/template/Dashboard';
+
+const lightTheme = createMuiTheme(LightThemeColors);
 
 class App extends Component {
 
@@ -23,7 +26,9 @@ class App extends Component {
 
     render() {
         return (
-            <Dashboard/>
+            <MuiThemeProvider theme={lightTheme}>
+                <Dashboard/>
+            </MuiThemeProvider>
         );
     }
 }
