@@ -12,7 +12,8 @@ def order_book_to_dict(order_book):
             "price": price,
             "orders": [order_to_dict(order) for order in orders]
         } for price, orders in sorted(order_book.ask_book.items())],
-        "timestamp": _round_up(order_book.last_time, 9)
+        "timestamp": _round_up(order_book.last_time, 9),
+        "last_sod_offset": order_book.last_sod_offset
     }
 
 
@@ -31,7 +32,8 @@ def message_to_dict(message, instrument):
         "order_id": message.id,
         "share_quantity": message.share_quantity,
         "price": message.price,
-        "direction": message.direction
+        "direction": message.direction,
+        "sod_offset": message.sod_offset
     }
 
 

@@ -1,5 +1,4 @@
 import argparse
-
 from datetime import datetime
 
 from lobster.extender import Extender, weekdays
@@ -30,6 +29,7 @@ def load(file, start_time, instrument, extend):
     extender = Extender(file, start_timestamp, int(extend[1]))
     for day in weekdays(start_timestamp, int(extend[0])):
         order_book = OrderBook(instrument)
+        sod_offset_counter = 0
         last_multiple = 1
         message_buffer = []
 
@@ -38,7 +38,7 @@ def load(file, start_time, instrument, extend):
         for message in extender.extend_sample(day_diff):
             if message.time > max_time:
                 break
-
+            message.sod_offset = sod_offset_counter
             current_multiple = message.time // interval
             if current_multiple > last_multiple:
                 print(str(order_book))
@@ -51,6 +51,7 @@ def load(file, start_time, instrument, extend):
                 message_buffer = []
 
             order_book.send(message)
+            sod_offset_counter += 1
 
         # Flushing out remaining messages in buffer
         if len(message_buffer) > 0:
@@ -58,6 +59,7 @@ def load(file, start_time, instrument, extend):
 
         eod_clear = OrderBook(instrument)
         eod_clear.last_time = max_time
+        eod_clear.last_sod_offset = sod_offset_counter
         # save an empty order_book at the end of the day
         save_order_book(eod_clear)
 
