@@ -1,5 +1,5 @@
 import React from 'react';
-import clsx from 'clsx';
+import classNames from 'classnames';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container} from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -33,18 +33,28 @@ const Dashboard = () => {
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <AppBar position={'absolute'} className={clsx(classes.appBar, open && classes.appBarShift)} theme={OBStyles.themeBackground}>
+            <AppBar 
+                position={'absolute'}
+                className={classNames(classes.appBar, open && classes.appBarShift)}
+                theme={OBStyles.themeBackground}
+            >
                 <Toolbar className={classes.toolbar}>
                     <IconButton
                         edge={'start'}
                         color={'inherit'}
                         aria-label={'open drawer'}
                         onClick={handleDrawerOpen}
-                        className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+                        className={classNames(classes.menuButton, open && classes.menuButtonHidden)}
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography component={'h1'} variant={'h6'} color={'inherit'} noWrap className={classes.title}>
+                    <Typography
+                        component={'h1'}
+                        variant={'h6'}
+                        color={'inherit'}
+                        noWrap
+                        className={classes.title}
+                    >
                         Graphelier
                     </Typography>
                 </Toolbar>
@@ -52,7 +62,7 @@ const Dashboard = () => {
             <Drawer
                 variant={'permanent'}
                 classes={{
-                    paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
+                    paper: classNames(classes.drawerPaper, !open && classes.drawerPaperClose),
                 }}
                 open={open}
             >

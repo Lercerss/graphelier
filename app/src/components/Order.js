@@ -13,12 +13,24 @@ class Order extends Component {
         const minQuantityTextSize = 1.5;
 
         return (
-            quantityBoxSize > minQuantityTextSize ?
-                <Box className={classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)} style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}>
+            quantityBoxSize > minQuantityTextSize ? (
+                <Box 
+                    className={classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)}
+                    style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}
+                >
                     <Typography className={classes.text}>{quantity}</Typography>
-                </Box> :
-                <Tooltip title={quantity} placement='cursor'><span className={`${classes.quantity} ${classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)}`} style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}/>
+                </Box>
+            ) : (
+                <Tooltip
+                    title={quantity}
+                    placement='cursor'
+                >
+                    <span
+                        className={`${classes.quantity} ${classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)}`}
+                        style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}
+                    />
                 </Tooltip>
+            )
         );
     }
 }

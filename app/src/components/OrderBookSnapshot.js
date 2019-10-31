@@ -1,18 +1,32 @@
 import React, { Component } from 'react';
-import { withStyles, Typography, FormControl, TextField, Slider, Collapse, IconButton, Card } from '@material-ui/core';
+import {
+    withStyles,
+    Typography,
+    FormControl,
+    TextField,
+    Slider,
+    Collapse,
+    IconButton,
+    Card
+} from '@material-ui/core';
 import { Styles } from '../styles/OrderBookSnapshot';
-import { dateStringToEpoch, nanosecondsToString } from '../utils/date-utils';
+import {
+    dateStringToEpoch,
+    nanosecondsToString,
+    convertNanosecondsToUTC
+} from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 import classNames from 'classnames';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-
 import OrderBookService from '../services/OrderBookService';
-import { SNAPSHOT_INSTRUMENT, NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS } from '../constants/Constants';
-
+import {
+    SNAPSHOT_INSTRUMENT,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
+    NANOSECONDS_IN_SIXTEEN_HOURS
+} from '../constants/Constants';
 
 class OrderBookSnapshot extends Component {
-
     constructor(props) {
         super(props);
 
@@ -31,12 +45,17 @@ class OrderBookSnapshot extends Component {
      * @desc Handles the date change for the TextField date picker
      * @param event The event object that caused the call
      */
-    handleChangeDate = (event) => {
+    handleChangeDate = event => {
         let selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:00'));
 
-        this.setState({
-            selectedDateNano,
-        }, () => { this.handleChangeDateTime(); });
+        this.setState(
+            {
+                selectedDateNano
+            },
+            () => {
+                this.handleChangeDateTime();
+            }
+        );
     };
 
     /**
@@ -49,7 +68,7 @@ class OrderBookSnapshot extends Component {
 
         this.setState({
             selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToString(selectedTimeNano),
+            selectedTimeString: nanosecondsToString(selectedTimeNano)
         });
     };
 
@@ -62,13 +81,16 @@ class OrderBookSnapshot extends Component {
         const { selectedDateNano } = this.state;
 
         let selectedTimeNano = parseInt(value);
-        let selectedDateTimeNano = selectedTimeNano + selectedDateNano;
+        let selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano + selectedDateNano);
 
-        this.setState({
-            selectedTimeNano,
-            selectedTimeString: nanosecondsToString(selectedTimeNano),
-            selectedDateTimeNano
-        }, () => this.handleChangeDateTime());
+        this.setState(
+            {
+                selectedTimeNano,
+                selectedTimeString: nanosecondsToString(selectedTimeNano),
+                selectedDateTimeNano
+            },
+            () => this.handleChangeDateTime()
+        );
     };
 
     /**
@@ -83,7 +105,7 @@ class OrderBookSnapshot extends Component {
                 .then(response => {
                     this.setState({
                         asks: response.data.asks,
-                        bids: response.data.bids,
+                        bids: response.data.bids
                     });
                 })
                 .catch(err => {
@@ -103,21 +125,27 @@ class OrderBookSnapshot extends Component {
         const { classes } = this.props;
         const { asks, bids, expanded } = this.state;
         return (
-            <Typography component={'div'} className={classes.container}>
+            <Typography
+                component={'div'}
+                className={classes.container}
+            >
                 <div className={classNames(classes.spaceBetween, classes.flex)}>
-                    {(this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0) ?
+                    {this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0 ? (
                         <Typography
                             variant={'body1'}
-                            className={classNames(classes.pleaseSelectMessage, classes.flex)}>
+                            className={classNames(classes.pleaseSelectMessage, classes.flex)}
+                        >
                             Please select Date and Time
-                        </Typography> :
+                        </Typography>
+                    ) : (
                         <Typography
                             variant={'body1'}
                             color={'textPrimary'}
-                            className={classNames(classes.selectMessage, classes.flex)}>
+                            className={classNames(classes.selectMessage, classes.flex)}
+                        >
                             Select Date and Time
                         </Typography>
-                    }
+                    )}
                     <IconButton
                         className={classNames(classes.expand, expanded && classes.expandOpen)}
                         onClick={this.handleExpandClick}
@@ -128,13 +156,17 @@ class OrderBookSnapshot extends Component {
                     </IconButton>
                 </div>
                 <Collapse in={expanded}>
-                    <div id={'ButtonHeader'} className={classes.divTopBook}>
+                    <div
+                        id={'ButtonHeader'}
+                        className={classes.divTopBook}
+                    >
                         <FormControl className={classes.formControl}>
                             <div className={classes.inline}>
                                 <Typography
                                     variant={'body1'}
                                     className={classNames(classes.inputLabel)}
-                                    color={'textSecondary'}>
+                                    color={'textSecondary'}
+                                >
                                     {'Date'}
                                 </Typography>
                                 <TextField
@@ -147,19 +179,22 @@ class OrderBookSnapshot extends Component {
                                 <Typography
                                     variant={'body1'}
                                     className={classes.inputLabel}
-                                    color={'textSecondary'}>
+                                    color={'textSecondary'}
+                                >
                                     {'Time'}
                                 </Typography>
                                 <Typography
                                     variant={'body1'}
-                                    className={classes.timestampDisplay}>
+                                    className={classes.timestampDisplay}
+                                >
                                     {this.state.selectedTimeString}
                                 </Typography>
                             </div>
                             <div className={classes.inline}>
-                                <Typography
+                                <Typography 
                                     variant={'body1'}
-                                    color={'textSecondary'}>
+                                    color={'textSecondary'}
+                                >
                                     9:30
                                 </Typography>
                                 <Slider
@@ -173,7 +208,8 @@ class OrderBookSnapshot extends Component {
                                 />
                                 <Typography
                                     variant={'body1'}
-                                    color={'textSecondary'}>
+                                    color={'textSecondary'}
+                                >
                                     16:00
                                 </Typography>
                             </div>
@@ -181,9 +217,7 @@ class OrderBookSnapshot extends Component {
                     </div>
                 </Collapse>
                 <Card>
-                    <TimestampOrderBookScroller
-                        orderBook={{ asks, bids }}
-                    />
+                    <TimestampOrderBookScroller orderBook={{ asks, bids }} />
                 </Card>
             </Typography>
         );
