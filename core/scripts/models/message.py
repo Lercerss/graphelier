@@ -1,5 +1,4 @@
 import enum
-
 from datetime import datetime
 
 
@@ -19,6 +18,7 @@ class Message:
         self.share_quantity = share_quantity
         self.price = price
         self.direction = direction
+        self.sod_offset = 0
 
     def __str__(self):
         return ('<Message id="{id}" time="{timef}" type="{message_type}" ' +

@@ -32,6 +32,7 @@ class OrderBook:
             MessageType.EXECUTE: self._do_execute,
             MessageType.IGNORE: lambda x: None
         }
+        self.last_sod_offset = 0
 
     def _do_new(self, msg: Message):
         o = Order(msg.id, msg.share_quantity, msg.price, msg.direction)
@@ -72,13 +73,15 @@ class OrderBook:
             del self.id_map[o.id]
             if len(self.ask_book[o.price]) == 0:
                 del self.ask_book[o.price]
-                self.ask = min(self.ask_book.keys()) if len(self.ask_book) > 0 else 0
+                self.ask = min(self.ask_book.keys()) if len(
+                    self.ask_book) > 0 else 0
         elif o.direction == 1:
             self.bid_book[o.price].remove(o)
             del self.id_map[o.id]
             if len(self.bid_book[o.price]) == 0:
                 del self.bid_book[o.price]
-                self.bid = max(self.bid_book.keys()) if len(self.bid_book) > 0 else 0
+                self.bid = max(self.bid_book.keys()) if len(
+                    self.bid_book) > 0 else 0
 
     def _do_execute(self, msg: Message):
         if msg.id == 0:
@@ -96,6 +99,7 @@ class OrderBook:
     def send(self, msg: Message):
         self.msg_handlers[msg.message_type](msg)
         self.last_time = msg.time
+        self.last_sod_offset = msg.sod_offset
 
     def __str__(self):
         return '<OrderBook bids={bids} asks={asks} time="{time}">'.format(
