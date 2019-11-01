@@ -53,7 +53,7 @@ jobs:
                   at: /go/src/graphelier
             - run:
                   name: Build service executable
-                  command: go get graphelier/core/graphelier-service
+                  command: go get -t graphelier/core/graphelier-service/...
             - save_cache:
                   key: v2-service-{{ .Branch }}
                   paths:

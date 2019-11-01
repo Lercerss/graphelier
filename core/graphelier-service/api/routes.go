@@ -40,4 +40,10 @@ var routes = Routes{
 		"/orderbook/{instrument}/{timestamp}",
 		hndlrs.CustomHandler{H: hndlrs.JSONOrderbook},
 	},
+	Route{
+		"Message",
+		"GET",
+		"/messages/{instrument}/{sodOffset}",
+		hndlrs.CustomHandler{H: hndlrs.FetchMessages},
+	},
 }

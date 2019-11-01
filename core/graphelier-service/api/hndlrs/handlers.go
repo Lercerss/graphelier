@@ -31,7 +31,7 @@ func (se StatusError) Status() int {
 
 // Env : A struct that represents the database configuration
 type Env struct {
-	Connector *db.Connector
+	Connector db.Datastore
 }
 
 // CustomHandler : A struct that links Env with a function matching http.HandlerFunc
