@@ -14,10 +14,11 @@ type Level struct {
 
 // Orderbook : A struct that represents the entire orderbook to send as json
 type Orderbook struct {
-	Instrument string   `json:"instrument"`
-	Bids       []*Level `json:"bids"`
-	Asks       []*Level `json:"asks"`
-	Timestamp  uint64   `json:"timestamp"`
+	Instrument    string   `json:"instrument"`
+	Bids          []*Level `json:"bids"`
+	Asks          []*Level `json:"asks"`
+	Timestamp     uint64   `json:"timestamp"`
+	LastSodOffset uint64   `json:"last_sod_offset"`
 }
 
 // ApplyMessagesToOrderbook : Applies each individual message to the orderbook
@@ -39,6 +40,7 @@ func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Order
 			// Pass
 		}
 		orderbook.Timestamp = message.Timestamp
+		orderbook.LastSodOffset = message.SodOffset
 	}
 
 	return orderbook

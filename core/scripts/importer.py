@@ -38,7 +38,8 @@ def load(file, start_time, instrument, extend):
         for message in extender.extend_sample(day_diff):
             if message.time > max_time:
                 break
-            message.sod_offset = sod_offset_counter
+            # day is a float, need to convert it to avoid floating point error
+            message.sod_offset = int(day) + sod_offset_counter
             current_multiple = message.time // interval
             if current_multiple > last_multiple:
                 print(str(order_book))
