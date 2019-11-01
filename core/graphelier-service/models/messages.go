@@ -9,6 +9,7 @@ type Message struct {
 	ShareQuantity uint64  `json:"share_qty" bson:"share_quantity"`
 	Price         float64 `json:"price"`
 	Direction     int64   `json:"direction"`
+	SodOffset     uint64  `json:"sod_offset" bson:"sod_offset"`
 }
 
 // MessageType : Enum for message types
