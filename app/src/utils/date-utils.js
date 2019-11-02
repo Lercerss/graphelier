@@ -1,7 +1,7 @@
 import NanoDate from 'nano-date';
 import moment from 'moment';
 
-import {NANOSECONDS_IN_ONE_SECOND} from '../constants/Constants';
+import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 
 /**
  * @desc formats given date in the format YYYY-MM-DD HH:mm:ssZ into human readable at nanosecond precision
@@ -9,8 +9,7 @@ import {NANOSECONDS_IN_ONE_SECOND} from '../constants/Constants';
  * @param date
  * @returns {string}
  */
-export const getFormattedDate = (date) => {
-
+export const getFormattedDate = date => {
     const dateObj = moment(date);
     const nanoDate = new NanoDate(dateObj.valueOf());
     let entries = nanoDate.toString().split(' ');
@@ -23,7 +22,7 @@ export const getFormattedDate = (date) => {
  * @param date
  * @returns {string}
  */
-export const dateStringToEpoch = (date) => {
+export const dateStringToEpoch = date => {
     const dateObj = moment.utc(date);
     const nanoDate = new NanoDate(dateObj.valueOf());
     return nanoDate.getTime();
@@ -34,12 +33,29 @@ export const dateStringToEpoch = (date) => {
  * @param nanosecondTimestamp
  * @returns {string}
  */
-export const nanosecondsToString = (nanosecondTimestamp) => {
+export const nanosecondsToString = nanosecondTimestamp => {
+    let nanoseconds = Math.floor(nanosecondTimestamp % NANOSECONDS_IN_ONE_SECOND);
+    let seconds = Math.floor((nanosecondTimestamp / NANOSECONDS_IN_ONE_SECOND) % 60);
+    let minutes = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60)) % 60);
+    let hours = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60 * 60)) % 24);
 
-    let nanoseconds = Math.floor(nanosecondTimestamp%NANOSECONDS_IN_ONE_SECOND);
-    let seconds = Math.floor((nanosecondTimestamp/NANOSECONDS_IN_ONE_SECOND)%60);
-    let minutes = Math.floor((nanosecondTimestamp/(NANOSECONDS_IN_ONE_SECOND*60))%60);
-    let hours = Math.floor((nanosecondTimestamp/(NANOSECONDS_IN_ONE_SECOND*60*60))%24);
+    return (
+        hours.toString().padStart(2, '0') +
+        ':' +
+        minutes.toString().padStart(2, '0') +
+        ':' +
+        seconds.toString().padStart(2, '0') +
+        '.' +
+        nanoseconds.toString().padStart(9, '0')
+    );
+};
 
-    return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0') + '.' + nanoseconds.toString().padStart(9, '0');
+/**
+ * @desc Given a timestamp in nanoseconds, returns the timestamp converted to UTC
+ * @param nanosecondTimestamp
+ * @returns {Number}
+ */
+export const convertNanosecondsToUTC = nanosecondTimestamp => {
+    let offsetNS = new Date().getTimezoneOffset() * 60 * 10 ** 9;
+    return nanosecondTimestamp + offsetNS;
 };

@@ -43,12 +43,12 @@ func JSONOrderbook(env *Env, w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(orderbook)
 	if err != nil {
 		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
 
 	return nil
 }
