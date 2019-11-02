@@ -52,17 +52,19 @@ class MultiDirectionalScroll extends Component {
      */
     handleVerticalScroll = () => {
         const {firstChild, lastChild, scrollTop, offsetTop, offsetHeight} = this.scroller;
-        const {onReachTop, onReachBottom} = this.props;
+        const {onReachTop, onReachBottom, children} = this.props;
 
-        const topEdge = firstChild.offsetTop;
-        const bottomEdge = lastChild.offsetTop + lastChild.offsetHeight;
-        const scrolledUp = scrollTop + offsetTop;
-        const scrolledDown = scrolledUp + offsetHeight;
+        if (children) {
+            const topEdge = firstChild.offsetTop;
+            const bottomEdge = lastChild.offsetTop + lastChild.offsetHeight;
+            const scrolledUp = scrollTop + offsetTop;
+            const scrolledDown = scrolledUp + offsetHeight;
 
-        if (scrolledDown >= bottomEdge) {
-            onReachBottom();
-        } else if (scrolledUp <= topEdge) {
-            onReachTop();
+            if (scrolledDown >= bottomEdge) {
+                onReachBottom();
+            } else if (scrolledUp <= topEdge) {
+                onReachTop();
+            }
         }
     };
 

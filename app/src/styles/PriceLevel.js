@@ -1,3 +1,5 @@
+import {Colors} from './App';
+
 export const Styles = {
     row: {
         flex: 1,
@@ -12,7 +14,7 @@ export const Styles = {
         width: '50px',
         textAlign: 'left',
         paddingRight: 15,
-        color: 'white'
+        color: Colors.darkGrey
     },
     bid: {
         display: 'flex',

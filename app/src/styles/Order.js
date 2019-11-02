@@ -26,4 +26,7 @@ export const Styles = {
         width: '100%',
         height: '100%',
     },
+    offsetTooltip: {
+        marginTop: -1
+    }
 };

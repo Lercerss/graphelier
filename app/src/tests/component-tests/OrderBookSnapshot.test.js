@@ -4,10 +4,20 @@ import {createMount, createShallow} from '@material-ui/core/test-utils';
 import { TextField, Slider } from '@material-ui/core';
 import {DATE_STRING, TIME_VALUE, TIME_STRING, DATE_VALUE} from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
+import {convertNanosecondsToUTC} from '../../utils/date-utils';
 
 describe('date and time picker functionality', () => {
     let mount, shallow;
-    const orderBookServiceSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices').mockImplementation((instrument, timestamp) => Promise.resolve({ data: () => [] }));
+    const orderBookServiceSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices')
+        .mockImplementation((instrument, timestamp) => {
+            return Promise.resolve(
+                {
+                    data: {
+                        asks: [],
+                        bids: []
+                    }
+                });
+        });
 
     beforeEach(() => {
         mount = createMount();
@@ -74,6 +84,6 @@ describe('date and time picker functionality', () => {
         wrapper.instance().handleCommitTime('change', TIME_VALUE);
 
         const selectedDateNano = wrapper.state().selectedDateTimeNano;
-        expect(selectedDateNano).toEqual(DATE_VALUE+TIME_VALUE);
+        expect(selectedDateNano).toEqual(convertNanosecondsToUTC(DATE_VALUE+TIME_VALUE));
     });
 });

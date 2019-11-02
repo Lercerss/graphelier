@@ -25,6 +25,8 @@ import {
     NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
     NANOSECONDS_IN_SIXTEEN_HOURS
 } from '../constants/Constants';
+import {processOrderBookFromScratch} from '../utils/order-book-utils';
+
 
 class OrderBookSnapshot extends Component {
     constructor(props) {
@@ -35,8 +37,6 @@ class OrderBookSnapshot extends Component {
             selectedTimeNano: 0,
             selectedDateTimeNano: 0,
             selectedTimeString: 'Select from slider',
-            asks: [],
-            bids: [],
             expanded: true
         };
     }
@@ -103,10 +103,10 @@ class OrderBookSnapshot extends Component {
         if (selectedDateTimeNano !== 0 && selectedDateNano !== 0) {
             OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
-                    this.setState({
-                        asks: response.data.asks,
-                        bids: response.data.bids
-                    });
+                    const {asks, bids} = response.data;
+                    const {listItems, maxQuantity} = processOrderBookFromScratch(asks, bids);
+
+                    this.setState({listItems, maxQuantity});
                 })
                 .catch(err => {
                     console.log(err);
@@ -123,14 +123,15 @@ class OrderBookSnapshot extends Component {
 
     render() {
         const { classes } = this.props;
-        const { asks, bids, expanded } = this.state;
+        const { expanded, listItems, maxQuantity, selectedTimeNano, selectedDateNano, selectedTimeString } = this.state;
+
         return (
             <Typography
                 component={'div'}
                 className={classes.container}
             >
                 <div className={classNames(classes.spaceBetween, classes.flex)}>
-                    {this.state.selectedTimeNano === 0 || this.state.selectedDateNano === 0 ? (
+                    {(selectedTimeNano === 0 || selectedDateNano === 0) ? (
                         <Typography
                             variant={'body1'}
                             className={classNames(classes.pleaseSelectMessage, classes.flex)}
@@ -187,11 +188,11 @@ class OrderBookSnapshot extends Component {
                                     variant={'body1'}
                                     className={classes.timestampDisplay}
                                 >
-                                    {this.state.selectedTimeString}
+                                    {selectedTimeString}
                                 </Typography>
                             </div>
                             <div className={classes.inline}>
-                                <Typography 
+                                <Typography
                                     variant={'body1'}
                                     color={'textSecondary'}
                                 >
@@ -217,7 +218,10 @@ class OrderBookSnapshot extends Component {
                     </div>
                 </Collapse>
                 <Card>
-                    <TimestampOrderBookScroller orderBook={{ asks, bids }} />
+                    <TimestampOrderBookScroller
+                        listItems={listItems}
+                        maxQuantity={maxQuantity}
+                    />
                 </Card>
             </Typography>
         );

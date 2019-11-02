@@ -1,4 +1,4 @@
-export const ORDERBOOK_FROM_BACKEND = {
+export const ORDER_BOOK_FROM_BACKEND = {
     asks: [
         {
             'price': 135.66,
@@ -98,6 +98,22 @@ export const ORDERBOOK_FROM_BACKEND = {
                     'quantity': 5300
                 }]
         }]
+};
+
+export const ORDER_BOOK_LIST_ITEMS = {
+    [ORDER_BOOK_FROM_BACKEND.bids[0].price] : {
+        price: ORDER_BOOK_FROM_BACKEND.bids[0].price,
+        isMiddle: false,
+        type: 'bid',
+        orders: ORDER_BOOK_FROM_BACKEND.bids[0].orders
+    },
+    [ORDER_BOOK_FROM_BACKEND.asks[0].price] : {
+        price: ORDER_BOOK_FROM_BACKEND.asks[0].price,
+        isMiddle: true,
+        type: 'ask',
+        orders: ORDER_BOOK_FROM_BACKEND.asks[0].orders
+    },
+
 };
 
 export const DATE_STRING = '2012-06-21';

@@ -66,8 +66,12 @@ describe('multidirectional scroll functionality', () => {
     });
 
     it('should trigger onReachBottom when hitting bottom', () => {
+        const wrapper = shallow(
+            <MultiDirectionalScroll>
+                <div>Test</div>
+            </MultiDirectionalScroll>
+        );
 
-        const wrapper = shallow(<MultiDirectionalScroll />);
         wrapper.instance().scroller = {
             ...scroller,
             offsetTop: 100,
@@ -85,8 +89,12 @@ describe('multidirectional scroll functionality', () => {
     });
 
     it('should trigger onReachTop when hitting top', () => {
+        const wrapper = shallow(
+            <MultiDirectionalScroll>
+                <div>Test</div>
+            </MultiDirectionalScroll>
+        );
 
-        const wrapper = shallow(<MultiDirectionalScroll />);
         wrapper.instance().scroller = {
             ...scroller,
             firstChild: {
