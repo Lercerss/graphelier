@@ -5,7 +5,7 @@ export const Styles = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
     },
     topOfTheBookButton: {
         marginTop: 20,
@@ -26,7 +26,7 @@ export const Styles = {
         justifyContent: 'flex-end',
         borderBottom: '0.5px solid #cacaca',
         paddingRight: 50,
-        paddingLeft: 50
+        paddingLeft: 50,
     },
     pricePoint: {
         display: 'flex',

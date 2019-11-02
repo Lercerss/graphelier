@@ -7,25 +7,25 @@ import {
     Slider,
     Collapse,
     IconButton,
-    Card
+    Card,
 } from '@material-ui/core';
+import classNames from 'classnames';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     dateStringToEpoch,
     nanosecondsToString,
-    convertNanosecondsToUTC
+    convertNanosecondsToUTC,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
-import classNames from 'classnames';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import OrderBookService from '../services/OrderBookService';
 import {
     SNAPSHOT_INSTRUMENT,
     NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
-    NANOSECONDS_IN_SIXTEEN_HOURS
+    NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
-import {processOrderBookFromScratch} from '../utils/order-book-utils';
+import { processOrderBookFromScratch } from '../utils/order-book-utils';
 
 
 class OrderBookSnapshot extends Component {
@@ -37,7 +37,7 @@ class OrderBookSnapshot extends Component {
             selectedTimeNano: 0,
             selectedDateTimeNano: 0,
             selectedTimeString: 'Select from slider',
-            expanded: true
+            expanded: true,
         };
     }
 
@@ -46,15 +46,15 @@ class OrderBookSnapshot extends Component {
      * @param event The event object that caused the call
      */
     handleChangeDate = event => {
-        let selectedDateNano = parseInt(dateStringToEpoch(event.target.value + ' 00:00:00'));
+        const selectedDateNano = parseInt(dateStringToEpoch(`${event.target.value} 00:00:00`));
 
         this.setState(
             {
-                selectedDateNano
+                selectedDateNano,
             },
             () => {
                 this.handleChangeDateTime();
-            }
+            },
         );
     };
 
@@ -64,11 +64,11 @@ class OrderBookSnapshot extends Component {
      * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day.
      */
     handleChangeTime = (event, value) => {
-        let selectedTimeNano = parseInt(value);
+        const selectedTimeNano = parseInt(value);
 
         this.setState({
-            selectedTimeNano: selectedTimeNano,
-            selectedTimeString: nanosecondsToString(selectedTimeNano)
+            selectedTimeNano,
+            selectedTimeString: nanosecondsToString(selectedTimeNano),
         });
     };
 
@@ -80,16 +80,16 @@ class OrderBookSnapshot extends Component {
     handleCommitTime = (event, value) => {
         const { selectedDateNano } = this.state;
 
-        let selectedTimeNano = parseInt(value);
-        let selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano + selectedDateNano);
+        const selectedTimeNano = parseInt(value);
+        const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano + selectedDateNano);
 
         this.setState(
             {
                 selectedTimeNano,
                 selectedTimeString: nanosecondsToString(selectedTimeNano),
-                selectedDateTimeNano
+                selectedDateTimeNano,
             },
-            () => this.handleChangeDateTime()
+            () => this.handleChangeDateTime(),
         );
     };
 
@@ -103,10 +103,10 @@ class OrderBookSnapshot extends Component {
         if (selectedDateTimeNano !== 0 && selectedDateNano !== 0) {
             OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
                 .then(response => {
-                    const {asks, bids} = response.data;
-                    const {listItems, maxQuantity} = processOrderBookFromScratch(asks, bids);
+                    const { asks, bids } = response.data;
+                    const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
 
-                    this.setState({listItems, maxQuantity});
+                    this.setState({ listItems, maxQuantity });
                 })
                 .catch(err => {
                     console.log(err);
@@ -118,12 +118,15 @@ class OrderBookSnapshot extends Component {
      * @desc Handles the expand button for showing or hiding the time settings for the orderbook
      */
     handleExpandClick = () => {
-        this.setState({ expanded: !this.state.expanded });
+        const { expanded } = this.state;
+        this.setState({ expanded: !expanded });
     };
 
     render() {
         const { classes } = this.props;
-        const { expanded, listItems, maxQuantity, selectedTimeNano, selectedDateNano, selectedTimeString } = this.state;
+        const {
+            expanded, listItems, maxQuantity, selectedTimeNano, selectedDateNano, selectedTimeString,
+        } = this.state;
 
         return (
             <Typography

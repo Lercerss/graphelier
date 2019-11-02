@@ -5,7 +5,7 @@
  * @param bids
  */
 export const processOrderBookFromScratch = (asks, bids) => {
-    let listItems = {};
+    const listItems = {};
     let firstBid = 0;
     let maxQuantity = 0;
 
@@ -20,7 +20,7 @@ export const processOrderBookFromScratch = (asks, bids) => {
 
         asks[i].orders.map(order => {
             sum += order.quantity;
-            if (sum > maxQuantity) {maxQuantity = sum;}
+            if (sum > maxQuantity) { maxQuantity = sum; }
         });
     }
 
@@ -35,11 +35,11 @@ export const processOrderBookFromScratch = (asks, bids) => {
 
         bid.orders.map(order => {
             sum += order.quantity;
-            if (sum > maxQuantity) {maxQuantity = sum;}
+            if (sum > maxQuantity) { maxQuantity = sum; }
         });
     });
 
-    return {listItems, maxQuantity,};
+    return { listItems, maxQuantity };
 };
 
 
@@ -49,10 +49,8 @@ export const processOrderBookFromScratch = (asks, bids) => {
  * @param listItemsObject
  * @returns {any[]}
  */
-export const getOrderBookListItemsAsArray = (listItemsObject) => {
-    return Object.values(listItemsObject).sort((listItem1, listItem2) => {
-        return listItem2.price - listItem1.price;
-    });
+export const getOrderBookListItemsAsArray = listItemsObject => {
+    return Object.values(listItemsObject).sort((listItem1, listItem2) => listItem2.price - listItem1.price);
 };
 
 
@@ -71,14 +69,15 @@ export const listItemsEquals = (listItemsObject1, listItemsObject2) => {
     return !listItems1.some(listItem => {
         if (listItem) {
             const siblingListItem = listItemsObject2[listItem.price];
-            const {orders} = listItem;
+            const { orders } = listItem;
             const siblingOrders = siblingListItem.orders;
 
             return (
-                !siblingListItem ||
-                listItem.type !== siblingListItem.type ||
-                orders.length !== siblingOrders.length);
+                !siblingListItem
+                || listItem.type !== siblingListItem.type
+                || orders.length !== siblingOrders.length);
         }
+        return false;
     });
 };
 

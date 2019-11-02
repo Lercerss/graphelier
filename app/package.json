@@ -7,7 +7,10 @@
         "@material-ui/icons": "^4.5.1",
         "@material-ui/styles": "^4.4.1",
         "axios": "^0.19.0",
+        "axios-logger": "^2.2.1",
         "classnames": "^2.2.6",
+        "enzyme": "^3.10.0",
+        "enzyme-adapter-react-16": "^1.15.1",
         "moment": "^2.24.0",
         "nano-date": "^4.1.0",
         "react": "^16.9.0",
@@ -18,22 +21,20 @@
         "redux-thunk": "^2.3.0"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
+        "start": "EXTEND_ESLINT=true react-scripts start",
+        "build": "EXTEND_ESLINT=true react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "lint": "eslint"
-    },
-    "eslintConfig": {
-        "extends": "react-app"
+        "lint": "eslint ./src"
     },
     "devDependencies": {
-        "axios-logger": "^2.2.1",
         "babel-eslint": "10.0.2",
-        "enzyme": "^3.10.0",
-        "enzyme-adapter-react-16": "^1.15.1",
-        "eslint": "^6.4.0",
+        "eslint": "^6.1.0",
+        "eslint-config-airbnb": "^18.0.1",
+        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-jsx-a11y": "^6.2.3",
         "eslint-plugin-react": "^7.16.0",
+        "eslint-plugin-react-hooks": "^1.7.0",
         "react-test-renderer": "^16.10.2"
     },
     "browserslist": {

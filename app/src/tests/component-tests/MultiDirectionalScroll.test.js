@@ -1,7 +1,7 @@
 import React from 'react';
-import MultiDirectionalScroll from '../../components/MultiDirectionalScroll';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { Box } from '@material-ui/core';
+import MultiDirectionalScroll from '../../components/MultiDirectionalScroll';
 
 describe('multidirectional scroll functionality', () => {
     let mount, shallow, scrollProps;
@@ -12,16 +12,16 @@ describe('multidirectional scroll functionality', () => {
         },
         lastChild: {
             offsetTop: 0,
-            offsetHeight: 0
+            offsetHeight: 0,
         },
         scrollTop: 0,
         offsetTop: 0,
-        offsetHeight: 0
+        offsetHeight: 0,
     };
 
     beforeEach(() => {
         mount = createMount();
-        shallow = createShallow({dive: true});
+        shallow = createShallow({ dive: true });
 
         scrollProps = {
             position: 10,
@@ -29,7 +29,6 @@ describe('multidirectional scroll functionality', () => {
             onReachBottom: jest.fn(),
             onReachTop: jest.fn(),
         };
-
     });
 
     afterEach(() => {
@@ -37,13 +36,20 @@ describe('multidirectional scroll functionality', () => {
     });
 
     it('renders a MultiDirectionalScroll component with expected props', () => {
-        const wrapper = mount(<MultiDirectionalScroll {...scrollProps} />);
+        const wrapper = mount(
+            <MultiDirectionalScroll
+                position={scrollProps.position}
+                onScroll={scrollProps.onScroll}
+                onReachBottom={scrollProps.onReachBottom}
+                onReachTop={scrollProps.onReachTop}
+            />,
+        );
         expect(wrapper.props().position).toEqual(10);
-        expect(wrapper.props().onScroll).toBeDefined();;
+        expect(wrapper.props().onScroll).toBeDefined();
     });
 
     it('renders a MultiDirectionalScroll component without optional props and without crashing', () => {
-        const wrapper = shallow(<MultiDirectionalScroll />);
+        shallow(<MultiDirectionalScroll />);
     });
 
 
@@ -54,7 +60,6 @@ describe('multidirectional scroll functionality', () => {
 
 
     it('should trigger onScroll on scroll', () => {
-
         const wrapper = shallow(<MultiDirectionalScroll />);
         wrapper.instance().scroller = scroller;
 
@@ -69,14 +74,14 @@ describe('multidirectional scroll functionality', () => {
         const wrapper = shallow(
             <MultiDirectionalScroll>
                 <div>Test</div>
-            </MultiDirectionalScroll>
+            </MultiDirectionalScroll>,
         );
 
         wrapper.instance().scroller = {
             ...scroller,
             offsetTop: 100,
             scrollTop: 100,
-            offsetHeight: 1000
+            offsetHeight: 1000,
         };
 
         wrapper.setProps(scrollProps);
@@ -92,7 +97,7 @@ describe('multidirectional scroll functionality', () => {
         const wrapper = shallow(
             <MultiDirectionalScroll>
                 <div>Test</div>
-            </MultiDirectionalScroll>
+            </MultiDirectionalScroll>,
         );
 
         wrapper.instance().scroller = {
@@ -100,9 +105,9 @@ describe('multidirectional scroll functionality', () => {
             firstChild: {
                 offsetTop: 100,
             },
-            lastChild:{
+            lastChild: {
                 offsetTop: 100,
-                offsetHeight: 100
+                offsetHeight: 100,
             },
             offsetTop: -1000,
             scrollTop: -1000,
@@ -116,5 +121,4 @@ describe('multidirectional scroll functionality', () => {
         expect(scrollProps.onReachTop).toHaveBeenCalled();
         expect(scrollProps.onReachBottom).toHaveBeenCalledTimes(0);
     });
-
 });
