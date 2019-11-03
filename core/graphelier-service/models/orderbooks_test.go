@@ -182,4 +182,70 @@ func TestExecuteOrderBids(t *testing.T) {
 
 	// Checking to see if orderID=2's share quantity was correctly modified
 	assert.EqualValues(t, 1, actualPriceLevel.Orders[0].Quantity)
+var orderbook *Orderbook
+var offsetMessage *Message
+var messages []*Message
+
+func setup() {
+	orderbook = &Orderbook{}
+	messages = append(messages, &Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 1})
+	messages = append(messages, &Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 17, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 4})
+	messages = append(messages, &Message{Direction: 1, Instrument: "test", MessageType: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 2})
+	messages = append(messages, &Message{Direction: 1, Instrument: "test", MessageType: 1, OrderID: 20, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 5})
+}
+
+func clear() {
+	for k := range messages {
+		messages[k] = nil
+	}
+	messages = messages[:0]
+}
+
+func TestDeltaAskChange(t *testing.T) {
+	setup()
+	offsetMessage := &Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 15, Price: 100, ShareQuantity: 50, Timestamp: 99, SodOffset: 3}
+	messages = append(messages, offsetMessage)
+	orderbook.ApplyMessages(messages)
+	deltabook := orderbook.BuildDeltabook(offsetMessage)
+
+	assert.Equal(t, uint64(99), deltabook.Timestamp)
+	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
+	assert.Equal(t, int(1), len(deltabook.Asks))
+	assert.Equal(t, int(2), len(deltabook.Asks[0].Orders))
+	assert.Equal(t, uint64(10), deltabook.Asks[0].Orders[0].Quantity)
+	assert.Equal(t, uint64(50), deltabook.Asks[0].Orders[1].Quantity)
+	assert.Equal(t, int(0), len(deltabook.Bids))
+	clear()
+}
+
+func TestDeltaBidChange(t *testing.T) {
+	setup()
+	offsetMessage := &Message{Direction: 1, Instrument: "test", MessageType: 1, OrderID: 15, Price: 100, ShareQuantity: 50, Timestamp: 99, SodOffset: 3}
+	messages = append(messages, offsetMessage)
+	orderbook.ApplyMessages(messages)
+	deltabook := orderbook.BuildDeltabook(offsetMessage)
+
+	assert.Equal(t, uint64(99), deltabook.Timestamp)
+	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
+	assert.Equal(t, int(1), len(deltabook.Bids))
+	assert.Equal(t, int(2), len(deltabook.Bids[0].Orders))
+	assert.Equal(t, uint64(10), deltabook.Bids[0].Orders[0].Quantity)
+	assert.Equal(t, uint64(50), deltabook.Bids[0].Orders[1].Quantity)
+	assert.Equal(t, int(0), len(deltabook.Asks))
+	clear()
+}
+
+func TestEmptyLevel(t *testing.T) {
+	setup()
+	offsetMessage := &Message{Direction: -1, Instrument: "test", MessageType: 3, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 3}
+	messages = append(messages, offsetMessage)
+	orderbook.ApplyMessages(messages)
+	deltabook := orderbook.BuildDeltabook(offsetMessage)
+
+	assert.Equal(t, uint64(99), deltabook.Timestamp)
+	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
+	assert.Equal(t, int(1), len(deltabook.Asks))
+	assert.Equal(t, int(0), len(deltabook.Asks[0].Orders))
+	assert.Equal(t, int(0), len(deltabook.Bids))
+	clear()
 }

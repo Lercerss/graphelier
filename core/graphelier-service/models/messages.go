@@ -13,7 +13,10 @@ type Message struct {
 }
 
 // MessageType : Enum for message types
-type MessageType int
+type MessageType uint64
+
+// MessageDirection : Enum for message direction indicating a bid or ask
+type MessageDirection int
 
 // Values for enum
 const (
@@ -22,6 +25,9 @@ const (
 	Delete   MessageType = 3
 	Execute  MessageType = 4
 	Ignore   MessageType = 5
+
+	Asks MessageDirection = -1
+	Bids MessageDirection = 1
 )
 
 // MessagePage is a list of messages along with pagination information

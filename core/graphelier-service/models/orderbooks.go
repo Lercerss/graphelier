@@ -15,14 +15,14 @@ type Level struct {
 // Orderbook : A struct that represents the entire orderbook to send as json
 type Orderbook struct {
 	Instrument    string   `json:"instrument"`
-	Bids          []*Level `json:"bids"`
-	Asks          []*Level `json:"asks"`
+	Bids          []*Level `json:"bids,omitempty"`
+	Asks          []*Level `json:"asks,omitempty"`
 	Timestamp     uint64   `json:"timestamp"`
-	LastSodOffset uint64   `json:"last_sod_offset"`
+	LastSodOffset uint64   `json:"last_sod_offset" bson:"last_sod_offset"`
 }
 
-// ApplyMessagesToOrderbook : Applies each individual message to the orderbook
-func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Orderbook {
+// ApplyMessages : Applies each individual message to the orderbook
+func (orderbook *Orderbook) ApplyMessages(messages []*Message) *Orderbook {
 	for _, message := range messages {
 		if message.OrderID == 0 {
 			continue
@@ -51,31 +51,30 @@ func (orderbook *Orderbook) applyNewOrder(message *Message) {
 		return
 	}
 	order := &Order{message.OrderID, message.ShareQuantity}
-	if message.Direction == -1 {
-		index, found := getLevelIndex(orderbook.Asks, message)
-		if !found {
+	index, found := orderbook.getLevelIndex(message)
+	if !found {
+		if MessageDirection(message.Direction) == Asks {
 			level := &Level{message.Price, []*Order{order}}
 			orderbook.Asks = append(orderbook.Asks, nil)
 			copy(orderbook.Asks[index+1:], orderbook.Asks[index:])
 			orderbook.Asks[index] = level
-		} else {
-			orderbook.Asks[index].Orders = append(orderbook.Asks[index].Orders, order)
-		}
-	} else if message.Direction == 1 {
-		index, found := getLevelIndex(orderbook.Bids, message)
-		if !found {
+		} else if MessageDirection(message.Direction) == Bids {
 			level := &Level{message.Price, []*Order{order}}
 			orderbook.Bids = append(orderbook.Bids, nil)
 			copy(orderbook.Bids[index+1:], orderbook.Bids[index:])
 			orderbook.Bids[index] = level
-		} else {
+		}
+	} else {
+		if MessageDirection(message.Direction) == Asks {
+			orderbook.Asks[index].Orders = append(orderbook.Asks[index].Orders, order)
+		} else if MessageDirection(message.Direction) == Bids {
 			orderbook.Bids[index].Orders = append(orderbook.Bids[index].Orders, order)
 		}
 	}
 }
 
 func (orderbook *Orderbook) applyModify(message *Message) {
-	orders, orderIndex := getOrders(orderbook, message)
+	orders, orderIndex := orderbook.getOrders(message)
 	if orderIndex < 0 || orders == nil {
 		return
 	}
@@ -91,7 +90,7 @@ func (orderbook *Orderbook) applyModify(message *Message) {
 }
 
 func (orderbook *Orderbook) applyDelete(message *Message) {
-	orders, orderIndex := getOrders(orderbook, message)
+	orders, orderIndex := orderbook.getOrders(message)
 	if orderIndex < 0 || orders == nil {
 		return
 	}
@@ -104,7 +103,7 @@ func (orderbook *Orderbook) applyDelete(message *Message) {
 }
 
 func (orderbook *Orderbook) applyExecute(message *Message) {
-	orders, orderIndex := getOrders(orderbook, message)
+	orders, orderIndex := orderbook.getOrders(message)
 	if orderIndex < 0 || orders == nil {
 		return
 	}
@@ -116,31 +115,35 @@ func (orderbook *Orderbook) applyExecute(message *Message) {
 }
 
 func (orderbook *Orderbook) removeEmptyLevel(message *Message) {
-	index := 0
-	var found bool
-	if message.Direction == -1 {
-		index, found = getLevelIndex(orderbook.Asks, message)
-		if !found {
-			return
-		}
+	index, found := orderbook.getLevelIndex(message)
+	if !found {
+		return
+	}
+
+	if MessageDirection(message.Direction) == Asks {
 		copy(orderbook.Asks[index:], orderbook.Asks[index+1:])
 		orderbook.Asks[len(orderbook.Asks)-1] = nil
 		orderbook.Asks = orderbook.Asks[:len(orderbook.Asks)-1]
-	} else if message.Direction == 1 {
-		index, found = getLevelIndex(orderbook.Bids, message)
-		if !found {
-			return
-		}
+	} else if MessageDirection(message.Direction) == Bids {
 		copy(orderbook.Bids[index:], orderbook.Bids[index+1:])
 		orderbook.Bids[len(orderbook.Bids)-1] = nil
 		orderbook.Bids = orderbook.Bids[:len(orderbook.Bids)-1]
 	}
 }
 
-func getLevelIndex(levels []*Level, message *Message) (int, bool) {
+func (orderbook *Orderbook) getLevelIndex(message *Message) (int, bool) {
 	// TODO Should use binary search here... since price-levels are sorted!
 	i := 0
 	var lastPrice float64
+	var levels []*Level
+	// TODO: Should probably change these if-else statements to match the factoy design pattern
+	if MessageDirection(message.Direction) == Asks {
+		levels = orderbook.Asks
+	} else if MessageDirection(message.Direction) == Bids {
+		levels = orderbook.Bids
+	} else {
+		return -1, false
+	}
 
 	for ; i < len(levels); i++ {
 		lastPrice = levels[i].Price
@@ -155,9 +158,18 @@ func getLevelIndex(levels []*Level, message *Message) (int, bool) {
 	return i, lastPrice == message.Price
 }
 
-func getOrderIndex(orders []*Order, message *Message) (int, bool) {
+func (orderbook *Orderbook) getOrderIndex(index int, message *Message) (int, bool) {
 	i := 0
 	var lastID uint64
+	var orders []*Order
+	if MessageDirection(message.Direction) == Asks {
+		orders = orderbook.Asks[index].Orders
+	} else if MessageDirection(message.Direction) == Bids {
+		orders = orderbook.Bids[index].Orders
+	} else {
+		return -1, false
+	}
+
 	for ; i < len(orders); i++ {
 		lastID = orders[i].ID
 		if lastID >= message.OrderID {
@@ -168,30 +180,47 @@ func getOrderIndex(orders []*Order, message *Message) (int, bool) {
 	return i, lastID == message.OrderID
 }
 
-func getOrders(orderbook *Orderbook, message *Message) (*[]*Order, int) {
-	orderIndex := 0
+func (orderbook *Orderbook) getOrders(message *Message) (*[]*Order, int) {
 	var orders *[]*Order
-	if message.Direction == -1 {
-		levelIndex, found := getLevelIndex(orderbook.Asks, message)
-		if !found {
-			return nil, -1
-		}
-		orderIndex, found = getOrderIndex(orderbook.Asks[levelIndex].Orders, message)
-		if !found {
-			return nil, -1
-		}
+	levelIndex, found := orderbook.getLevelIndex(message)
+	if !found {
+		return nil, -1
+	}
+	orderIndex, found := orderbook.getOrderIndex(levelIndex, message)
+	if !found {
+		return nil, -1
+	}
+
+	if MessageDirection(message.Direction) == Asks {
 		orders = &orderbook.Asks[levelIndex].Orders
-	} else if message.Direction == 1 {
-		levelIndex, found := getLevelIndex(orderbook.Bids, message)
-		if !found {
-			return nil, -1
-		}
-		orderIndex, found = getOrderIndex(orderbook.Bids[levelIndex].Orders, message)
-		if !found {
-			return nil, -1
-		}
+	} else if MessageDirection(message.Direction) == Bids {
 		orders = &orderbook.Bids[levelIndex].Orders
 	}
 
 	return orders, orderIndex
+}
+
+// BuildDeltabook : Builds a new orderbook with only the delta given from the offset message
+func (orderbook *Orderbook) BuildDeltabook(message *Message) *Orderbook {
+	index, found := orderbook.getLevelIndex(message)
+	deltabook := &Orderbook{}
+	if !found {
+		level := &Level{Price: message.Price, Orders: []*Order{}}
+		if MessageDirection(message.Direction) == Asks {
+			deltabook.Asks = append(deltabook.Asks, level)
+		} else if MessageDirection(message.Direction) == Bids {
+			deltabook.Bids = append(deltabook.Bids, level)
+		}
+	} else {
+		if MessageDirection(message.Direction) == Asks {
+			deltabook.Asks = append(deltabook.Asks, orderbook.Asks[index])
+		} else if MessageDirection(message.Direction) == Bids {
+			deltabook.Bids = append(deltabook.Bids, orderbook.Bids[index])
+		}
+	}
+	deltabook.Instrument = orderbook.Instrument
+	deltabook.Timestamp = orderbook.Timestamp
+	deltabook.LastSodOffset = orderbook.LastSodOffset
+
+	return deltabook
 }
