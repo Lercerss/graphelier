@@ -49,6 +49,5 @@ func JSONOrderbook(env *Env, w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-
 	return nil
 }

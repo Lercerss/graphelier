@@ -11,6 +11,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Datastore interface containing all queries to the database
+type Datastore interface {
+	GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error)
+	GetMessages(instrument string, timestamp uint64, latestFullSnapshot uint64) ([]*models.Message, error)
+	GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error)
+}
+
 // Connector : A struct that represents the database
 type Connector struct {
 	*mongo.Client
@@ -87,4 +94,58 @@ func (c *Connector) GetMessages(instrument string, timestamp uint64, latestFullS
 	}
 
 	return results, nil
+}
+
+// GetMessagesWithPagination returns an messages given an instrument, sod_offset with pagination
+func (c *Connector) GetMessagesWithPagination(instrument string, sodOffset int64, paginator *models.Paginator) (results []*models.Message, err error) {
+	collection := c.Database("graphelier-db").Collection("messages")
+	var filterKey string
+	var sortDirection int8
+	if paginator.NMessages < 0 {
+		filterKey = "$lt"
+		sortDirection = -1
+	} else {
+		filterKey = "$gt"
+		sortDirection = 1
+	}
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "sod_offset", Value: bson.D{
+			{Key: filterKey, Value: sodOffset},
+		}},
+	}
+
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{Key: "instrument", Value: 1}, {Key: "sod_offset", Value: sortDirection}})
+	findOptions.SetLimit(abs(paginator.NMessages))
+
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var m models.Message
+		err := cursor.Decode(&m)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, &m)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// Default Abs func for golang takes a float and returns a float. Need one for ints
+func abs(n int64) int64 {
+	if n < 0 {
+		return -n
+	}
+	return n
 }

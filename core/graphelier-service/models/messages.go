@@ -23,3 +23,9 @@ const (
 	Execute  MessageType = 4
 	Ignore   MessageType = 5
 )
+
+// MessagePage is a list of messages along with pagination information
+type MessagePage struct {
+	PageInfo Paginator  `json:"pageInfo"`
+	Messages []*Message `json:"messages"`
+}
