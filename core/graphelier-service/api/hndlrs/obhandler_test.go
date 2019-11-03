@@ -13,30 +13,32 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type mockDB struct {
+type mockDBObHndlr struct {
 	mock.Mock
 }
 
-func (db *mockDB) GetSingleMessage(instrument string, totalOffset int64) (result *models.Message, err error) {
+func (db *mockDBObHndlr) GetSingleMessage(instrument string, totalOffset int64) (result *models.Message, err error) {
 	db.Called(instrument, totalOffset)
 	return &models.Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 15, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 3}, nil
 }
-
-func (db *mockDB) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
+func (db *mockDBObHndlr) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
 	db.Called(instrument, timestamp)
 	return &models.Orderbook{}, nil
 }
-
-func (db *mockDB) GetMessages(instrument string, timestamp uint64) (results []*models.Message, err error) {
+func (db *mockDBObHndlr) GetMessages(instrument string, timestamp uint64) (results []*models.Message, err error) {
 	db.Called(instrument, timestamp)
 	messages := make([]*models.Message, 0)
 	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
 	messages = append(messages, &models.Message{Direction: 1, Instrument: "test", MessageType: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
 	return messages, nil
 }
+func (db *mockDBObHndlr) GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error) {
+	messages := make([]*models.Message, 0)
+	return messages, nil
+}
 
 func TestFetchOrderbookDeltaSuccess(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBObHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/delta/test/1/2", nil)
 	vars := map[string]string{
@@ -68,7 +70,7 @@ func TestFetchOrderbookDeltaSuccess(t *testing.T) {
 }
 
 func TestFetchOrderbookDeltaBadInput(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBObHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/delta/test/1/2abc", nil)
 	vars := map[string]string{
@@ -90,7 +92,7 @@ func TestFetchOrderbookDeltaBadInput(t *testing.T) {
 }
 
 func TestFetchOrderbookDeltaBigNegativeOffset(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBObHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/delta/test/1/-5", nil)
 	vars := map[string]string{

@@ -183,7 +183,6 @@ func TestExecuteOrderBids(t *testing.T) {
 	// Checking to see if orderID=2's share quantity was correctly modified
 	assert.EqualValues(t, 1, actualPriceLevel.Orders[0].Quantity)
 var orderbook *Orderbook
-var offsetMessage *Message
 var messages []*Message
 
 func setup() {

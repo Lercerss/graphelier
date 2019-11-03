@@ -14,18 +14,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type mockDB struct {
+type mockDBMsgHndlr struct {
 	mock.Mock
 }
 
-func (db *mockDB) GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error) {
+func (db *mockDBMsgHndlr) GetSingleMessage(instrument string, totalOffset int64) (result *models.Message, err error) {
+	return &models.Message{}, nil
+}
+func (db *mockDBMsgHndlr) GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error) {
 	return &models.Orderbook{}, nil
 }
-func (db *mockDB) GetMessages(instrument string, timestamp uint64, latestFullSnapshot uint64) ([]*models.Message, error) {
+func (db *mockDBMsgHndlr) GetMessages(instrument string, timestamp uint64) ([]*models.Message, error) {
 	messages := make([]*models.Message, 0)
 	return messages, nil
 }
-func (db *mockDB) GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error) {
+func (db *mockDBMsgHndlr) GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error) {
 	db.Called(instrument, timestamp, paginator)
 	messages := make([]*models.Message, 0)
 	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: models.NewOrder, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
@@ -34,7 +37,7 @@ func (db *mockDB) GetMessagesWithPagination(instrument string, timestamp int64, 
 }
 
 func TestFetchMessagesSuccess(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBMsgHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/messages/test/100?nMessages=25", nil)
 	vars := map[string]string{
@@ -58,7 +61,7 @@ func TestFetchMessagesSuccess(t *testing.T) {
 }
 
 func TestFetchMessagesDefaultValues(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBMsgHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/messages/test/100", nil)
 	vars := map[string]string{
@@ -85,7 +88,7 @@ func TestFetchMessagesDefaultValues(t *testing.T) {
 }
 
 func TestFetchMessagesNegativeNMessages(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBMsgHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/messages/test/100?nMessages=-25", nil)
 	vars := map[string]string{
@@ -115,7 +118,7 @@ func TestFetchMessagesNegativeNMessages(t *testing.T) {
 }
 
 func TestFetchMessagesBadInput(t *testing.T) {
-	mockedDB := &mockDB{}
+	mockedDB := &mockDBMsgHndlr{}
 	mockedEnv := &Env{mockedDB}
 	req := httptest.NewRequest("GET", "/messages/test/10aa0", nil)
 	vars := map[string]string{
