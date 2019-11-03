@@ -49,10 +49,12 @@ func TestFetchMessagesSuccess(t *testing.T) {
 	mockedDB.On("GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 25})
 
 	err := FetchMessages(mockedEnv, writer, req)
+	assert.Nil(t, err)
 	resp := writer.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 	var messagePage models.MessagePage
-	json.Unmarshal(body, &messagePage)
+	err = json.Unmarshal(body, &messagePage)
+
 	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 25})
 	assert.Nil(t, err)
 	assert.Equal(t, int64(25), messagePage.PageInfo.NMessages)
@@ -74,10 +76,11 @@ func TestFetchMessagesDefaultValues(t *testing.T) {
 	mockedDB.On("GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 20})
 
 	err := FetchMessages(mockedEnv, writer, req)
+	assert.Nil(t, err)
 	resp := writer.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 	var messagePage models.MessagePage
-	json.Unmarshal(body, &messagePage)
+	err = json.Unmarshal(body, &messagePage)
 
 	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 20})
 
@@ -101,10 +104,11 @@ func TestFetchMessagesNegativeNMessages(t *testing.T) {
 	mockedDB.On("GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: -25})
 
 	err := FetchMessages(mockedEnv, writer, req)
+	assert.Nil(t, err)
 	resp := writer.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 	var messagePage models.MessagePage
-	json.Unmarshal(body, &messagePage)
+	err = json.Unmarshal(body, &messagePage)
 
 	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: -25})
 

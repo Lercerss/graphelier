@@ -53,10 +53,11 @@ func TestFetchOrderbookDeltaSuccess(t *testing.T) {
 	mockedDB.On("GetOrderbook", "test", uint64(100))
 
 	err := FetchOrderbookDelta(mockedEnv, writer, req)
+	assert.Nil(t, err)
 	resp := writer.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 	var deltabook models.Orderbook
-	json.Unmarshal(body, &deltabook)
+	err = json.Unmarshal(body, &deltabook)
 
 	mockedDB.AssertCalled(t, "GetSingleMessage", "test", int64(3))
 	mockedDB.AssertCalled(t, "GetMessages", "test", uint64(100))
@@ -107,10 +108,11 @@ func TestFetchOrderbookDeltaBigNegativeOffset(t *testing.T) {
 	mockedDB.On("GetOrderbook", "test", uint64(100))
 
 	err := FetchOrderbookDelta(mockedEnv, writer, req)
+	assert.Nil(t, err)
 	resp := writer.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 	var deltabook models.Orderbook
-	json.Unmarshal(body, &deltabook)
+	err = json.Unmarshal(body, &deltabook)
 
 	mockedDB.AssertCalled(t, "GetSingleMessage", "test", int64(0))
 	mockedDB.AssertCalled(t, "GetMessages", "test", uint64(100))
