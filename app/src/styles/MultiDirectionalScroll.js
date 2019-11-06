@@ -4,6 +4,6 @@ export const Styles = {
         height: 'inherit',
         width: '100%',
         WebkitOverflowScrolling: 'inherit',
-        whitespace: 'normal'
-    }
+        whitespace: 'normal',
+    },
 };

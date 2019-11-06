@@ -8,14 +8,36 @@
             "experimentalObjectRestSpread": true
         }
     },
+    "extends": ["react-app", "airbnb"],
     "rules": {
         "semi": "error",
         "indent": ["error", 4],
         "camelcase": "error",
+        "max-len": ["error", {"code": 120}],
         "quotes": ["error", "single", { "allowTemplateLiterals": true }],
         "no-template-curly-in-string": "error",
         "no-multi-spaces": "error",
-        "react/jsx-max-props-per-line": [1, { "maximum": 1 }]
+        "no-console": "off",
+        "one-var": "off",
+        "one-var-declaration-per-line": "off",
+        "arrow-parens": ["error", "as-needed"],
+        "arrow-body-style": "off",
+        "array-callback-return": "off",
+        "import/prefer-default-export": "off",
+        "no-unused-vars": ["error", { "vars": "all", "args": "none"}],
+        "no-unused-expressions": "off",
+        "no-loop-func": "off",
+        "no-plusplus": "off",
+        "radix": ["error", "as-needed"],
+        "react/jsx-max-props-per-line": [1, { "maximum": 1 }],
+        "react/prop-types": "off",
+        "react/jsx-filename-extension": "off",
+        "react/jsx-indent" : ["error", 4],
+        "react/jsx-indent-props" : ["error", 4],
+        "react/jsx-curly-brace-presence": ["error", { "props": "always", "children": "ignore"}],
+        "react/jsx-props-no-spreading": "error",
+        "react/static-property-placement": "off",
+        "react/prefer-stateless-function": "off"
     },
     "plugins": ["react"]
 }

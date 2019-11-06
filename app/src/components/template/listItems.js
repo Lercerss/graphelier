@@ -14,31 +14,31 @@ export const mainListItems = (
             <ListItemIcon>
                 <DashboardIcon />
             </ListItemIcon>
-            <ListItemText primary="Home" />
+            <ListItemText primary={'Home'} />
         </ListItem>
         <ListItem button>
             <ListItemIcon>
                 <AssignmentIcon />
             </ListItemIcon>
-            <ListItemText primary="OrderBook Snapshot" />
+            <ListItemText primary={'OrderBook Snapshot'} />
         </ListItem>
         <ListItem button>
             <ListItemIcon>
                 <Message />
             </ListItemIcon>
-            <ListItemText primary="Message List" />
+            <ListItemText primary={'Message List'} />
         </ListItem>
         <ListItem button>
             <ListItemIcon>
                 <BarChartIcon />
             </ListItemIcon>
-            <ListItemText primary="Squarepoint Orders" />
+            <ListItemText primary={'Squarepoint Orders'} />
         </ListItem>
         <ListItem button>
             <ListItemIcon>
                 <LayersIcon />
             </ListItemIcon>
-            <ListItemText primary="TBD" />
+            <ListItemText primary={'TBD'} />
         </ListItem>
     </div>
 );

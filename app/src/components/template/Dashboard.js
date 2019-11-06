@@ -1,7 +1,9 @@
 import React from 'react';
 import classNames from 'classnames';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container} from '@material-ui/core';
+import {
+    Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container,
+} from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { mainListItems } from './listItems';
@@ -17,14 +19,14 @@ const Dashboard = () => {
     const [open, setOpen] = React.useState(false);
 
     /**
-     * @description Handles opening the left menu drawer 
+     * @description Handles opening the left menu drawer
      */
     const handleDrawerOpen = () => {
         setOpen(true);
     };
 
     /**
-     * @description Handles closing the left menu drawer 
+     * @description Handles closing the left menu drawer
      */
     const handleDrawerClose = () => {
         setOpen(false);
@@ -33,7 +35,7 @@ const Dashboard = () => {
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <AppBar 
+            <AppBar
                 position={'absolute'}
                 className={classNames(classes.appBar, open && classes.appBarShift)}
                 theme={OBStyles.themeBackground}

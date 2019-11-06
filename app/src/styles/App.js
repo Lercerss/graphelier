@@ -4,15 +4,16 @@ export const Colors = {
     empty: '#dcdcdc',
     lightBlue: '#2196f3',
     green: '#159027',
-    red: '#943e30'
+    red: '#943e30',
+    darkGrey: '#343434',
 };
 
 export const LightThemeColors = {
     palette: {
         primary: {
-            main: '#41aeff'
+            main: '#41aeff',
         },
-    }
+    },
 };
 
 export const Styles = {

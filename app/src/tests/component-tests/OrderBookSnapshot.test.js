@@ -1,17 +1,28 @@
 import React from 'react';
-import OrderBookSnapshot from '../../components/OrderBookSnapshot';
-import {createMount, createShallow} from '@material-ui/core/test-utils';
+import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { TextField, Slider } from '@material-ui/core';
-import {DATE_STRING, TIME_VALUE, TIME_STRING, DATE_VALUE} from '../utils/mock-data';
+import OrderBookSnapshot from '../../components/OrderBookSnapshot';
+import {
+    DATE_STRING, TIME_VALUE, TIME_STRING, DATE_VALUE,
+} from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
+import { convertNanosecondsToUTC } from '../../utils/date-utils';
 
 describe('date and time picker functionality', () => {
     let mount, shallow;
-    const orderBookServiceSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices').mockImplementation((instrument, timestamp) => Promise.resolve({ data: () => [] }));
+    const orderBookServiceSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices')
+        .mockImplementation((instrument, timestamp) => Promise.resolve(
+            {
+                data: {
+                    asks: [],
+                    bids: [],
+                },
+            },
+        ));
 
     beforeEach(() => {
         mount = createMount();
-        shallow = createShallow({dive: true});
+        shallow = createShallow({ dive: true });
     });
 
     afterEach(() => {
@@ -20,11 +31,11 @@ describe('date and time picker functionality', () => {
     });
 
     it('renders an OrderBookSnapshot component without crashing', () => {
-        const wrapper = mount(<OrderBookSnapshot/>);
+        mount(<OrderBookSnapshot />);
     });
 
     it('makes database call once a date and time are selected, in order', () => {
-        const wrapper = shallow(<OrderBookSnapshot/>);
+        const wrapper = shallow(<OrderBookSnapshot />);
 
         wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
         expect(orderBookServiceSpy).toHaveBeenCalledTimes(0);
@@ -37,7 +48,7 @@ describe('date and time picker functionality', () => {
     });
 
     it('makes database call once a time and date are selected, in order', () => {
-        const wrapper = shallow(<OrderBookSnapshot/>);
+        const wrapper = shallow(<OrderBookSnapshot />);
 
         wrapper.find(Slider).simulate('change', TIME_VALUE);
         expect(orderBookServiceSpy).toHaveBeenCalledTimes(0);
@@ -50,30 +61,30 @@ describe('date and time picker functionality', () => {
     });
 
     it('should store the proper time string when the time is selected', () => {
-        const wrapper = shallow(<OrderBookSnapshot/>);
+        const wrapper = shallow(<OrderBookSnapshot />);
 
         wrapper.instance().handleCommitTime('change', TIME_VALUE);
 
-        const selectedTimeString = wrapper.state().selectedTimeString;
+        const { selectedTimeString } = wrapper.state();
         expect(selectedTimeString).toEqual(TIME_STRING);
     });
 
     it('should store the proper date value in nanoseconds when the date is selected', () => {
-        const wrapper = shallow(<OrderBookSnapshot/>);
+        const wrapper = shallow(<OrderBookSnapshot />);
 
         wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
 
-        const selectedDateNano = wrapper.state().selectedDateNano;
+        const { selectedDateNano } = wrapper.state();
         expect(selectedDateNano).toEqual(DATE_VALUE);
     });
 
     it('should store the proper epoch timestamp in nanoseconds when the date and time are selected', () => {
-        const wrapper = shallow(<OrderBookSnapshot/>);
+        const wrapper = shallow(<OrderBookSnapshot />);
 
         wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
         wrapper.instance().handleCommitTime('change', TIME_VALUE);
 
         const selectedDateNano = wrapper.state().selectedDateTimeNano;
-        expect(selectedDateNano).toEqual(DATE_VALUE+TIME_VALUE);
+        expect(selectedDateNano).toEqual(convertNanosecondsToUTC(DATE_VALUE + TIME_VALUE));
     });
 });
