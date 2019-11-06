@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import clsx from 'clsx';
+import classNames from 'classnames';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container, Link } from '@material-ui/core';
+import {
+    Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container,
+} from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
@@ -12,40 +14,21 @@ import { styles } from '../../styles/Dashboard';
 
 
 class Dashboard extends Component {
-
     constructor(props) {
         super(props);
 
         this.state = {
-            open: false
+            open: false,
         };
     }
 
-
     /**
-     * @description Returns copyright component for footer
-     */
-    getCopyright = () => {
-        const { classes } = this.props;
-        return (
-            <Typography variant={'body2'} color={'textSecondary'} align={'center'} className={classes.paddingCopyright}>
-                {'Copyright © '}
-                <Link color="inherit" href="https://github.com/Lercerss/graphelier">
-                    TFBAG
-                </Link>{' '}
-                {new Date().getFullYear()}
-                {'.'}
-            </Typography>
-        );
-    }
-
-    /**
-     * @description Handles opening the left menu drawer 
+     * @description Handles opening the left menu drawer
      */
     handleOpenCloseDrawer = () => {
         const { open } = this.state;
         this.setState({ open: !open });
-    }
+    };
 
     render() {
         const { open } = this.state;
@@ -54,18 +37,28 @@ class Dashboard extends Component {
         return (
             <div className={classes.root}>
                 <CssBaseline />
-                <AppBar position={'absolute'} className={clsx(classes.appBar, open && classes.appBarShift)} theme={OBStyles.themeBackground}>
+                <AppBar
+                    position={'absolute'}
+                    className={classNames(classes.appBar, open && classes.appBarShift)}
+                    theme={OBStyles.themeBackground}
+                >
                     <Toolbar className={classes.toolbar}>
                         <IconButton
                             edge={'start'}
                             color={'inherit'}
                             aria-label={'open drawer'}
                             onClick={this.handleOpenCloseDrawer}
-                            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+                            className={classNames(classes.menuButton, open && classes.menuButtonHidden)}
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography component={'h1'} variant={'h6'} color={'inherit'} noWrap className={classes.title}>
+                        <Typography
+                            component={'h1'}
+                            variant={'h6'}
+                            color={'inherit'}
+                            noWrap
+                            className={classes.title}
+                        >
                             Graphelier
                         </Typography>
                     </Toolbar>
@@ -73,7 +66,7 @@ class Dashboard extends Component {
                 <Drawer
                     variant={'permanent'}
                     classes={{
-                        paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
+                        paper: classNames(classes.drawerPaper, !open && classes.drawerPaperClose),
                     }}
                     open={open}
                 >

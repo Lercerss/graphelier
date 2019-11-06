@@ -5,23 +5,23 @@ export const styles = theme => ({
         display: 'flex',
     },
     toolbar: {
-        paddingRight: 24, // keep right padding when drawer closed
+        paddingRight: 24, // keep right padding when  drawer closed
     },
     toolbarIcon: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-end',
         padding: '0 8px',
-        ...theme.mixins.toolbar
+        ...theme.mixins.toolbar,
     },
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
         transition:
             theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-        backgroundColor: `#41aeff !important`
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+            }),
+        backgroundColor: `#41aeff !important`,
     },
     appBarShift: {
         marginLeft: DRAWER_WIDTH,
@@ -71,7 +71,7 @@ export const styles = theme => ({
         paddingBottom: theme.spacing(2),
         paddingLeft: '0px !important',
         paddingRight: '0px !important',
-        maxWidth: '90%'
+        maxWidth: '90%',
     },
     paper: {
         display: 'flex',
@@ -82,9 +82,9 @@ export const styles = theme => ({
         height: 240,
     },
     maxHeight: {
-        height: '100%'
+        height: '100%',
     },
     paddingCopyright: {
         paddingBottom: theme.spacing(1),
-    }
+    },
 });
