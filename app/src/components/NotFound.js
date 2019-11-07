@@ -13,7 +13,11 @@ class NotFound extends Component {
         const { classes } = this.props;
 
         return (
-            <img className={classes.notFound} src={'/404_cat.jpg'} alt={'404 derpy cat'} />
+            <img
+                className={classes.notFound}
+                src={'/404_cat.jpg'}
+                alt={'404 derpy cat'}
+            />
         );
     }
 }

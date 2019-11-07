@@ -12,7 +12,12 @@ import '../../styles/index.css';
 
 export const mainListItems = (
     <div>
-        <NavLink exact to={'/'} className={'mainItemsList-removeLink'} activeClassName={'mainItemsList-active'}>
+        <NavLink
+            exact
+            to={'/'}
+            className={'mainItemsList-removeLink'}
+            activeClassName={'mainItemsList-active'}
+        >
             <ListItem button>
                 <ListItemIcon>
                     <DashboardIcon />
@@ -20,7 +25,11 @@ export const mainListItems = (
                 <ListItemText primary={'Home'} />
             </ListItem>
         </NavLink>
-        <NavLink to={'/orderbook'} className={'mainItemsList-removeLink'} activeClassName={'mainItemsList-active'}>
+        <NavLink
+            to={'/orderbook'}
+            className={'mainItemsList-removeLink'}
+            activeClassName={'mainItemsList-active'}
+        >
             <ListItem button>
                 <ListItemIcon>
                     <AssignmentIcon />
@@ -28,7 +37,11 @@ export const mainListItems = (
                 <ListItemText primary={'OrderBook Snapshot'} />
             </ListItem>
         </NavLink>
-        <NavLink to={'/Messages'} className={'mainItemsList-removeLink'} activeClassName={'mainItemsList-active'}>
+        <NavLink
+            to={'/Messages'}
+            className={'mainItemsList-removeLink'}
+            activeClassName={'mainItemsList-active'}
+        >
             <ListItem button>
                 <ListItemIcon>
                     <Message />
@@ -36,7 +49,11 @@ export const mainListItems = (
                 <ListItemText primary={'Message List'} />
             </ListItem>
         </NavLink>
-        <NavLink to={'/ordergraph'} className={'mainItemsList-removeLink'} activeClassName={'mainItemsList-active'}>
+        <NavLink
+            to={'/ordergraph'}
+            className={'mainItemsList-removeLink'}
+            activeClassName={'mainItemsList-active'}
+        >
             <ListItem button>
                 <ListItemIcon>
                     <BarChartIcon />
@@ -44,7 +61,11 @@ export const mainListItems = (
                 <ListItemText primary={'Order Graph'} />
             </ListItem>
         </NavLink>
-        <NavLink to={'/tbd'} className={'mainItemsList-removeLink'} activeClassName={'mainItemsList-active'}>
+        <NavLink
+            to={'/tbd'}
+            className={'mainItemsList-removeLink'}
+            activeClassName={'mainItemsList-active'}
+        >
             <ListItem button>
                 <ListItemIcon>
                     <LayersIcon />
