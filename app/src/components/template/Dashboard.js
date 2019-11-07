@@ -4,14 +4,17 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import {
     Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container,
 } from '@material-ui/core';
+
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
 import { mainListItems } from './listItems';
 import { Styles as OBStyles } from '../../styles/OrderBookSnapshot';
 import OrderBookSnapshot from '../OrderBookSnapshot';
+import Home from '../Home';
+import NotFound from '../NotFound';
 import { styles } from '../../styles/Dashboard';
-
 
 class Dashboard extends Component {
     constructor(props) {
@@ -63,27 +66,40 @@ class Dashboard extends Component {
                         </Typography>
                     </Toolbar>
                 </AppBar>
-                <Drawer
-                    variant={'permanent'}
-                    classes={{
-                        paper: classNames(classes.drawerPaper, !open && classes.drawerPaperClose),
-                    }}
-                    open={open}
-                >
-                    <div className={classes.toolbarIcon}>
-                        <IconButton onClick={this.handleOpenCloseDrawer}>
-                            <ChevronLeftIcon />
-                        </IconButton>
-                    </div>
-                    <Divider />
-                    <List>{mainListItems}</List>
-                </Drawer>
-                <main className={classes.content}>
-                    <div className={classes.appBarSpacer} />
-                    <Container className={classes.container}>
-                        <OrderBookSnapshot />
-                    </Container>
-                </main>
+                <Router>
+                    <Drawer
+                        variant={'permanent'}
+                        classes={{
+                            paper: classNames(classes.drawerPaper, !open && classes.drawerPaperClose),
+                        }}
+                        open={open}
+                    >
+                        <div className={classes.toolbarIcon}>
+                            <IconButton onClick={this.handleOpenCloseDrawer}>
+                                <ChevronLeftIcon />
+                            </IconButton>
+                        </div>
+                        <Divider />
+                        <List>{mainListItems}</List>
+                    </Drawer>
+                    <main className={classes.content}>
+                        <div className={classes.appBarSpacer} />
+                        <Container className={classes.container}>
+                            <Switch>
+                                <Route
+                                    exact
+                                    path={'/'}
+                                    component={Home}
+                                />
+                                <Route
+                                    path={'/orderbook'}
+                                    component={OrderBookSnapshot}
+                                />
+                                <Route component={NotFound} />
+                            </Switch>
+                        </Container>
+                    </main>
+                </Router>
             </div>
         );
     }
