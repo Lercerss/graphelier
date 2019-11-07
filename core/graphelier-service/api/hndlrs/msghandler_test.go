@@ -18,21 +18,21 @@ type mockDBMsgHndlr struct {
 	mock.Mock
 }
 
-func (db *mockDBMsgHndlr) GetSingleMessage(instrument string, totalOffset int64) (result *models.Message, err error) {
+func (db *mockDBMsgHndlr) GetSingleMessage(instrument string, sodOffset int64) (result *models.Message, err error) {
 	return &models.Message{}, nil
 }
 func (db *mockDBMsgHndlr) GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error) {
 	return &models.Orderbook{}, nil
 }
-func (db *mockDBMsgHndlr) GetMessages(instrument string, timestamp uint64) ([]*models.Message, error) {
+func (db *mockDBMsgHndlr) GetMessagesByTimestamp(instrument string, timestamp uint64) ([]*models.Message, error) {
 	messages := make([]*models.Message, 0)
 	return messages, nil
 }
-func (db *mockDBMsgHndlr) GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error) {
-	db.Called(instrument, timestamp, paginator)
+func (db *mockDBMsgHndlr) GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error) {
+	db.Called(instrument, paginator)
 	messages := make([]*models.Message, 0)
-	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: models.NewOrder, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
-	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: models.NewOrder, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
+	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
+	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
 	return messages, nil
 }
 
@@ -46,7 +46,7 @@ func TestFetchMessagesSuccess(t *testing.T) {
 	}
 	req = mux.SetURLVars(req, vars)
 	writer := httptest.NewRecorder()
-	mockedDB.On("GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 25})
+	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 25})
 
 	err := FetchMessages(mockedEnv, writer, req)
 	assert.Nil(t, err)
@@ -55,7 +55,7 @@ func TestFetchMessagesSuccess(t *testing.T) {
 	var messagePage models.MessagePage
 	err = json.Unmarshal(body, &messagePage)
 
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 25})
+	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 25})
 	assert.Nil(t, err)
 	assert.Equal(t, int64(25), messagePage.PageInfo.NMessages)
 	assert.Equal(t, int64(100), messagePage.PageInfo.SodOffset)
@@ -73,7 +73,7 @@ func TestFetchMessagesDefaultValues(t *testing.T) {
 	req = mux.SetURLVars(req, vars)
 	writer := httptest.NewRecorder()
 
-	mockedDB.On("GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 20})
+	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 20})
 
 	err := FetchMessages(mockedEnv, writer, req)
 	assert.Nil(t, err)
@@ -82,7 +82,7 @@ func TestFetchMessagesDefaultValues(t *testing.T) {
 	var messagePage models.MessagePage
 	err = json.Unmarshal(body, &messagePage)
 
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: 20})
+	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 20})
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(20), messagePage.PageInfo.NMessages)
@@ -101,7 +101,7 @@ func TestFetchMessagesNegativeNMessages(t *testing.T) {
 	req = mux.SetURLVars(req, vars)
 	writer := httptest.NewRecorder()
 
-	mockedDB.On("GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: -25})
+	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: -25})
 
 	err := FetchMessages(mockedEnv, writer, req)
 	assert.Nil(t, err)
@@ -110,7 +110,7 @@ func TestFetchMessagesNegativeNMessages(t *testing.T) {
 	var messagePage models.MessagePage
 	err = json.Unmarshal(body, &messagePage)
 
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", int64(100), &models.Paginator{SodOffset: 100, NMessages: -25})
+	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: -25})
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(-25), messagePage.PageInfo.NMessages)
@@ -132,10 +132,10 @@ func TestFetchMessagesBadInput(t *testing.T) {
 	req = mux.SetURLVars(req, vars)
 	writer := httptest.NewRecorder()
 
-	mockedDB.On("GetMessagesWithPagination", "test", mock.Anything, mock.Anything, mock.Anything)
+	mockedDB.On("GetMessagesWithPagination", "test", mock.Anything, mock.Anything)
 
 	err := FetchMessages(mockedEnv, writer, req)
 
-	mockedDB.AssertNotCalled(t, "GetMessagesWithPagination", mock.Anything, mock.Anything, mock.Anything)
+	mockedDB.AssertNotCalled(t, "GetMessagesWithPagination", mock.Anything, mock.Anything)
 	assert.NotNil(t, err)
 }

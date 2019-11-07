@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"graphelier/core/graphelier-service/models"
+	"graphelier/core/graphelier-service/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -27,11 +28,11 @@ func FetchOrderbook(env *Env, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return StatusError{500, err}
 	}
-	messages, err := env.Connector.GetMessages(instrument, timestamp)
+	messages, err := env.Connector.GetMessagesByTimestamp(instrument, timestamp)
 	if err != nil {
 		return StatusError{500, err}
 	}
-	orderbook.ApplyMessages(messages)
+	orderbook.ApplyMessagesToOrderbook(messages)
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(orderbook)
@@ -52,7 +53,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 	so := params["sod_offset"]
 	nm := params["num_messages"]
 
-	// Convert strings to uint64
+	// Convert strings to int64
 	sodOffset, err := strconv.ParseInt(so, 10, 64)
 	if err != nil {
 		return StatusError{400, err}
@@ -62,29 +63,57 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 		return StatusError{400, err}
 	}
 
-	totalOffset := int64(sodOffset + numMessages)
-	if totalOffset < 0 {
-		totalOffset = 0
+	sodMessage, err := env.Connector.GetSingleMessage(instrument, sodOffset)
+	if err != nil {
+		return StatusError{500, err}
+	}
+	orderbook, err := env.Connector.GetOrderbook(instrument, sodMessage.Timestamp)
+	if err != nil {
+		return StatusError{500, err}
+	}
+	totalOffset := int64(int64(sodMessage.SodOffset-orderbook.LastSodOffset) + numMessages)
+
+	// get previous book for high number of backward messages
+	for totalOffset < 0 {
+		prevSnapTime := int64(orderbook.Timestamp - 10000000000)
+		if prevSnapTime < 0 {
+			return StatusError{400, err}
+		}
+		orderbook, err = env.Connector.GetOrderbook(instrument, uint64(prevSnapTime))
+		if err != nil {
+			return StatusError{500, err}
+		}
+		totalOffset = int64(int64(sodMessage.SodOffset-orderbook.LastSodOffset) + numMessages)
+	}
+	nMessages := int64(int64(sodMessage.SodOffset-orderbook.LastSodOffset) + utils.Abs(numMessages))
+	paginator := &models.Paginator{NMessages: nMessages, SodOffset: int64(orderbook.LastSodOffset)}
+	allMessages, err := env.Connector.GetMessagesWithPagination(instrument, paginator)
+	if err != nil {
+		return StatusError{500, err}
 	}
 
-	message, err := env.Connector.GetSingleMessage(instrument, totalOffset)
-	if err != nil {
-		return StatusError{500, err}
+	var preMessagesSize int64
+	if numMessages < 0 {
+		// messages going backward
+		preMessagesSize = int64(sodMessage.SodOffset-orderbook.LastSodOffset) + numMessages
+	} else {
+		// messages going forward
+		preMessagesSize = int64(sodMessage.SodOffset - orderbook.LastSodOffset)
 	}
-	if message.OrderID == 0 || models.MessageType(message.MessageType) == models.Ignore {
-		w.WriteHeader(http.StatusOK)
-		return
+	preMessages := allMessages[:preMessagesSize]
+	postMessages := allMessages[preMessagesSize:]
+	orderbook.ApplyMessagesToOrderbook(preMessages)
+
+	var deltabook = &models.Orderbook{}
+	for i := int64(0); i < utils.Abs(numMessages); i++ {
+		message := postMessages[i]
+		if message.OrderID == 0 || message.Type == models.Ignore {
+			continue
+		}
+		var messageSlice []*models.Message
+		orderbook.ApplyMessagesToOrderbook(append(messageSlice, message))
+		orderbook.BuildDeltabook(deltabook, message, numMessages)
 	}
-	orderbook, err := env.Connector.GetOrderbook(instrument, message.Timestamp)
-	if err != nil {
-		return StatusError{500, err}
-	}
-	messages, err := env.Connector.GetMessages(instrument, message.Timestamp)
-	if err != nil {
-		return StatusError{500, err}
-	}
-	orderbook.ApplyMessages(messages)
-	deltabook := orderbook.BuildDeltabook(message)
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(deltabook)
