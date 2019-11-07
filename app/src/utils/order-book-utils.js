@@ -95,38 +95,31 @@ export const ordersEquals = (ordersArray1, ordersArray2) => {
     });
 };
 
+const updateListItems = (type, newArray, listItems) => {
+    newArray.forEach(askOrBid => {
+        /* eslint-disable no-param-reassign */
+        const { price, orders } = askOrBid;
+        if (orders.length === 0) delete listItems[price]; // Remove price level
+        else if (listItems[price]) {
+            listItems[price].orders = orders; // Modify price level
+        } else {
+            listItems[price] = { // Add price level
+                price,
+                orders,
+                type,
+            };
+        }
+        /* eslint-enable no-param-reassign */
+    });
+};
+
 export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) => {
     const listItems = currentListItems;
     let firstBid = 0;
     let maxQuantity = 0;
 
-    newAsks.forEach(ask => {
-        const { price, orders } = ask;
-        if (orders.length === 0) delete listItems[price]; // Remove price level
-        else if (listItems[price]) {
-            listItems[price].orders = orders; // Modify price level
-        } else {
-            listItems[price] = { // Add price level
-                price,
-                orders,
-                type: 'ask',
-            };
-        }
-    });
-
-    newBids.forEach(bid => {
-        const { price, orders } = bid;
-        if (orders.length === 0) delete listItems[price]; // Remove price level
-        else if (listItems[price]) {
-            listItems[price].orders = orders; // Modify price level
-        } else {
-            listItems[price] = { // Add price level
-                price,
-                orders,
-                type: 'bid',
-            };
-        }
-    });
+    updateListItems('ask', newAsks, listItems);
+    updateListItems('bid', newBids, listItems);
 
     Object.keys(listItems).forEach(key => {
         const priceLevel = key;

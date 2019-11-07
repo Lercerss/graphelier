@@ -39,6 +39,10 @@ class TimestampOrderBookScroller extends Component {
         }
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('keyup', this.onKeyUp);
+    }
+
     onKeyUp = e => {
         const { handleGoToPreviousMessage, handleGoToNextMessage } = this.props;
         if (e.keyCode === LEFT_ARROW_KEY_CODE) handleGoToPreviousMessage();

@@ -68,10 +68,10 @@ export const epochToDateString = nanosecondDate => {
  * its time nanoseconds
  */
 export const splitNanosecondEpochTimestamp = nanosecondTimestamp => {
-    // eslint-disable-next-line no-param-reassign
-    if (typeof nanosecondTimestamp === 'string') nanosecondTimestamp = parseInt(nanosecondTimestamp);
-    const timeNanoseconds = nanosecondTimestamp % NANOSECONDS_IN_ONE_DAY;
-    const dateNanoseconds = nanosecondTimestamp - timeNanoseconds;
+    let timestamp = nanosecondTimestamp;
+    if (typeof nanosecondTimestamp === 'string') timestamp = parseInt(nanosecondTimestamp);
+    const timeNanoseconds = timestamp % NANOSECONDS_IN_ONE_DAY;
+    const dateNanoseconds = timestamp - timeNanoseconds;
     return {
         timeNanoseconds,
         dateNanoseconds,
