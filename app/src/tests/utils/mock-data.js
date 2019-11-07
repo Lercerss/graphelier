@@ -1,4 +1,13 @@
+export const DATE_STRING = '2012-06-21';
+export const DATE_VALUE = 1340236800000000000; // 2012-06-21 UTC in epoch nanoseconds
+export const TIME_STRING = '12:00:00.000000000';
+export const TIME_VALUE = 43200000000000; // number of nanoseconds in 12 hours
+export const TIMESTAMP = 1340280000000000000; // 2012-06-21 at 12 pm
+export const LAST_SOD_OFFSET = 3;
+
 export const ORDER_BOOK_FROM_BACKEND = {
+    timestamp: TIMESTAMP,
+    last_sod_offset: LAST_SOD_OFFSET,
     asks: [
         {
             price: 135.66,
@@ -100,6 +109,49 @@ export const ORDER_BOOK_FROM_BACKEND = {
         }],
 };
 
+export const MESSAGE_DELTAS_FROM_BACKEND_MODIFY = {
+    timestamp: TIMESTAMP,
+    last_sod_offset: LAST_SOD_OFFSET,
+    asks: [
+        {
+            price: 135.66,
+            orders: [
+                {
+                    id: 20933587,
+                    quantity: 9000,
+                },
+            ],
+        }],
+    bids: [],
+};
+
+export const MESSAGE_DELTAS_FROM_BACKEND_REMOVE = {
+    timestamp: TIMESTAMP,
+    last_sod_offset: LAST_SOD_OFFSET,
+    asks: [
+        {
+            price: 135.66,
+            orders: [],
+        }],
+    bids: [],
+};
+
+export const MESSAGE_DELTAS_FROM_BACKEND_ADD = {
+    timestamp: TIMESTAMP,
+    last_sod_offset: LAST_SOD_OFFSET,
+    asks: [
+        {
+            price: 135.68,
+            orders: [
+                {
+                    id: 20933587,
+                    quantity: 598,
+                },
+            ],
+        }],
+    bids: [],
+};
+
 export const ORDER_BOOK_LIST_ITEMS = {
     [ORDER_BOOK_FROM_BACKEND.bids[0].price]: {
         price: ORDER_BOOK_FROM_BACKEND.bids[0].price,
@@ -115,8 +167,3 @@ export const ORDER_BOOK_LIST_ITEMS = {
     },
 
 };
-
-export const DATE_STRING = '2012-06-21';
-export const DATE_VALUE = 1340236800000000000; // 2012-06-21 UTC in epoch nanoseconds
-export const TIME_STRING = '12:00:00.000000000';
-export const TIME_VALUE = 43200000000000; // number of nanoseconds in 12 hours
