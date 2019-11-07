@@ -1,8 +1,6 @@
 import React from 'react';
-import TimestampOrderBookScroller from '../../components/TimestampOrderBookScroller';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
-import { IconButton, AppBar } from '@material-ui/core';
-import {ORDERBOOK_FROM_BACKEND} from '../utils/mock-data';
+import { IconButton } from '@material-ui/core';
 import Dashboard from '../../components/template/Dashboard';
 
 describe('Dashboard functionality', () => {
@@ -10,7 +8,7 @@ describe('Dashboard functionality', () => {
 
     beforeEach(() => {
         mount = createMount();
-        shallow = createShallow({dive: true});
+        shallow = createShallow({ dive: true });
     });
 
     afterEach(() => {
@@ -18,11 +16,11 @@ describe('Dashboard functionality', () => {
     });
 
     it('renders a Dashboard component without crashing', () => {
-        const wrapper = mount(<Dashboard/>);
+        mount(<Dashboard />);
     });
 
     it('renders a Dashboard component with drawer and simulate open', () => {
-        const wrapper = shallow(<Dashboard/>);
+        const wrapper = shallow(<Dashboard />);
 
 
         wrapper.find(IconButton).last().simulate('click');
