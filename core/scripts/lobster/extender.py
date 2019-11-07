@@ -210,6 +210,5 @@ class Extender:
                 continue
 
             # Delete all possible conflicts from the book first
-            if m.message_type == MessageType.NEW_ORDER:
-                yield from self.handle_conflicts(ob_ref.conflicts(m), m)
+            yield from self.handle_conflicts(ob_ref.conflicts(m), m)
             yield from self._yield_n_copies(m)

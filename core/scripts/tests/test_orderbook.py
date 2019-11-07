@@ -71,13 +71,17 @@ class TestOrderbook(unittest.TestCase):
 
         orderbook.send(new_order)
         orderbook.send(new_order_2)
-        bids = list(orderbook.conflicts(Message(3, MessageType.DELETE, 13, 10, 1, -1)))
-        asks = list(orderbook.conflicts(Message(3, MessageType.DELETE, 13, 10, 2, 1)))
+        bids = list(orderbook.conflicts(
+            Message(3, MessageType.NEW_ORDER, 13, 10, 1, -1)))
+        asks = list(orderbook.conflicts(
+            Message(3, MessageType.NEW_ORDER, 13, 10, 2, 1)))
         self.assertListEqual(bids, [Order(12, 10, 1, 1)])
         self.assertListEqual(asks, [Order(11, 10, 2, -1)])
 
-        empty_bids = list(orderbook.conflicts(Message(3, MessageType.DELETE, 13, 10, 1, 1)))
-        empty_asks = list(orderbook.conflicts(Message(3, MessageType.DELETE, 13, 10, 2, -1)))
+        empty_bids = list(orderbook.conflicts(
+            Message(3, MessageType.DELETE, 13, 10, 1, 1)))
+        empty_asks = list(orderbook.conflicts(
+            Message(3, MessageType.DELETE, 13, 10, 2, -1)))
         self.assertListEqual(empty_bids, [])
         self.assertListEqual(empty_asks, [])
 
@@ -86,7 +90,11 @@ class TestOrderbook(unittest.TestCase):
         orderbook.send(Message(1, MessageType.NEW_ORDER, 11, 10, 2, -1))
         orderbook.send(Message(2, MessageType.NEW_ORDER, 12, 10, 1, 1))
 
-        self.assertTrue(orderbook.has_order(Message(3, MessageType.DELETE, 11, 10, 2, -1)))
-        self.assertFalse(orderbook.has_order(Message(3, MessageType.DELETE, 11, 10, 2, 1)))
-        self.assertFalse(orderbook.has_order(Message(3, MessageType.DELETE, 12, 10, 2, 1)))
-        self.assertTrue(orderbook.has_order(Message(3, MessageType.DELETE, 12, 10, 1, 1)))
+        self.assertTrue(orderbook.has_order(
+            Message(3, MessageType.DELETE, 11, 10, 2, -1)))
+        self.assertFalse(orderbook.has_order(
+            Message(3, MessageType.DELETE, 11, 10, 2, 1)))
+        self.assertFalse(orderbook.has_order(
+            Message(3, MessageType.DELETE, 12, 10, 2, 1)))
+        self.assertTrue(orderbook.has_order(
+            Message(3, MessageType.DELETE, 12, 10, 1, 1)))

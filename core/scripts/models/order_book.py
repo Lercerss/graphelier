@@ -101,8 +101,17 @@ class OrderBook:
         self.last_time = msg.time
         self.last_sod_offset = msg.sod_offset
 
-    def conflicts(self, msg: Message):
+    def conflicts(self, msg: Message) -> List[Order]:
+        """Returns all orders which would conflict with the given message.
+        Only NEW_ORDER messages can cause a conflict by altering the top-of-book.
+
+        In the case of a new ask, return all existing bids with a higher price.
+        In the case of a new bid, return all existing asks with a lower price.
+        """
         ret = []
+        if msg.message_type != MessageType.NEW_ORDER:
+            return ret
+
         if msg.direction == -1:
             if msg.price <= self.bid:
                 for price in sorted(self.bid_book, reverse=True):
