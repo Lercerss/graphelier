@@ -96,42 +96,41 @@ export const ordersEquals = (ordersArray1, ordersArray2) => {
 };
 
 const updateListItems = (type, newArray, listItems) => {
+    const newListItems = listItems;
     newArray.forEach(askOrBid => {
-        /* eslint-disable no-param-reassign */
         const { price, orders } = askOrBid;
-        if (orders.length === 0) delete listItems[price]; // Remove price level
+        if (orders.length === 0) delete newListItems[price]; // Remove price level
         else if (listItems[price]) {
-            listItems[price].orders = orders; // Modify price level
+            newListItems[price].orders = orders; // Modify price level
         } else {
-            listItems[price] = { // Add price level
+            newListItems[price] = { // Add price level
                 price,
                 orders,
                 type,
             };
         }
-        /* eslint-enable no-param-reassign */
     });
+    return newListItems;
 };
 
 export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) => {
-    const listItems = currentListItems;
     let firstBid = 0;
     let maxQuantity = 0;
 
-    updateListItems('ask', newAsks, listItems);
-    updateListItems('bid', newBids, listItems);
+    let updatedListItems = updateListItems('ask', newAsks, currentListItems);
+    updatedListItems = updateListItems('bid', newBids, updatedListItems);
 
-    Object.keys(listItems).forEach(key => {
+    Object.keys(updatedListItems).forEach(key => {
         const priceLevel = key;
-        const sum = listItems[priceLevel].orders.reduce(
+        const sum = updatedListItems[priceLevel].orders.reduce(
             (totalQuantity, order) => (totalQuantity + parseInt(order.quantity)), 0,
         );
         if (sum > maxQuantity) maxQuantity = sum; // Compute max quantity
 
-        if (listItems[priceLevel].type === 'bid') { // Determine middle element
-            listItems[priceLevel].isMiddle = firstBid++ === 0;
-        } else listItems[priceLevel].isMiddle = false;
+        if (updatedListItems[priceLevel].type === 'bid') { // Determine middle element
+            updatedListItems[priceLevel].isMiddle = firstBid++ === 0;
+        } else updatedListItems[priceLevel].isMiddle = false;
     });
 
-    return { newListItems: listItems, newMaxQuantity: maxQuantity };
+    return { newListItems: updatedListItems, newMaxQuantity: maxQuantity };
 };
