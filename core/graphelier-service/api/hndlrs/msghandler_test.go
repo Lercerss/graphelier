@@ -28,8 +28,8 @@ func (db *mockDB) GetMessages(instrument string, timestamp uint64, latestFullSna
 func (db *mockDB) GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error) {
 	db.Called(instrument, timestamp, paginator)
 	messages := make([]*models.Message, 0)
-	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
-	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", MessageType: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
+	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: models.NewOrder, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
+	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: models.NewOrder, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
 	return messages, nil
 }
 

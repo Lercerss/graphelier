@@ -27,7 +27,7 @@ func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Order
 		if message.OrderID == 0 {
 			continue
 		}
-		switch MessageType(message.MessageType) {
+		switch message.Type {
 		case NewOrder:
 			orderbook.applyNewOrder(message)
 		case Modify:
@@ -47,6 +47,9 @@ func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Order
 }
 
 func (orderbook *Orderbook) applyNewOrder(message *Message) {
+	if message.ShareQuantity == 0 {
+		return
+	}
 	order := &Order{message.OrderID, message.ShareQuantity}
 	if message.Direction == -1 {
 		index, found := getLevelIndex(orderbook.Asks, message)
@@ -78,7 +81,7 @@ func (orderbook *Orderbook) applyModify(message *Message) {
 	}
 
 	o := (*orders)[orderIndex]
-	if message.ShareQuantity < o.Quantity {
+	if message.ShareQuantity >= 0 && message.ShareQuantity < o.Quantity {
 		o.Quantity -= message.ShareQuantity
 	} else {
 		orderbook.applyDelete(message)
@@ -138,9 +141,13 @@ func getLevelIndex(levels []*Level, message *Message) (int, bool) {
 	// TODO Should use binary search here... since price-levels are sorted!
 	i := 0
 	var lastPrice float64
+
 	for ; i < len(levels); i++ {
 		lastPrice = levels[i].Price
-		if lastPrice >= message.Price {
+		if message.Direction == -1 && lastPrice >= message.Price {
+			break
+		}
+		if message.Direction == 1 && lastPrice <= message.Price {
 			break
 		}
 	}
