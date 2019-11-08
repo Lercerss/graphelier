@@ -24,9 +24,9 @@ class LobsterMessageParser:
             # This maps indexes to object keys and the corresponding function to parse it from a string
             ('time', lambda x: float(x) * 10**9 + start_timestamp),
             ('message_type', lambda x: _lobster_msg_types.get(x, MessageType.IGNORE)),
-            ('id_', int),
+            ('id', int),
             ('share_quantity', int),
-            ('price', lambda x: float(x) / 10000),
+            ('price', int),
             ('direction', int)
         )
 
@@ -34,3 +34,12 @@ class LobsterMessageParser:
         kwargs = {key: parse_fun(
             line[index]) for index, (key, parse_fun) in enumerate(self.line_parsers)}
         return Message(**kwargs)
+
+
+def parse_top_of_book(ob_file_path: str) -> Tuple[int, int]:
+    line = ''
+    with open(ob_file_path, 'r') as f:
+        line = f.readline()
+
+    values = line.split(',')
+    return int(values[0]), int(values[2])

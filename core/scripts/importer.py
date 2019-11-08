@@ -1,20 +1,24 @@
 import argparse
+import os
 from datetime import datetime
 
 from lobster.extender import Extender, weekdays
+from lobster.parser import parse_top_of_book
 from models.order_book import OrderBook
 from mongo_db.db_connector import save_messages, save_order_book
 
 parser = argparse.ArgumentParser(
     description='Import dataset into mongodb', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
-    'file', help='Path to sample messages file', type=argparse.FileType())
+    'message_file', help='Path to sample messages file', type=argparse.FileType())
 parser.add_argument('start_time', help='Time at which sample starts, e.g. "2012-06-21 00:00:00"',
                     type=lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
 parser.add_argument('instrument', help='Name of instrument for sample')
 parser.add_argument('-e', '--extend', nargs=2,
                     help='Number of days to extend the sample over and the number of times to duplicate messages',
                     default=[1, 1])
+parser.add_argument('-t', '--top-of-book', help='Top of book at the start of sample (ask, bid)',
+                    nargs=2)
 
 # Determines how many messages will be parsed before sending them to db
 MESSAGE_BATCH_SIZE = 200
@@ -22,11 +26,14 @@ MESSAGE_BATCH_SIZE = 200
 EOD = 16 * 60 * 60 * 10**9  # 4:00 PM as ns
 
 
-def load(file, start_time, instrument, extend):
+def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book):
     start_timestamp = start_time.timestamp() * 10**9  # in nanoseconds
     interval = 10 * 10**9  # in nanoseconds
 
-    extender = Extender(file, start_timestamp, int(extend[1]))
+    initial_top_of_book = (int(top_of_book[0]), int(top_of_book[1])) \
+        if top_of_book else parse_top_of_book(ob_file_path)
+    extender = Extender(message_file, start_timestamp,
+                        int(extend[1]), initial_top_of_book)
     for day in weekdays(start_timestamp, int(extend[0])):
         order_book = OrderBook(instrument)
         sod_offset_counter = 0
@@ -35,7 +42,7 @@ def load(file, start_time, instrument, extend):
 
         day_diff = day - start_timestamp
         max_time = day + EOD
-        for message in extender.extend_sample(day_diff):
+        for message in extender.extend_sample(day_diff, order_book):
             if message.time > max_time:
                 break
             # day is a float, need to convert it to avoid floating point error
@@ -70,6 +77,19 @@ def load(file, start_time, instrument, extend):
         ))
 
 
-if __name__ == '__main__':
+def main():
     args = parser.parse_args()
-    load(args.file, args.start_time, args.instrument, args.extend)
+    if not args.top_of_book:
+        ob_file_path = args.message_file.name.replace('message', 'orderbook')
+        while not os.path.exists(ob_file_path):
+            print(
+                'Could not find an orderbook file provided by Lobster in the same path as the message file.')
+            ob_file_path = input(
+                'Please provide the path to the orderbook file: ')
+
+    load(args.message_file, ob_file_path, args.start_time,
+         args.instrument, args.extend, args.top_of_book)
+
+
+if __name__ == '__main__':
+    main()

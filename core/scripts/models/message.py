@@ -11,20 +11,23 @@ class MessageType(enum.IntEnum):
 
 
 class Message:
-    def __init__(self, time, message_type, id_, share_quantity, price, direction):
+    def __init__(self, time, message_type, id, share_quantity, price, direction, sod_offset=0, fake=False):
         self.time = time
         self.message_type = message_type
-        self.id = id_
+        self.id = id
         self.share_quantity = share_quantity
         self.price = price
         self.direction = direction
-        self.sod_offset = 0
+        self.sod_offset = sod_offset
+        self.fake = fake
 
     def __str__(self):
         return ('<Message id="{id}" time="{timef}" type="{message_type}" ' +
-                'price="{price}" qty="{share_quantity}" direction="{direction}">').format(
-                    **self.__dict__, timef=datetime.fromtimestamp(
-                        self.time // 10**9).strftime('%Y-%m-%d %H:%M:%S'))
+                'price="{pricef}" qty="{share_quantity}" direction="{direction}">').format(
+                    **self.__dict__,
+                    timef=datetime.fromtimestamp(
+                        self.time // 10**9).strftime('%Y-%m-%d %H:%M:%S'),
+                    pricef=self.price / 10000)
 
     def copy(self):
-        return Message(self.time, self.message_type, self.id, self.share_quantity, self.price, self.direction)
+        return Message(**self.__dict__)

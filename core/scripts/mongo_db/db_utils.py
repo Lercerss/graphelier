@@ -5,11 +5,11 @@ def order_book_to_dict(order_book):
     return {
         "instrument": order_book.instrument,
         "bids": [{
-            "price": price,
+            "price": price / 10000,
             "orders": [order_to_dict(order) for order in orders]
         } for price, orders in sorted(order_book.bid_book.items(), reverse=True)],
         "asks": [{
-            "price": price,
+            "price": price / 10000,
             "orders": [order_to_dict(order) for order in orders]
         } for price, orders in sorted(order_book.ask_book.items())],
         "timestamp": _round_up(order_book.last_time, 9),
@@ -31,7 +31,7 @@ def message_to_dict(message, instrument):
         "message_type": int(message.message_type),
         "order_id": message.id,
         "share_quantity": message.share_quantity,
-        "price": message.price,
+        "price": message.price / 10000,
         "direction": message.direction,
         "sod_offset": message.sod_offset
     }

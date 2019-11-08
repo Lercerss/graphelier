@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from models.message import Message, MessageType
+from models.order_book import OrderBook
 from lobster.extender import (
     weekdays, Placement, Extender,
     _initial_qty_for_messages, _mix_by_index, _unfilled_qty_for_messages
@@ -79,18 +80,20 @@ class ExtenderTest(unittest.TestCase):
         sample = []
         extended = []
         with open('tests/messages_sample.fixture', 'r') as f:
-            e = Extender(f, start, 1)
+            e = Extender(f, start, 1, (1356500, 1356300))
 
             sample_count = 9
             extended_count = (9 + 7) * 2
 
-            for m in e.extend_sample(0):
+            ob = OrderBook("SPY")
+            for m in e.extend_sample(0, ob):
                 if len(sample) < sample_count:
                     sample.append(m)
                 elif len(extended) < extended_count:
                     extended.append(m)
                 else:
                     break
+                ob.send(m)
 
         new_orders = [m for m in extended
                       if m.message_type == MessageType.NEW_ORDER]

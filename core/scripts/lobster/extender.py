@@ -4,11 +4,24 @@ import random
 from collections import defaultdict, namedtuple
 from datetime import datetime, time, timedelta
 
+from models.order_book import OrderBook
 from models.message import Message, MessageType
 from lobster.parser import LobsterMessageParser
 
 
 Placement = namedtuple('Placement', ['index', 'message'])
+
+
+class _TopOfBook:
+    def __init__(self, ask, bid):
+        self.ask = ask
+        self.bid = bid
+
+    def get(self, direction):
+        return self.ask if direction == -1 else self.bid
+
+    def __sub__(self, o):
+        return _TopOfBook(self.ask - o.ask, self.bid - o.bid)
 
 
 def _endless_copies(l):
@@ -92,6 +105,7 @@ def _backfill(initial_messages, n_duplicates):
 
     id_diff = max(id_map) - min(id_map) + 1
     backfilled = []
+    upper_delete_bound = int(len(initial_messages) / 10)
     for id_, placements in id_map.items():
         first_place = placements[0]
         if first_place.message.message_type != MessageType.NEW_ORDER:
@@ -112,7 +126,7 @@ def _backfill(initial_messages, n_duplicates):
         unfilled_qty = _unfilled_qty_for_messages(placements)
         if unfilled_qty:
             # Unfilled order
-            new_index = _rand_range(0, first_place.index)
+            new_index = _rand_range(0, upper_delete_bound)
             time_diff = initial_messages[new_index].time - \
                 initial_messages[max(0, new_index - 1)].time
             _time = initial_messages[new_index].time + \
@@ -123,7 +137,8 @@ def _backfill(initial_messages, n_duplicates):
                     new_index,
                     Message(_time, MessageType.DELETE,
                             id_ - id_diff * n_duplicates, unfilled_qty,
-                            first_place.message.price, first_place.message.direction)
+                            first_place.message.price, first_place.message.direction,
+                            fake=True)
                 )
             )
 
@@ -132,8 +147,9 @@ def _backfill(initial_messages, n_duplicates):
 
 class Extender:
 
-    def __init__(self, file, start_time: float, n_duplicates: int):
+    def __init__(self, file, start_time: float, n_duplicates: int, initial_top_of_book):
         self.n_duplicates = n_duplicates
+        self.initial_top_of_book = _TopOfBook(*initial_top_of_book)
         print('Parsing sample set of messages...')
         message_parser = LobsterMessageParser(start_time)
         self.initial_messages = [
@@ -145,7 +161,8 @@ class Extender:
             self.initial_messages[0].time
 
         print('Backfilling for missing messages in sample...')
-        backfilled, self.id_diff = _backfill(self.initial_messages, n_duplicates)
+        backfilled, self.id_diff = _backfill(
+            self.initial_messages, n_duplicates)
         self.mixed_messages = sorted(_mix_by_index(self.initial_messages, backfilled),
                                      key=lambda x: x.time)
         print('Added {} messages to fill holes in sample.\n'.format(len(backfilled)))
@@ -159,15 +176,39 @@ class Extender:
                 m_copy.id += i * self.id_diff
             yield m_copy
 
-    def extend_sample(self, day_diff: int):
+    def handle_conflicts(self, conflicts, msg):
+        return [
+            Message(msg.time, MessageType.DELETE, order.id, order.qty,
+                    order.price, order.direction)
+            for order in conflicts
+        ]
+
+    def extend_sample(self, day_diff: int, ob_ref: OrderBook):
         for m in self.initial_messages:
             m_ = m.copy()
             m_.time += day_diff
             yield from self._yield_n_copies(m_)
 
+        prev_loop = 0
+        prev_diff = None
+        diff_top_of_book = _TopOfBook(0, 0)
         for loop_count, m in _endless_copies(self.mixed_messages):
+            if loop_count > prev_loop:
+                prev_loop = loop_count
+                prev_diff = diff_top_of_book
+                diff_top_of_book = _TopOfBook(ob_ref.ask, ob_ref.bid) - \
+                    self.initial_top_of_book
             m.time += day_diff + self.time_diff * loop_count
             if m.id != 0:
                 m.id += self.id_diff * loop_count * self.n_duplicates
 
+            m.price = m.price + \
+                (prev_diff if m.fake else diff_top_of_book).get(m.direction)
+
+            if m.fake and not ob_ref.has_order(m):
+                # Deleted through handle conflict
+                continue
+
+            # Delete all possible conflicts from the book first
+            yield from self.handle_conflicts(ob_ref.conflicts(m), m)
             yield from self._yield_n_copies(m)
