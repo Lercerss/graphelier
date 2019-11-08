@@ -28,6 +28,7 @@ import {
     NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
+import MessageList from './MessageList';
 
 
 class OrderBookSnapshot extends Component {
@@ -292,6 +293,12 @@ class OrderBookSnapshot extends Component {
                         lastSodOffset={lastSodOffset}
                         timeOrDateIsNotSet={selectedTimeNano === 0 || selectedDateNano === 0}
                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                    />
+                </Card>
+                <div style={{ height: `10px` }}> </div>
+                <Card>
+                    <MessageList
+                        lastSodOffset={lastSodOffset}
                     />
                 </Card>
             </Typography>
