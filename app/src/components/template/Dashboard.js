@@ -5,7 +5,9 @@ import {
     Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container,
 } from '@material-ui/core';
 
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import {
+    Route, BrowserRouter as Router, Switch, NavLink,
+} from 'react-router-dom';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
@@ -40,33 +42,39 @@ class Dashboard extends Component {
         return (
             <div className={classes.root}>
                 <CssBaseline />
-                <AppBar
-                    position={'absolute'}
-                    className={classNames(classes.appBar, open && classes.appBarShift)}
-                    theme={OBStyles.themeBackground}
-                >
-                    <Toolbar className={classes.toolbar}>
-                        <IconButton
-                            edge={'start'}
-                            color={'inherit'}
-                            aria-label={'open drawer'}
-                            onClick={this.handleOpenCloseDrawer}
-                            className={classNames(classes.menuButton, open && classes.menuButtonHidden)}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Typography
-                            component={'h1'}
-                            variant={'h6'}
-                            color={'inherit'}
-                            noWrap
-                            className={classes.title}
-                        >
-                            Graphelier
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
                 <Router>
+                    <AppBar
+                        position={'absolute'}
+                        className={classNames(classes.appBar, open && classes.appBarShift)}
+                        theme={OBStyles.themeBackground}
+                    >
+                        <Toolbar className={classes.toolbar}>
+                            <IconButton
+                                edge={'start'}
+                                color={'inherit'}
+                                aria-label={'open drawer'}
+                                onClick={this.handleOpenCloseDrawer}
+                                className={classNames(classes.menuButton, open && classes.menuButtonHidden)}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                            <Typography
+                                component={'h1'}
+                                variant={'h6'}
+                                color={'inherit'}
+                                noWrap
+                                className={classes.title}
+                            >
+                                <NavLink
+                                    exact
+                                    to={'/'}
+                                    className={classNames('mainItemsList-removeLink')}
+                                >
+                                    Graphelier
+                                </NavLink>
+                            </Typography>
+                        </Toolbar>
+                    </AppBar>
                     <Drawer
                         variant={'permanent'}
                         classes={{

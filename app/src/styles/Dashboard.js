@@ -38,7 +38,14 @@ export const styles = theme => ({
         display: 'none',
     },
     title: {
-        flexGrow: 1,
+        display: 'contents',
+        textAlign: 'center',
+        '& a': {
+            padding: '1rem',
+        },
+        '& a:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.08)',
+        },
     },
     drawerPaper: {
         position: 'relative',

@@ -1,6 +1,6 @@
-// import { Colors } from './App';
+import { makeStyles } from '@material-ui/core/styles';
 
-export const styles = {
+export const styles = makeStyles({
     root: {
         textAlign: 'center',
         minWidth: '100%',
@@ -17,7 +17,14 @@ export const styles = {
     center: {
         textAlign: 'center',
     },
-    ul: {
-        listStyleType: 'none',
+    drawerOffset: {
+        marginLeft: '-72px',
     },
-};
+    home: {
+        width: '25rem !important',
+        height: '39rem !important',
+        display: 'flex',
+        margin: 'auto',
+        color: '#41aeff',
+    },
+});

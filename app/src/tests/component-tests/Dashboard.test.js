@@ -15,25 +15,12 @@ describe('Dashboard functionality', () => {
         mount.cleanUp();
     });
 
-    it('renders a Dashboard component without crashing', () => {
-        mount(<Dashboard />);
-    });
-
-    it('renders a Dashboard component with drawer and simulate open', () => {
-        const wrapper = shallow(<Dashboard />);
-
-
-        wrapper.find(IconButton).last().simulate('click');
-        const isOpen = wrapper.state().open;
-        expect(isOpen).toBe(true);
-    });
-
-    it('renders a Dashboard component with drawer and simulate close', () => {
+    it('renders a Dashboard component with drawer and simulate open and close', () => {
         const wrapper = shallow(<Dashboard />);
 
         wrapper.find(IconButton).last().simulate('click');
+        expect(wrapper.state().open).toBe(true);
         wrapper.find(IconButton).first().simulate('click');
-        const isOpen = wrapper.state().open;
-        expect(isOpen).toBe(false);
+        expect(wrapper.state().open).toBe(false);
     });
 });
