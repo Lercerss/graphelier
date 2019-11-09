@@ -6,5 +6,5 @@ export default class OrderBookService {
     static getPriceLevelsByMessageOffset = (instrument, timestamp, offset) => httpClient
         .get(`/delta/${instrument}/${timestamp}/${offset}`);
 
-    static getMessageList = (instrument, sodOffset) => httpClient.get(`/message/${instrument}/${sodOffset}`);
+    static getMessageList = (instrument, sodOffset) => httpClient.get(`/messages/${instrument}/${sodOffset}`);
 }

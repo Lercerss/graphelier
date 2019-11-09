@@ -296,11 +296,13 @@ class OrderBookSnapshot extends Component {
                     />
                 </Card>
                 <div style={{ height: `10px` }}> </div>
-                <Card>
-                    <MessageList
-                        lastSodOffset={lastSodOffset}
-                    />
-                </Card>
+                {lastSodOffset && (
+                    <Card>
+                        <MessageList
+                            lastSodOffset={lastSodOffset}
+                        />
+                    </Card>
+                )}
             </Typography>
         );
     }
