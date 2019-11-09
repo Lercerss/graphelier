@@ -79,8 +79,8 @@ def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book
 
 def main():
     args = parser.parse_args()
+    ob_file_path = args.message_file.name.replace('message', 'orderbook')
     if not args.top_of_book:
-        ob_file_path = args.message_file.name.replace('message', 'orderbook')
         while not os.path.exists(ob_file_path):
             print(
                 'Could not find an orderbook file provided by Lobster in the same path as the message file.')
