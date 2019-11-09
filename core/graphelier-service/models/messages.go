@@ -6,7 +6,7 @@ type Message struct {
 	Timestamp     uint64           `json:"timestamp"`
 	Type          MessageType      `json:"message_type" bson:"message_type"`
 	OrderID       uint64           `json:"order_id" bson:"order_id"`
-	ShareQuantity uint64           `json:"share_qty" bson:"share_quantity"`
+	ShareQuantity int64            `json:"share_qty" bson:"share_quantity"`
 	Price         float64          `json:"price"`
 	Direction     MessageDirection `json:"direction"`
 	SodOffset     uint64           `json:"sod_offset" bson:"sod_offset"`

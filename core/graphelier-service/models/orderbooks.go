@@ -5,7 +5,7 @@ import "graphelier/core/graphelier-service/utils"
 // Order : A struct that represents a single bid or ask order in the orderbook
 type Order struct {
 	ID       uint64 `json:"id" bson:"id"`
-	Quantity uint64 `json:"quantity"`
+	Quantity int64  `json:"quantity"`
 }
 
 // Level : A struct that represents a bid or an ask
@@ -82,7 +82,7 @@ func (orderbook *Orderbook) applyModify(message *Message) {
 	}
 
 	o := (*orders)[orderIndex]
-	if message.ShareQuantity < o.Quantity {
+	if message.ShareQuantity >= 0 && message.ShareQuantity < o.Quantity {
 		o.Quantity -= message.ShareQuantity
 	} else {
 		orderbook.applyDelete(message)

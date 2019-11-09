@@ -28,8 +28,8 @@ func clear() {
 
 func TestNewOrderBidsSamePrice(t *testing.T) {
 	orderbook := Orderbook{Instrument: "test", Asks: make([]*Level, 0), Bids: make([]*Level, 0), Timestamp: uint64(1), LastSodOffset: uint64(1)}
-	newOrder := Message{OrderID: uint64(1), Type: NewOrder, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(1), Direction: 1}
-	newOrder2 := Message{OrderID: uint64(2), Type: NewOrder, Price: 1.0, ShareQuantity: uint64(3), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	newOrder := Message{OrderID: uint64(1), Type: NewOrder, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(1), Direction: 1}
+	newOrder2 := Message{OrderID: uint64(2), Type: NewOrder, Price: 1.0, ShareQuantity: int64(3), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 	messages := make([]*Message, 0)
 	messages = append(messages, &newOrder, &newOrder2)
 
@@ -45,8 +45,8 @@ func TestNewOrderBidsSamePrice(t *testing.T) {
 
 func TestNewOrderBidsAccrossPriceLevels(t *testing.T) {
 	orderbook := Orderbook{Instrument: "test", Asks: make([]*Level, 0), Bids: make([]*Level, 0), Timestamp: uint64(1), LastSodOffset: uint64(1)}
-	newOrder := Message{OrderID: uint64(1), Type: NewOrder, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(1), Direction: 1}
-	newOrder2 := Message{OrderID: uint64(2), Type: NewOrder, Price: 2.0, ShareQuantity: uint64(3), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	newOrder := Message{OrderID: uint64(1), Type: NewOrder, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(1), Direction: 1}
+	newOrder2 := Message{OrderID: uint64(2), Type: NewOrder, Price: 2.0, ShareQuantity: int64(3), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 	messages := make([]*Message, 0)
 	messages = append(messages, &newOrder, &newOrder2)
 
@@ -63,8 +63,8 @@ func TestNewOrderBidsAccrossPriceLevels(t *testing.T) {
 }
 func TestNewOrderAsks(t *testing.T) {
 	orderbook := Orderbook{Instrument: "test", Asks: make([]*Level, 0), Bids: make([]*Level, 0), Timestamp: uint64(1), LastSodOffset: uint64(1)}
-	newOrder := Message{OrderID: uint64(1), Type: NewOrder, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(1), Direction: -1}
-	newOrder2 := Message{OrderID: uint64(2), Type: NewOrder, Price: 1.0, ShareQuantity: uint64(3), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
+	newOrder := Message{OrderID: uint64(1), Type: NewOrder, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(1), Direction: -1}
+	newOrder2 := Message{OrderID: uint64(2), Type: NewOrder, Price: 1.0, ShareQuantity: int64(3), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
 	messages := make([]*Message, 0)
 	messages = append(messages, &newOrder, &newOrder2)
 
@@ -88,7 +88,7 @@ func TestDeleteOrderBids(t *testing.T) {
 	priceLevels = append(priceLevels, &priceLevel)
 	orderbook := Orderbook{Instrument: "test", Asks: make([]*Level, 0), Bids: priceLevels, Timestamp: uint64(1), LastSodOffset: uint64(1)}
 
-	deleteOrder := Message{OrderID: uint64(2), Type: Delete, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	deleteOrder := Message{OrderID: uint64(2), Type: Delete, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 
 	messages := make([]*Message, 0)
 	messages = append(messages, &deleteOrder)
@@ -102,8 +102,8 @@ func TestDeleteOrderBids(t *testing.T) {
 	assert.EqualValues(t, 1, actualPriceLevel.Orders[0].ID)
 	assert.EqualValues(t, 3, actualPriceLevel.Orders[1].ID)
 
-	deleteOrder1 := Message{OrderID: uint64(1), Type: Delete, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
-	deleteOrder3 := Message{OrderID: uint64(3), Type: Delete, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	deleteOrder1 := Message{OrderID: uint64(1), Type: Delete, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	deleteOrder3 := Message{OrderID: uint64(3), Type: Delete, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 
 	continuingMessages := append(messages, &deleteOrder1, &deleteOrder3)
 	orderbook.ApplyMessagesToOrderbook(continuingMessages)
@@ -120,7 +120,7 @@ func TestDeleteOrderAsks(t *testing.T) {
 	priceLevels = append(priceLevels, &priceLevel)
 	orderbook := Orderbook{Instrument: "test", Asks: priceLevels, Bids: make([]*Level, 0), Timestamp: uint64(1), LastSodOffset: uint64(1)}
 
-	deleteOrder := Message{OrderID: uint64(2), Type: Delete, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
+	deleteOrder := Message{OrderID: uint64(2), Type: Delete, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
 
 	messages := make([]*Message, 0)
 	messages = append(messages, &deleteOrder)
@@ -134,8 +134,8 @@ func TestDeleteOrderAsks(t *testing.T) {
 	assert.EqualValues(t, 1, actualPriceLevel.Orders[0].ID)
 	assert.EqualValues(t, 3, actualPriceLevel.Orders[1].ID)
 
-	deleteOrder1 := Message{OrderID: uint64(1), Type: Delete, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
-	deleteOrder3 := Message{OrderID: uint64(3), Type: Delete, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
+	deleteOrder1 := Message{OrderID: uint64(1), Type: Delete, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
+	deleteOrder3 := Message{OrderID: uint64(3), Type: Delete, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: -1}
 
 	continuingMessages := append(messages, &deleteOrder1, &deleteOrder3)
 	orderbook.ApplyMessagesToOrderbook(continuingMessages)
@@ -152,9 +152,9 @@ func TestModifyOrder(t *testing.T) {
 	priceLevels = append(priceLevels, &priceLevel)
 	orderbook := Orderbook{Instrument: "test", Asks: make([]*Level, 0), Bids: priceLevels, Timestamp: uint64(1), LastSodOffset: uint64(1)}
 
-	modifyOrder1 := Message{OrderID: uint64(1), Type: Modify, Price: 1.0, ShareQuantity: uint64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	modifyOrder1 := Message{OrderID: uint64(1), Type: Modify, Price: 1.0, ShareQuantity: int64(2), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 	// This modify simply removes the order
-	modifyOrder2 := Message{OrderID: uint64(2), Type: Modify, Price: 1.0, ShareQuantity: uint64(6), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	modifyOrder2 := Message{OrderID: uint64(2), Type: Modify, Price: 1.0, ShareQuantity: int64(6), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 
 	messages := make([]*Message, 0)
 	messages = append(messages, &modifyOrder2, &modifyOrder1)
@@ -183,8 +183,8 @@ func TestExecuteOrderBids(t *testing.T) {
 	priceLevels = append(priceLevels, &priceLevel)
 	orderbook := Orderbook{Instrument: "test", Asks: make([]*Level, 0), Bids: priceLevels, Timestamp: uint64(1), LastSodOffset: uint64(1)}
 
-	executeOrder1 := Message{OrderID: uint64(1), Type: Execute, Price: 1.0, ShareQuantity: uint64(1), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
-	executeOrder2 := Message{OrderID: uint64(2), Type: Execute, Price: 1.0, ShareQuantity: uint64(1), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	executeOrder1 := Message{OrderID: uint64(1), Type: Execute, Price: 1.0, ShareQuantity: int64(1), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
+	executeOrder2 := Message{OrderID: uint64(2), Type: Execute, Price: 1.0, ShareQuantity: int64(1), Timestamp: uint64(1), SodOffset: uint64(2), Direction: 1}
 
 	messages := make([]*Message, 0)
 	messages = append(messages, &executeOrder1, &executeOrder2)
@@ -213,8 +213,8 @@ func TestDeltaAskChange(t *testing.T) {
 	assert.Equal(t, uint64(4), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Asks))
 	assert.Equal(t, int(2), len(deltabook.Asks[0].Orders))
-	assert.Equal(t, uint64(10), deltabook.Asks[0].Orders[0].Quantity)
-	assert.Equal(t, uint64(50), deltabook.Asks[0].Orders[1].Quantity)
+	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[0].Quantity)
+	assert.Equal(t, int64(50), deltabook.Asks[0].Orders[1].Quantity)
 	assert.Equal(t, int(0), len(deltabook.Bids))
 	clear()
 }
@@ -230,8 +230,8 @@ func TestDeltaBidChange(t *testing.T) {
 	assert.Equal(t, uint64(4), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Bids))
 	assert.Equal(t, int(2), len(deltabook.Bids[0].Orders))
-	assert.Equal(t, uint64(10), deltabook.Bids[0].Orders[0].Quantity)
-	assert.Equal(t, uint64(50), deltabook.Bids[0].Orders[1].Quantity)
+	assert.Equal(t, int64(10), deltabook.Bids[0].Orders[0].Quantity)
+	assert.Equal(t, int64(50), deltabook.Bids[0].Orders[1].Quantity)
 	assert.Equal(t, int(0), len(deltabook.Asks))
 	clear()
 }

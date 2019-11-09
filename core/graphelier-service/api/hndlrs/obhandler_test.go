@@ -67,13 +67,13 @@ func TestFetchOrderbookDeltaSuccess(t *testing.T) {
 	assert.Equal(t, float64(100), deltabook.Asks[0].Price)
 	assert.Equal(t, int(2), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, uint64(12), deltabook.Asks[0].Orders[0].ID)
-	assert.Equal(t, uint64(10), deltabook.Asks[0].Orders[0].Quantity)
+	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[0].Quantity)
 	assert.Equal(t, uint64(15), deltabook.Asks[0].Orders[1].ID)
-	assert.Equal(t, uint64(10), deltabook.Asks[0].Orders[1].Quantity)
+	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[1].Quantity)
 	assert.Equal(t, float64(100), deltabook.Bids[0].Price)
 	assert.Equal(t, int(1), len(deltabook.Bids))
 	assert.Equal(t, uint64(13), deltabook.Bids[0].Orders[0].ID)
-	assert.Equal(t, uint64(10), deltabook.Bids[0].Orders[0].Quantity)
+	assert.Equal(t, int64(10), deltabook.Bids[0].Orders[0].Quantity)
 }
 
 func TestFetchOrderbookDeltaBadInput(t *testing.T) {
@@ -127,7 +127,7 @@ func TestFetchOrderbookDeltaNegativeOffset(t *testing.T) {
 	assert.Equal(t, float64(100), deltabook.Asks[0].Price)
 	assert.Equal(t, int(1), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, uint64(12), deltabook.Asks[0].Orders[0].ID)
-	assert.Equal(t, uint64(10), deltabook.Asks[0].Orders[0].Quantity)
+	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[0].Quantity)
 	assert.Equal(t, int(0), len(deltabook.Bids))
 }
 
