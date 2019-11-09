@@ -250,3 +250,33 @@ func TestEmptyLevel(t *testing.T) {
 	assert.Equal(t, int(0), len(deltabook.Bids))
 	clear()
 }
+
+func TestApplyDeltaPositiveNumMessages(t *testing.T) {
+	setup()
+	var messages []*Message
+	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 25, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 6})
+	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 26, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 7})
+	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 27, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 8})
+	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 28, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 9})
+	orderbook.ApplyMessagesToDeltabook(deltabook, messages, 2)
+
+	assert.Equal(t, int(1), len(deltabook.Asks[0].Orders))
+	assert.Equal(t, int(1), len(deltabook.Asks[1].Orders))
+	assert.Equal(t, int(0), len(deltabook.Bids))
+	clear()
+}
+
+func TestApplyDeltaNegativeNumMessages(t *testing.T) {
+	setup()
+	var messages []*Message
+	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 25, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 6})
+	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 26, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 7})
+	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 27, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 8})
+	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 28, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 9})
+	orderbook.ApplyMessagesToDeltabook(deltabook, messages, -2)
+
+	assert.Equal(t, int(1), len(deltabook.Asks[0].Orders))
+	assert.Equal(t, int(1), len(deltabook.Asks[1].Orders))
+	assert.Equal(t, int(0), len(deltabook.Bids))
+	clear()
+}

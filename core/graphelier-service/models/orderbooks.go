@@ -1,5 +1,7 @@
 package models
 
+import "graphelier/core/graphelier-service/utils"
+
 // Order : A struct that represents a single bid or ask order in the orderbook
 type Order struct {
 	ID       uint64 `json:"id" bson:"id"`
@@ -201,7 +203,7 @@ func (orderbook *Orderbook) getOrders(message *Message) (*[]*Order, int) {
 }
 
 // BuildDeltabook : Builds a new orderbook with only the delta given from the offset message
-func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Message, numMessages int64) *Orderbook {
+func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Message, numMessages int64) {
 	index, found := orderbook.getLevelIndex(message)
 	if !found {
 		level := &Level{Price: message.Price, Orders: []*Order{}}
@@ -220,6 +222,17 @@ func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Messag
 	deltabook.Instrument = orderbook.Instrument
 	deltabook.Timestamp = orderbook.Timestamp
 	deltabook.LastSodOffset = uint64(int64(orderbook.LastSodOffset) + numMessages)
+}
 
-	return deltabook
+// ApplyMessagesToDeltabook : Applies messages to build deltabook while also applying the message to the original orderbook
+func (orderbook *Orderbook) ApplyMessagesToDeltabook(deltabook *Orderbook, messages []*Message, numMessages int64) {
+	for i := int64(0); i < utils.Abs(numMessages); i++ {
+		message := messages[i]
+		if message.OrderID == 0 || message.Type == Ignore {
+			continue
+		}
+		var messageSlice []*Message
+		orderbook.ApplyMessagesToOrderbook(append(messageSlice, message))
+		orderbook.BuildDeltabook(deltabook, message, numMessages)
+	}
 }
