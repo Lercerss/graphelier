@@ -210,7 +210,7 @@ func TestDeltaAskChange(t *testing.T) {
 	orderbook.BuildDeltabook(deltabook, offsetMessage, 1)
 
 	assert.Equal(t, uint64(99), deltabook.Timestamp)
-	assert.Equal(t, uint64(4), deltabook.LastSodOffset)
+	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Asks))
 	assert.Equal(t, int(2), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[0].Quantity)
@@ -227,7 +227,7 @@ func TestDeltaBidChange(t *testing.T) {
 	orderbook.BuildDeltabook(deltabook, offsetMessage, 1)
 
 	assert.Equal(t, uint64(99), deltabook.Timestamp)
-	assert.Equal(t, uint64(4), deltabook.LastSodOffset)
+	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Bids))
 	assert.Equal(t, int(2), len(deltabook.Bids[0].Orders))
 	assert.Equal(t, int64(10), deltabook.Bids[0].Orders[0].Quantity)
@@ -244,7 +244,7 @@ func TestEmptyLevel(t *testing.T) {
 	orderbook.BuildDeltabook(deltabook, offsetMessage, 1)
 
 	assert.Equal(t, uint64(99), deltabook.Timestamp)
-	assert.Equal(t, uint64(4), deltabook.LastSodOffset)
+	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Asks))
 	assert.Equal(t, int(0), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, int(0), len(deltabook.Bids))

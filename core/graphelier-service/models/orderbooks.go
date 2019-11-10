@@ -246,7 +246,12 @@ func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Messag
 	}
 	deltabook.Instrument = orderbook.Instrument
 	deltabook.Timestamp = orderbook.Timestamp
-	deltabook.LastSodOffset = uint64(int64(orderbook.LastSodOffset) + numMessages)
+	if numMessages < 0 {
+		deltabook.LastSodOffset = uint64(int64(orderbook.LastSodOffset) + numMessages)
+	} else {
+		deltabook.LastSodOffset = orderbook.LastSodOffset
+	}
+
 }
 
 // ApplyMessagesToDeltabook : Applies messages to build deltabook while also applying the message to the original orderbook
