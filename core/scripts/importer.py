@@ -36,7 +36,9 @@ def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book
                         int(extend[1]), initial_top_of_book)
     for day in weekdays(start_timestamp, int(extend[0])):
         order_book = OrderBook(instrument)
-        sod_offset_counter = 0
+        order_book.last_time = day
+        # day is a float, need to convert it to avoid floating point error
+        order_book.last_sod_offset = sod_offset_counter = int(day)
         last_multiple = 1
         message_buffer = []
 
@@ -45,8 +47,7 @@ def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book
         for message in extender.extend_sample(day_diff, order_book):
             if message.time > max_time:
                 break
-            # day is a float, need to convert it to avoid floating point error
-            message.sod_offset = int(day) + sod_offset_counter
+            message.sod_offset = sod_offset_counter
             current_multiple = message.time // interval
             if current_multiple > last_multiple:
                 print(str(order_book))
