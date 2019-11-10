@@ -21,8 +21,8 @@ type Orderbook struct {
 	Instrument    string   `json:"instrument"`
 	Bids          []*Level `json:"bids,omitempty"`
 	Asks          []*Level `json:"asks,omitempty"`
-	Timestamp     uint64   `json:"timestamp"`
-	LastSodOffset uint64   `json:"last_sod_offset" bson:"last_sod_offset"`
+	Timestamp     uint64   `json:"timestamp,string"`
+	LastSodOffset uint64   `json:"last_sod_offset,string" bson:"last_sod_offset"`
 }
 
 // ApplyMessagesToOrderbook : Applies each individual message to the orderbook

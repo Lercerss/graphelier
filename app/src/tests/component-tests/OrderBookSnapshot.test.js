@@ -10,7 +10,7 @@ import {
     ORDER_BOOK_LIST_ITEMS,
     MESSAGE_DELTAS_FROM_BACKEND_MODIFY,
     MESSAGE_DELTAS_FROM_BACKEND_ADD,
-    MESSAGE_DELTAS_FROM_BACKEND_REMOVE,
+    MESSAGE_DELTAS_FROM_BACKEND_REMOVE, ORDER_BOOK_FROM_BACKEND,
 } from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
 import { convertNanosecondsToUTC } from '../../utils/date-utils';
@@ -20,10 +20,7 @@ describe('date and time picker functionality', () => {
     const getOrderBookPricesSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices')
         .mockImplementation((instrument, timestamp) => Promise.resolve(
             {
-                data: {
-                    asks: [],
-                    bids: [],
-                },
+                data: ORDER_BOOK_FROM_BACKEND,
             },
         ));
 
