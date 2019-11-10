@@ -134,3 +134,12 @@ export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) =
 
     return { newListItems: updatedListItems, newMaxQuantity: maxQuantity };
 };
+
+/**
+ * @desc based on values for direction returned by the backend, returns verbose direction
+ * @param direction
+ * @returns {string}
+ */
+export const getMessageDirection = direction => {
+    return (direction === 1) ? 'Bid' : 'Ask';
+};

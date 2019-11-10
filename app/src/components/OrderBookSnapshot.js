@@ -148,6 +148,10 @@ class OrderBookSnapshot extends Component {
         }
     };
 
+    /**
+     * @desc handles the updates with deltas once a message is moved by a certain amount
+     * @param deltas
+     */
     handleUpdateWithDeltas = deltas => {
         const { listItems } = this.state;
         const {

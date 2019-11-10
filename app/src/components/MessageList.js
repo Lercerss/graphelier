@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import { Box } from '@material-ui/core';
 import OrderBookService from '../services/OrderBookService';
 import {
     SNAPSHOT_INSTRUMENT,
@@ -8,6 +9,9 @@ import {
 } from '../constants/Constants';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import { Styles } from '../styles/MessageList';
+import { roundNumber } from '../utils/number-utils';
+import { getMessageDirection } from '../utils/order-book-utils';
+import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
 
 class MessageList extends Component {
     constructor(props) {
@@ -26,11 +30,44 @@ class MessageList extends Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { lastSodOffset } = this.props;
+        const { messages } = this.state;
+
         if (lastSodOffset !== prevProps.lastSodOffset) {
-            this.fetchInitialMessages();
+            const messageIndex = this.getPotentialIndexOfLastSodOffsetFromProps();
+            if (messageIndex !== -1) {
+                const messagesLength = messages.length;
+                const halfway = messagesLength / 2;
+                const directionOfPotentialPaging = (messageIndex > halfway) ? 'bottom' : 'top';
+                const diffFromEdge = directionOfPotentialPaging === 'bottom'
+                    ? messagesLength - messageIndex : messageIndex;
+
+                if (diffFromEdge < 5) {
+                    this.handleHitEdge(directionOfPotentialPaging);
+                }
+            } else {
+                this.fetchInitialMessages();
+            }
         }
     }
 
+    /**
+     * @desc Helper that checks for existence of a message in the array of messages (from state)
+     * that equals the latest lastSodOffset passed in props.
+     * @returns {*|number|never|boolean} returns -1 if not found
+     */
+    getPotentialIndexOfLastSodOffsetFromProps = () => {
+        const { messages } = this.state;
+        const { lastSodOffset } = this.props;
+
+        if (!messages) return false;
+
+        return messages.map(message => message.sod_offset).findIndex(sodOffset => sodOffset === lastSodOffset);
+    };
+
+    /**
+     * @desc function called to load initial message list; when there is no messages or the sodOffset is
+     * significantly different from the current one
+     */
     fetchInitialMessages() {
         const { lastSodOffset } = this.props;
         OrderBookService.getMessageList(SNAPSHOT_INSTRUMENT, lastSodOffset)
@@ -49,16 +86,23 @@ class MessageList extends Component {
             });
     }
 
+    /**
+     * @desc Paging handler for upwards and downwards hitting of the multidirectional scroll
+     * @param direction
+     */
     handleHitEdge(direction) {
         const { lastSodOffsetTop, lastSodOffsetBottom } = this.state;
+        // eslint-disable-next-line react/destructuring-assignment
+        const existingMessages = this.state.messages;
+
         if (direction === 'top') {
             const nMessages = -MESSAGE_LIST_DEFAULT_PAGE_SIZE;
             OrderBookService.getMessageList(SNAPSHOT_INSTRUMENT, lastSodOffsetTop, nMessages)
                 .then(response => {
                     const { pageInfo, messages } = response.data;
                     this.setState({
-                        messages,
-                        lastSodOffsetTop: pageInfo.lastSodOffset,
+                        messages: messages ? messages.concat(existingMessages) : existingMessages,
+                        lastSodOffsetTop: pageInfo.sod_offset,
                     });
                 })
                 .catch(err => {
@@ -69,8 +113,8 @@ class MessageList extends Component {
                 .then(response => {
                     const { pageInfo, messages } = response.data;
                     this.setState({
-                        messages,
-                        lastSodOffsetBottom: pageInfo.lastSodOffset,
+                        messages: messages ? existingMessages.concat(messages) : existingMessages,
+                        lastSodOffsetBottom: pageInfo.sod_offset,
                     });
                 })
                 .catch(err => {
@@ -79,6 +123,10 @@ class MessageList extends Component {
         }
     }
 
+    /**
+     * @desc Renders every row of the message list table. every row corresponds to a message
+     * @returns {*}
+     */
     renderTableData() {
         const { classes, lastSodOffset } = this.props;
         const { messages } = this.state;
@@ -87,14 +135,14 @@ class MessageList extends Component {
                 timestamp, message_type, order_id, share_qty, price, direction, sod_offset,
             } = message;
             return (
-                <tr className={lastSodOffset === sod_offset ? classes.currentMessageRow : classes.tableDataRow}>
-                    <td>{timestamp}</td>
-                    <td>{message_type}</td>
-                    <td>{order_id}</td>
-                    <td>{share_qty}</td>
-                    <td>{price}</td>
-                    <td>{direction}</td>
-                </tr>
+                <Box className={lastSodOffset === sod_offset ? classes.currentMessageRow : classes.tableDataRow}>
+                    <Box className={classes.tableColumn}>{timestamp}</Box>
+                    <Box className={classes.tableColumn}>{MESSAGE_TYPE_ENUM[message_type].name}</Box>
+                    <Box className={classes.tableColumn}>{order_id}</Box>
+                    <Box className={classes.tableColumn}>{share_qty}</Box>
+                    <Box className={classes.tableColumn}>{roundNumber(price, 2)}</Box>
+                    <Box className={classes.tableColumn}>{getMessageDirection(direction)}</Box>
+                </Box>
             );
         });
     }
@@ -104,22 +152,23 @@ class MessageList extends Component {
 
         return (
             <div className={classes.scrollContainer}>
+                <Box
+                    className={classes.tableHeaderRow}
+                    bgcolor={'primary.main'}
+                >
+                    <Box className={classes.tableColumn}><div>{'Timestamp'}</div></Box>
+                    <Box className={classes.tableColumn}><div>{'Type'}</div></Box>
+                    <Box className={classes.tableColumn}><div>{'OrderID'}</div></Box>
+                    <Box className={classes.tableColumn}><div>{'Quantity'}</div></Box>
+                    <Box className={classes.tableColumn}><div>{'Price'}</div></Box>
+                    <Box className={classes.tableColumn}><div>{'Direction'}</div></Box>
+                </Box>
                 <MultiDirectionalScroll
                     onReachBottom={() => this.handleHitEdge('bottom')}
                     onReachTop={() => this.handleHitEdge('top')}
                     position={50}
                 >
-                    <table className={classes.messageTable}>
-                        <tr className={classes.tableHeaderRow}>
-                            <th>{'Timestamp'}</th>
-                            <th>{'Type'}</th>
-                            <th>{'Order ID'}</th>
-                            <th>{'Quantity'}</th>
-                            <th>{'Price'}</th>
-                            <th>{'Direction'}</th>
-                        </tr>
-                        {this.renderTableData()}
-                    </table>
+                    {this.renderTableData()}
                 </MultiDirectionalScroll>
             </div>
         );
