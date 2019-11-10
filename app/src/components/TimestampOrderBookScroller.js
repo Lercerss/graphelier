@@ -24,11 +24,11 @@ class TimestampOrderBookScroller extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { listItems, maxQuantity } = this.props;
-
-        if (!listItems || !nextProps.listItems) return true;
-        return (!listItemsEquals(listItems, nextProps.listItems)
-            || maxQuantity !== nextProps.maxQuantity);
+        const { lastSodOffset } = this.props;
+        if (lastSodOffset && nextProps.lastSodOffset) {
+            return (lastSodOffset.toString() !== nextProps.lastSodOffset.toString());
+        }
+        return true;
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -43,6 +43,10 @@ class TimestampOrderBookScroller extends Component {
         window.removeEventListener('keyup', this.onKeyUp);
     }
 
+    /**
+     * @desc handles the key up action while moving messages
+     * @param e
+     */
     onKeyUp = e => {
         const { handleGoToPreviousMessage, handleGoToNextMessage } = this.props;
         if (e.keyCode === LEFT_ARROW_KEY_CODE) handleGoToPreviousMessage();
@@ -79,7 +83,6 @@ class TimestampOrderBookScroller extends Component {
 
     /**
      * @desc Gets the message for the given offset and updates the order book with the message's timestamp
-     *
      * @param offset The number of messages to skip forward or backward to
      */
     handleGoToMessageByOffset = offset => {
@@ -94,9 +97,10 @@ class TimestampOrderBookScroller extends Component {
     };
 
     render() {
-        const { listItems, maxQuantity, classes } = this.props;
+        const {
+            listItems, maxQuantity, classes, timeOrDateIsNotSet,
+        } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
-        const { timeOrDateIsNotSet } = this.props;
 
         return (
             <Box className={classes.container}>

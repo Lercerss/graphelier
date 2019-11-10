@@ -42,7 +42,7 @@ export const nanosecondsToString = nanosecondTimestamp => {
 
 /**
  * @desc Given a timestamp in nanoseconds, returns the timestamp converted to UTC
- * @param nanosecondTimestamp BigInt
+ * @param nanosecondTimestamp {BigInt}
  * @returns {BigInt}
  */
 export const convertNanosecondsToUTC = nanosecondTimestamp => {
@@ -51,8 +51,18 @@ export const convertNanosecondsToUTC = nanosecondTimestamp => {
 };
 
 /**
+ * @desc Given a timestamp in nanoseconds UTC, returns the timestamp for current timezone
+ * @param nanosecondTimestamp {BigInt}
+ * @returns {BigInt}
+ */
+export const convertNanosecondsUTCToCurrentTimezone = nanosecondTimestamp => {
+    const offsetNS = BigInt(new Date().getTimezoneOffset()) * BigInt(60 * 10 ** 9);
+    return nanosecondTimestamp - offsetNS;
+};
+
+/**
  * @desc Given a nanosecond epoch date, returns time string in the format YYYY-MM-DD
- * @param nanosecondDate
+ * @param nanosecondDate {BigInt}
  * @returns {string}
  */
 export const epochToDateString = nanosecondDate => {

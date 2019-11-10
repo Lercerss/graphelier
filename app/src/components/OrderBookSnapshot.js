@@ -18,6 +18,7 @@ import {
     epochToDateString,
     splitNanosecondEpochTimestamp,
     convertNanosecondsToUTC,
+    convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 
@@ -166,8 +167,10 @@ class OrderBookSnapshot extends Component {
                 lastSodOffset: BigInt(last_sod_offset),
                 selectedDateNano: dateNanoseconds,
                 selectedDateString: epochToDateString(dateNanoseconds),
-                selectedTimeNano: BigInt(timeNanoseconds),
-                selectedTimeString: nanosecondsToString(timeNanoseconds),
+                selectedTimeNano: convertNanosecondsUTCToCurrentTimezone(BigInt(timeNanoseconds)),
+                selectedTimeString: nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(
+                    BigInt(timeNanoseconds),
+                ))),
                 selectedDateTimeNano: BigInt(timestamp),
                 listItems: newListItems,
                 maxQuantity: newMaxQuantity,

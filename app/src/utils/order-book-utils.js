@@ -55,34 +55,6 @@ export const getOrderBookListItemsAsArray = listItemsObject => {
 
 
 /**
- * @desc Give the orderBook list items stored as an object in the redux store, determines whether
- * or not the contents are the same
- * @param listItemsObject1 {}
- * @param listItemsObject2 {}
- */
-export const listItemsEquals = (listItemsObject1, listItemsObject2) => {
-    const listItems1 = getOrderBookListItemsAsArray(listItemsObject1);
-    const listItems2 = getOrderBookListItemsAsArray(listItemsObject2);
-
-    if (listItems1.length !== listItems2.length) return false;
-
-    return !listItems1.some(listItem => {
-        if (listItem) {
-            const siblingListItem = listItemsObject2[listItem.price];
-            const { orders } = listItem;
-            const siblingOrders = siblingListItem.orders;
-
-            return (
-                !siblingListItem
-                || listItem.type !== siblingListItem.type
-                || orders.length !== siblingOrders.length);
-        }
-        return false;
-    });
-};
-
-
-/**
  * @desc Checks whether two arrays are the same in terms of orders
  * @param ordersArray1
  * @param ordersArray2
@@ -95,8 +67,48 @@ export const ordersEquals = (ordersArray1, ordersArray2) => {
     });
 };
 
+
+/**
+ * @desc Give the orderBook list items stored as an object in the redux store, determines whether
+ * or not the contents are the same
+ * @param listItemsObject1 {}
+ * @param listItemsObject2 {}
+ */
+export const listItemsEquals = (listItemsObject1, listItemsObject2) => {
+    const listItems1 = getOrderBookListItemsAsArray(listItemsObject1);
+    const listItems2 = getOrderBookListItemsAsArray(listItemsObject2);
+
+    if (listItems1.length !== listItems2.length) return false;
+
+    return listItems1.every(listItem => {
+        if (listItem) {
+            const siblingListItem = listItemsObject2[listItem.price];
+            const { orders } = listItem;
+            const siblingOrders = siblingListItem.orders;
+
+            return (
+                siblingListItem
+                && listItem.type === siblingListItem.type
+                && ordersEquals(siblingOrders, orders)
+            );
+        }
+        return false;
+    });
+};
+
+/**
+ * @desc Given a single price with new orders, updates listItems object with new value for that price
+ * @param type
+ * @param newArray
+ * @param listItems
+ * @returns {*}
+ */
 const updateListItems = (type, newArray, listItems) => {
     const newListItems = listItems;
+
+    if (!newArray) {
+        return newListItems;
+    }
     newArray.forEach(askOrBid => {
         const { price, orders } = askOrBid;
         if (orders.length === 0) delete newListItems[price]; // Remove price level
@@ -113,6 +125,13 @@ const updateListItems = (type, newArray, listItems) => {
     return newListItems;
 };
 
+/**
+ * @desc Processes existing listItems to compute new max quantity and new middle
+ * @param currentListItems
+ * @param newAsks
+ * @param newBids
+ * @returns {{newMaxQuantity: number, newListItems: *}}
+ */
 export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) => {
     let firstBid = 0;
     let maxQuantity = 0;

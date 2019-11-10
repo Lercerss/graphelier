@@ -41,4 +41,8 @@ export const Styles = {
         wordBreak: 'break-word',
         overflowWrap: 'break-word',
     },
+    overrideTimestampColumn: {
+        maxWidth: '30%',
+        width: '30%',
+    },
 };
