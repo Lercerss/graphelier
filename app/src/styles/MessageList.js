@@ -5,21 +5,22 @@ export const Styles = {
         height: 350,
         width: '100%',
     },
-    table: {
+    messageTable: {
         display: 'flex',
-        backgroundColor: Colors.lightBlue,
         border: '2px',
         borderColor: Colors.black,
+        backgroundColor: Colors.lightBlue,
+    },
+    currentMessageRow: {
+        backgroundColor: Colors.yellow,
     },
     tableDataRow: {
         border: '3px',
         borderColor: Colors.black,
         textAlign: 'center',
-        flexDirection: 'row',
     },
     tableHeaderRow: {
-        border: '5px solid Colors.black',
+        border: '5px',
         textAlign: 'center',
-        flexDirection: 'row',
     },
 };
