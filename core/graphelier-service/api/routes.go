@@ -38,7 +38,13 @@ var routes = Routes{
 		"Orderbook",
 		"GET",
 		"/orderbook/{instrument}/{timestamp}",
-		hndlrs.CustomHandler{H: hndlrs.JSONOrderbook},
+		hndlrs.CustomHandler{H: hndlrs.FetchOrderbook},
+	},
+	Route{
+		"Deltabook",
+		"GET",
+		"/delta/{instrument}/{sod_offset}/{num_messages}",
+		hndlrs.CustomHandler{H: hndlrs.FetchOrderbookDelta},
 	},
 	Route{
 		"Message",

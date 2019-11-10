@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"graphelier/core/graphelier-service/utils"
 	"log"
 
 	"graphelier/core/graphelier-service/models"
@@ -14,8 +15,9 @@ import (
 // Datastore interface containing all queries to the database
 type Datastore interface {
 	GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error)
-	GetMessages(instrument string, timestamp uint64, latestFullSnapshot uint64) ([]*models.Message, error)
-	GetMessagesWithPagination(instrument string, timestamp int64, paginator *models.Paginator) ([]*models.Message, error)
+	GetMessagesByTimestamp(instrument string, timestamp uint64) ([]*models.Message, error)
+	GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error)
+	GetSingleMessage(instrument string, sodOffset int64) (*models.Message, error)
 }
 
 // Connector : A struct that represents the database
@@ -49,10 +51,10 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 			{Key: "$lte", Value: timestamp},
 		}},
 	}
-	option := options.FindOne()
-	option.SetSort(bson.D{{Key: "timestamp", Value: -1}})
+	options := options.FindOne()
+	options.SetSort(bson.D{{Key: "timestamp", Value: -1}})
 
-	err = collection.FindOne(context.TODO(), filter, option).Decode(&result)
+	err = collection.FindOne(context.TODO(), filter, options).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +62,11 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 	return result, nil
 }
 
-// GetMessages : Finds the Message of an instrument based on the timestamp requested
-func (c *Connector) GetMessages(instrument string, timestamp uint64, latestFullSnapshot uint64) (results []*models.Message, err error) {
+// GetMessagesByTimestamp : Finds the Message of an instrument based on the timestamp requested
+func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
+	divisor := uint64(10000000000)
+	latestFullSnapshot := timestamp / divisor * divisor
+
 	collection := c.Database("graphelier-db").Collection("messages")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
@@ -71,9 +76,9 @@ func (c *Connector) GetMessages(instrument string, timestamp uint64, latestFullS
 		}},
 	}
 
-	findOptions := options.Find()
+	options := options.Find()
 
-	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	cursor, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +102,7 @@ func (c *Connector) GetMessages(instrument string, timestamp uint64, latestFullS
 }
 
 // GetMessagesWithPagination returns an messages given an instrument, sod_offset with pagination
-func (c *Connector) GetMessagesWithPagination(instrument string, sodOffset int64, paginator *models.Paginator) (results []*models.Message, err error) {
+func (c *Connector) GetMessagesWithPagination(instrument string, paginator *models.Paginator) (results []*models.Message, err error) {
 	collection := c.Database("graphelier-db").Collection("messages")
 	var filterKey string
 	var sortDirection int8
@@ -111,13 +116,13 @@ func (c *Connector) GetMessagesWithPagination(instrument string, sodOffset int64
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
 		{Key: "sod_offset", Value: bson.D{
-			{Key: filterKey, Value: sodOffset},
+			{Key: filterKey, Value: paginator.SodOffset},
 		}},
 	}
 
 	findOptions := options.Find()
 	findOptions.SetSort(bson.D{{Key: "instrument", Value: 1}, {Key: "sod_offset", Value: sortDirection}})
-	findOptions.SetLimit(abs(paginator.NMessages))
+	findOptions.SetLimit(utils.Abs(paginator.NMessages))
 
 	cursor, err := collection.Find(context.TODO(), filter, findOptions)
 	if err != nil {
@@ -142,10 +147,20 @@ func (c *Connector) GetMessagesWithPagination(instrument string, sodOffset int64
 	return results, nil
 }
 
-// Default Abs func for golang takes a float and returns a float. Need one for ints
-func abs(n int64) int64 {
-	if n < 0 {
-		return -n
+// GetSingleMessage : Returns the message corresponding to the sod_offset (message id)
+func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result *models.Message, err error) {
+	collection := c.Database("graphelier-db").Collection("messages")
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "sod_offset", Value: sodOffset},
 	}
-	return n
+
+	options := options.FindOne()
+
+	err = collection.FindOne(context.TODO(), filter, options).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
