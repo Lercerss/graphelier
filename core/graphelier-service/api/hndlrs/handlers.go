@@ -49,8 +49,8 @@ func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Printf("HTTP %d - %s", e.Status(), e)
 			http.Error(w, e.Error(), e.Status())
 		default:
+			log.Printf("Error: %s", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
-		log.Fatal(err)
 	}
 }
