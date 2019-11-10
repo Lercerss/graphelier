@@ -280,3 +280,25 @@ func TestApplyDeltaNegativeNumMessages(t *testing.T) {
 	assert.Equal(t, int(0), len(deltabook.Bids))
 	clear()
 }
+
+func TestOrderbookPriceSort(t *testing.T) {
+	setup()
+	orderbook.ApplyMessagesToOrderbook(messages)
+
+	assert.Equal(t, float64(100), orderbook.Asks[0].Price)
+	assert.Equal(t, float64(200), orderbook.Asks[1].Price)
+	assert.Equal(t, float64(200), orderbook.Bids[0].Price)
+	assert.Equal(t, float64(100), orderbook.Bids[1].Price)
+	clear()
+}
+
+func TestDeltaPriceSort(t *testing.T) {
+	setup()
+	orderbook.ApplyMessagesToDeltabook(deltabook, messages, 4)
+
+	assert.Equal(t, float64(100), deltabook.Asks[0].Price)
+	assert.Equal(t, float64(200), deltabook.Asks[1].Price)
+	assert.Equal(t, float64(200), deltabook.Bids[0].Price)
+	assert.Equal(t, float64(100), deltabook.Bids[1].Price)
+	clear()
+}

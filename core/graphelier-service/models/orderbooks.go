@@ -1,6 +1,8 @@
 package models
 
-import "graphelier/core/graphelier-service/utils"
+import (
+	"graphelier/core/graphelier-service/utils"
+)
 
 // Order : A struct that represents a single bid or ask order in the orderbook
 type Order struct {
@@ -204,19 +206,39 @@ func (orderbook *Orderbook) getOrders(message *Message) (*[]*Order, int) {
 
 // BuildDeltabook : Builds a new orderbook with only the delta given from the offset message
 func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Message, numMessages int64) {
-	index, found := orderbook.getLevelIndex(message)
-	if !found {
-		level := &Level{Price: message.Price, Orders: []*Order{}}
-		if message.Direction == Asks {
-			deltabook.Asks = append(deltabook.Asks, level)
-		} else if message.Direction == Bids {
-			deltabook.Bids = append(deltabook.Bids, level)
+	order := &Order{message.OrderID, message.ShareQuantity}
+	oIndex, oFound := orderbook.getLevelIndex(message)
+	dIndex, dFound := deltabook.getLevelIndex(message)
+	if !oFound {
+		if !dFound {
+			level := &Level{Price: message.Price, Orders: []*Order{}}
+			if message.Direction == Asks {
+				deltabook.Asks = append(deltabook.Asks, nil)
+				copy(deltabook.Asks[dIndex+1:], deltabook.Asks[dIndex:])
+				deltabook.Asks[dIndex] = level
+			} else if message.Direction == Bids {
+				deltabook.Bids = append(deltabook.Bids, nil)
+				copy(deltabook.Bids[dIndex+1:], deltabook.Bids[dIndex:])
+				deltabook.Bids[dIndex] = level
+			}
 		}
 	} else {
-		if message.Direction == Asks {
-			deltabook.Asks = append(deltabook.Asks, orderbook.Asks[index])
-		} else if message.Direction == Bids {
-			deltabook.Bids = append(deltabook.Bids, orderbook.Bids[index])
+		if !dFound {
+			if message.Direction == Asks {
+				deltabook.Asks = append(deltabook.Asks, nil)
+				copy(deltabook.Asks[dIndex+1:], deltabook.Asks[dIndex:])
+				deltabook.Asks[dIndex] = orderbook.Asks[oIndex]
+			} else if message.Direction == Bids {
+				deltabook.Bids = append(deltabook.Bids, nil)
+				copy(deltabook.Bids[dIndex+1:], deltabook.Bids[dIndex:])
+				deltabook.Bids[dIndex] = orderbook.Bids[oIndex]
+			}
+		} else {
+			if message.Direction == Asks {
+				deltabook.Asks[dIndex].Orders = append(deltabook.Asks[dIndex].Orders, order)
+			} else if message.Direction == Bids {
+				deltabook.Bids[dIndex].Orders = append(deltabook.Bids[dIndex].Orders, order)
+			}
 		}
 	}
 	deltabook.Instrument = orderbook.Instrument
