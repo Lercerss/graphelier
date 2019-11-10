@@ -26,7 +26,7 @@ type Orderbook struct {
 }
 
 // ApplyMessagesToOrderbook : Applies each individual message to the orderbook
-func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Orderbook {
+func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) {
 	for _, message := range messages {
 		if message.OrderID == 0 {
 			continue
@@ -46,8 +46,6 @@ func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) *Order
 		orderbook.Timestamp = message.Timestamp
 		orderbook.LastSodOffset = message.SodOffset
 	}
-
-	return orderbook
 }
 
 func (orderbook *Orderbook) applyNewOrder(message *Message) {
@@ -206,20 +204,25 @@ func (orderbook *Orderbook) getOrders(message *Message) (*[]*Order, int) {
 
 // BuildDeltabook : Builds a new orderbook with only the delta given from the offset message
 func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Message, numMessages int64) {
-	order := &Order{message.OrderID, message.ShareQuantity}
 	oIndex, oFound := orderbook.getLevelIndex(message)
 	dIndex, dFound := deltabook.getLevelIndex(message)
 	if !oFound {
+		emptyLevel := &Level{Price: message.Price, Orders: []*Order{}}
 		if !dFound {
-			level := &Level{Price: message.Price, Orders: []*Order{}}
 			if message.Direction == Asks {
 				deltabook.Asks = append(deltabook.Asks, nil)
 				copy(deltabook.Asks[dIndex+1:], deltabook.Asks[dIndex:])
-				deltabook.Asks[dIndex] = level
+				deltabook.Asks[dIndex] = emptyLevel
 			} else if message.Direction == Bids {
 				deltabook.Bids = append(deltabook.Bids, nil)
 				copy(deltabook.Bids[dIndex+1:], deltabook.Bids[dIndex:])
-				deltabook.Bids[dIndex] = level
+				deltabook.Bids[dIndex] = emptyLevel
+			}
+		} else {
+			if message.Direction == Asks {
+				deltabook.Asks[dIndex] = emptyLevel
+			} else if message.Direction == Bids {
+				deltabook.Bids[dIndex] = emptyLevel
 			}
 		}
 	} else {
@@ -235,9 +238,9 @@ func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Messag
 			}
 		} else {
 			if message.Direction == Asks {
-				deltabook.Asks[dIndex].Orders = append(deltabook.Asks[dIndex].Orders, order)
+				deltabook.Asks[dIndex].Orders = orderbook.Asks[oIndex].Orders
 			} else if message.Direction == Bids {
-				deltabook.Bids[dIndex].Orders = append(deltabook.Bids[dIndex].Orders, order)
+				deltabook.Bids[dIndex].Orders = orderbook.Bids[oIndex].Orders
 			}
 		}
 	}

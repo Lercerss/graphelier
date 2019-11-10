@@ -281,6 +281,99 @@ func TestApplyDeltaNegativeNumMessages(t *testing.T) {
 	clear()
 }
 
+func TestDeltaNoOrderIndexNoDeltaIndex(t *testing.T) {
+	orderbook := &Orderbook{}
+	deltabook := &Orderbook{}
+	orderMessages := make([]*Message, 0)
+	deltaMessages := make([]*Message, 0)
+
+	orderMessages = append(orderMessages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 2})
+	orderMessages = append(orderMessages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 20, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 5})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 1})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 17, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 4})
+
+	orderbook.ApplyMessagesToOrderbook(orderMessages)
+	deltabook.ApplyMessagesToOrderbook(deltaMessages)
+	message := &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 44, Price: 201, ShareQuantity: 10, Timestamp: 100, SodOffset: 10}
+	orderbook.BuildDeltabook(deltabook, message, 3)
+
+	assert.NotEqual(t, message.Price, orderbook.Bids[0].Price)
+	assert.NotEqual(t, message.Price, orderbook.Bids[1].Price)
+	assert.Equal(t, int(2), len(orderbook.Bids))
+	assert.Equal(t, int(3), len(deltabook.Asks))
+	assert.Equal(t, message.Price, deltabook.Asks[2].Price)
+
+}
+
+func TestDeltaNoOrderIndexDeltaIndex(t *testing.T) {
+	orderbook := &Orderbook{}
+	deltabook := &Orderbook{}
+	orderMessages := make([]*Message, 0)
+	deltaMessages := make([]*Message, 0)
+
+	orderMessages = append(orderMessages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 13, Price: 200, ShareQuantity: 10, Timestamp: 99, SodOffset: 2})
+	orderMessages = append(orderMessages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 20, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 5})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 1})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 17, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 4})
+
+	orderbook.ApplyMessagesToOrderbook(orderMessages)
+	deltabook.ApplyMessagesToOrderbook(deltaMessages)
+	message := &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 44, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 10}
+	orderbook.BuildDeltabook(deltabook, message, 3)
+
+	assert.NotEqual(t, message.Price, orderbook.Bids[0].Price)
+	assert.Equal(t, int(1), len(orderbook.Bids))
+	assert.Equal(t, int(2), len(deltabook.Asks))
+	assert.Equal(t, message.Price, deltabook.Asks[0].Price)
+	assert.Equal(t, int(0), len(deltabook.Asks[0].Orders))
+}
+
+func TestDeltaOrderIndexNoDeltaIndex(t *testing.T) {
+	orderbook := &Orderbook{}
+	deltabook := &Orderbook{}
+	orderMessages := make([]*Message, 0)
+	deltaMessages := make([]*Message, 0)
+
+	orderMessages = append(orderMessages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 2})
+	orderMessages = append(orderMessages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 20, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 5})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 12, Price: 200, ShareQuantity: 10, Timestamp: 99, SodOffset: 1})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 17, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 4})
+
+	orderbook.ApplyMessagesToOrderbook(orderMessages)
+	deltabook.ApplyMessagesToOrderbook(deltaMessages)
+	message := &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 44, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 10}
+	orderbook.BuildDeltabook(deltabook, message, 3)
+
+	assert.Equal(t, int(2), len(orderbook.Bids))
+	assert.NotEqual(t, message.Price, deltabook.Asks[0].Price)
+	assert.Equal(t, int(1), len(deltabook.Asks))
+	assert.Equal(t, message.Price, deltabook.Bids[0].Price)
+	assert.Equal(t, int(1), len(deltabook.Bids[0].Orders))
+}
+
+func TestDeltaOrderIndexDeltaIndex(t *testing.T) {
+	orderbook := &Orderbook{}
+	deltabook := &Orderbook{}
+	orderMessages := make([]*Message, 0)
+	deltaMessages := make([]*Message, 0)
+
+	orderMessages = append(orderMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 2})
+	orderMessages = append(orderMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 20, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 5})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 99, SodOffset: 1})
+	deltaMessages = append(deltaMessages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 17, Price: 200, ShareQuantity: 10, Timestamp: 100, SodOffset: 4})
+
+	orderbook.ApplyMessagesToOrderbook(orderMessages)
+	deltabook.ApplyMessagesToOrderbook(deltaMessages)
+	message := &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 44, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 10}
+	orderbook.BuildDeltabook(deltabook, message, 3)
+
+	assert.Equal(t, len(orderbook.Asks), len(deltabook.Asks))
+	assert.Equal(t, orderbook.Asks[0].Price, deltabook.Asks[0].Price)
+	assert.Equal(t, orderbook.Asks[1].Price, deltabook.Asks[1].Price)
+	assert.Equal(t, len(orderbook.Asks[0].Orders), len(deltabook.Asks[0].Orders))
+	assert.Equal(t, len(orderbook.Asks[1].Orders), len(deltabook.Asks[1].Orders))
+}
+
 func TestOrderbookPriceSort(t *testing.T) {
 	setup()
 	orderbook.ApplyMessagesToOrderbook(messages)
