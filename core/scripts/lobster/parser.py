@@ -18,11 +18,11 @@ class LobsterMessageParser:
     See LOBSTER_SampleFiles_ReadMe.txt for official documentation
     """
 
-    def __init__(self, start_timestamp: float):
+    def __init__(self, start_timestamp: int):
         self.line_parsers: Tuple[str, Callable] = (
             # Each index corresponds to an index in the line.
             # This maps indexes to object keys and the corresponding function to parse it from a string
-            ('time', lambda x: float(x) * 10**9 + start_timestamp),
+            ('time', lambda x: int(float(x) * 10**9) + start_timestamp),
             ('message_type', lambda x: _lobster_msg_types.get(x, MessageType.IGNORE)),
             ('id', int),
             ('share_quantity', int),

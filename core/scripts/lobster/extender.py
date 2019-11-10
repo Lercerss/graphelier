@@ -1,13 +1,11 @@
 import csv
 import random
-
 from collections import defaultdict, namedtuple
 from datetime import datetime, time, timedelta
 
-from models.order_book import OrderBook
-from models.message import Message, MessageType
 from lobster.parser import LobsterMessageParser
-
+from models.message import Message, MessageType
+from models.order_book import OrderBook
 
 Placement = namedtuple('Placement', ['index', 'message'])
 
@@ -48,10 +46,10 @@ def _mix_by_index(base, mix):
         yield b
 
 
-def weekdays(start: float, n):
+def weekdays(start: int, n):
     current = datetime.fromtimestamp(start / 10 ** 9).date()
     for _ in range(n):
-        yield datetime.combine(current, time()).timestamp() * 10 ** 9
+        yield int(datetime.combine(current, time()).timestamp() * 10 ** 9)
         offset = 3 if current.weekday() == 4 else 1
         current = current + timedelta(days=offset)
 
@@ -147,7 +145,7 @@ def _backfill(initial_messages, n_duplicates):
 
 class Extender:
 
-    def __init__(self, file, start_time: float, n_duplicates: int, initial_top_of_book):
+    def __init__(self, file, start_time: int, n_duplicates: int, initial_top_of_book):
         self.n_duplicates = n_duplicates
         self.initial_top_of_book = _TopOfBook(*initial_top_of_book)
         print('Parsing sample set of messages...')
@@ -157,8 +155,8 @@ class Extender:
         print('Found {} messages in sample.\n'.format(
             len(self.initial_messages)))
 
-        self.time_diff = self.initial_messages[-1].time - \
-            self.initial_messages[0].time
+        self.time_diff = int(self.initial_messages[-1].time -
+                             self.initial_messages[0].time)
 
         print('Backfilling for missing messages in sample...')
         backfilled, self.id_diff = _backfill(
