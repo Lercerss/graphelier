@@ -36,9 +36,9 @@ class OrderBookSnapshot extends Component {
 
         this.state = {
             lastSodOffset: null,
-            selectedDateNano: 0,
-            selectedTimeNano: 0,
-            selectedDateTimeNano: 0,
+            selectedDateNano: BigInt(0),
+            selectedTimeNano: BigInt(0),
+            selectedDateTimeNano: BigInt(0),
             selectedTimeString: 'Select from slider',
             selectedDateString: '',
             expanded: true,
@@ -63,7 +63,7 @@ class OrderBookSnapshot extends Component {
         } else {
             const { selectedTimeNano } = this.state;
             const selectedDateString = event.target.value;
-            const selectedDateNano = parseInt(dateStringToEpoch(`${selectedDateString} 00:00:00`));
+            const selectedDateNano = dateStringToEpoch(`${selectedDateString} 00:00:00`);
             const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano + selectedDateNano);
 
             this.setState(
@@ -85,13 +85,15 @@ class OrderBookSnapshot extends Component {
      * @param value The new time value that represents the nanoseconds between 12 am and the chosen time of day.
      */
     handleChangeTime = (event, value) => {
-        const selectedTimeNano = parseInt(value);
-        const selectedTimeString = nanosecondsToString(selectedTimeNano);
+        if (value) {
+            const selectedTimeNano = BigInt(value);
+            const selectedTimeString = nanosecondsToString(parseInt(value));
 
-        this.setState({
-            selectedTimeNano,
-            selectedTimeString,
-        });
+            this.setState({
+                selectedTimeNano,
+                selectedTimeString,
+            });
+        }
     };
 
     /**
@@ -102,8 +104,8 @@ class OrderBookSnapshot extends Component {
     handleCommitTime = (event, value) => {
         const { selectedDateNano } = this.state;
 
-        const selectedTimeNano = parseInt(value);
-        const selectedTimeString = nanosecondsToString(selectedTimeNano);
+        const selectedTimeNano = BigInt(value);
+        const selectedTimeString = nanosecondsToString(parseInt(value));
         const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano + selectedDateNano);
 
         this.setState(
@@ -123,8 +125,9 @@ class OrderBookSnapshot extends Component {
     handleChangeDateTime = () => {
         const { selectedDateTimeNano, selectedDateNano, selectedTimeNano } = this.state;
 
-        if (selectedTimeNano !== 0 && selectedDateNano !== 0) {
-            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano)
+        // eslint-disable-next-line eqeqeq
+        if (selectedTimeNano != 0 && selectedDateNano != 0) {
+            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano.toString())
                 .then(response => {
                     // eslint-disable-next-line camelcase
                     const { asks, bids, last_sod_offset } = response.data;
@@ -134,7 +137,7 @@ class OrderBookSnapshot extends Component {
                         {
                             listItems,
                             maxQuantity,
-                            lastSodOffset: last_sod_offset,
+                            lastSodOffset: BigInt(last_sod_offset),
                         },
                     );
                 })
@@ -155,12 +158,12 @@ class OrderBookSnapshot extends Component {
 
         this.setState(
             {
-                lastSodOffset: last_sod_offset,
+                lastSodOffset: BigInt(last_sod_offset),
                 selectedDateNano: dateNanoseconds,
                 selectedDateString: epochToDateString(dateNanoseconds),
-                selectedTimeNano: timeNanoseconds,
+                selectedTimeNano: BigInt(timeNanoseconds),
                 selectedTimeString: nanosecondsToString(timeNanoseconds),
-                selectedDateTimeNano: timestamp,
+                selectedDateTimeNano: BigInt(timestamp),
                 listItems: newListItems,
                 maxQuantity: newMaxQuantity,
             },
@@ -194,7 +197,8 @@ class OrderBookSnapshot extends Component {
                 className={classes.container}
             >
                 <div className={classNames(classes.expandRow, classes.flex)}>
-                    {(selectedTimeNano === 0 || selectedDateNano === 0) ? (
+                    {/* eslint-disable-next-line eqeqeq */}
+                    {(selectedTimeNano == 0 || selectedDateNano == 0) ? (
                         <Typography
                             variant={'body1'}
                             className={classNames(classes.pleaseSelectMessage, classes.flex)}
@@ -267,7 +271,7 @@ class OrderBookSnapshot extends Component {
                                     min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am
                                     max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm
                                     step={1}
-                                    value={selectedTimeNano}
+                                    value={Number(selectedTimeNano)}
                                     onChange={this.handleChangeTime}
                                     onChangeCommitted={this.handleCommitTime}
                                 />

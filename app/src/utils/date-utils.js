@@ -10,17 +10,17 @@ import {
 /**
  * @desc Given a utc date string in the format YYYY-MM-DD HH:mm:ssZ, returns epoch time in nanoseconds
  * @param date
- * @returns {string}
+ * @returns {BigInt}
  */
 export const dateStringToEpoch = date => {
     const dateObj = moment.utc(date);
     const nanoDate = new NanoDate(dateObj.valueOf());
-    return nanoDate.getTime();
+    return BigInt(nanoDate.getTime());
 };
 
 /**
  * @desc Given an amount of time in nanoseconds, returns time string in the format HH:mm:ssZ
- * @param nanosecondTimestamp
+ * @param nanosecondTimestamp {Number}
  * @returns {string}
  */
 export const nanosecondsToString = nanosecondTimestamp => {
@@ -42,11 +42,11 @@ export const nanosecondsToString = nanosecondTimestamp => {
 
 /**
  * @desc Given a timestamp in nanoseconds, returns the timestamp converted to UTC
- * @param nanosecondTimestamp
- * @returns {Number}
+ * @param nanosecondTimestamp BigInt
+ * @returns {BigInt}
  */
 export const convertNanosecondsToUTC = nanosecondTimestamp => {
-    const offsetNS = new Date().getTimezoneOffset() * 60 * 10 ** 9;
+    const offsetNS = BigInt(new Date().getTimezoneOffset()) * BigInt(60 * 10 ** 9);
     return nanosecondTimestamp + offsetNS;
 };
 
@@ -57,23 +57,22 @@ export const convertNanosecondsToUTC = nanosecondTimestamp => {
  */
 export const epochToDateString = nanosecondDate => {
     // We only need day precision, so get the date in milliseconds
-    const millisecondDate = nanosecondDate / NANOSECONDS_IN_ONE_MILLISECOND;
-    return moment.utc(millisecondDate).format('YYYY-MM-DD');
+    const millisecondDate = nanosecondDate / BigInt(NANOSECONDS_IN_ONE_MILLISECOND);
+    return moment.utc(Number(millisecondDate)).format('YYYY-MM-DD');
 };
 
 /**
  * @desc Given a nanosecond epoch timestamp, returns an object with date nanoseconds and time nanoseconds
- * @param nanosecondTimestamp
- * @returns {{timeNanoseconds: Number, dateNanoseconds: Number}} The timestamp split into its date nanoseconds and
- * its time nanoseconds
+ * @param nanosecondTimestamp string
+ * @returns {{timeNanoseconds: Number, dateNanoseconds: BigInt}} The timestamp split into its date
+ * nanoseconds and its time in nanoseconds
  */
 export const splitNanosecondEpochTimestamp = nanosecondTimestamp => {
-    let timestamp = nanosecondTimestamp;
-    if (typeof nanosecondTimestamp === 'string') timestamp = parseInt(nanosecondTimestamp);
-    const timeNanoseconds = timestamp % NANOSECONDS_IN_ONE_DAY;
+    const timestamp = BigInt(nanosecondTimestamp);
+    const timeNanoseconds = timestamp % BigInt(NANOSECONDS_IN_ONE_DAY);
     const dateNanoseconds = timestamp - timeNanoseconds;
     return {
-        timeNanoseconds,
+        timeNanoseconds: Number(timeNanoseconds),
         dateNanoseconds,
     };
 };

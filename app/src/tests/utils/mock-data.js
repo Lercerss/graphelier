@@ -1,9 +1,9 @@
 export const DATE_STRING = '2012-06-21';
-export const DATE_VALUE = 1340236800000000000; // 2012-06-21 UTC in epoch nanoseconds
+export const DATE_VALUE = BigInt(1340236800000000000); // 2012-06-21 UTC in epoch nanoseconds
 export const TIME_STRING = '12:00:00.000000000';
-export const TIME_VALUE = 43200000000000; // number of nanoseconds in 12 hours
+export const TIME_VALUE = BigInt(43200000000000); // number of nanoseconds in 12 hours
 export const TIMESTAMP = 1340280000000000000; // 2012-06-21 at 12 pm
-export const LAST_SOD_OFFSET = 3;
+export const LAST_SOD_OFFSET = '3';
 
 export const ORDER_BOOK_FROM_BACKEND = {
     timestamp: TIMESTAMP,
