@@ -57,13 +57,13 @@ class MessageList extends Component {
     /**
      * @desc Helper that checks for existence of a message in the array of messages (from state)
      * that equals the latest lastSodOffset passed in props.
-     * @returns {*|number|never|boolean} returns -1 if not found
+     * @returns {Number} returns -1 if not found
      */
     getPotentialIndexOfLastSodOffsetFromProps = () => {
         const { messages } = this.state;
         const { lastSodOffset } = this.props;
 
-        if (!messages) return false;
+        if (!messages) return -1;
 
         return messages
             .map(message => message.sod_offset)
