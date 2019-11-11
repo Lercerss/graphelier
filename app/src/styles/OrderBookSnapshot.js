@@ -80,4 +80,7 @@ export const Styles = {
         justifyContent: 'space-between',
         marginBottom: '10px',
     },
+    messageListCard: {
+        marginTop: '10px',
+    },
 };

@@ -302,9 +302,8 @@ class OrderBookSnapshot extends Component {
                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                     />
                 </Card>
-                <div style={{ height: `10px` }}> </div>
                 {(lastSodOffset !== null) && (
-                    <Card>
+                    <Card className={classes.messageListCard}>
                         <MessageList
                             lastSodOffset={lastSodOffset}
                         />
