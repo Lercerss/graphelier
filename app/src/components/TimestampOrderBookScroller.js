@@ -48,9 +48,8 @@ class TimestampOrderBookScroller extends Component {
      * @param e
      */
     onKeyUp = e => {
-        const { handleGoToPreviousMessage, handleGoToNextMessage } = this.props;
-        if (e.keyCode === LEFT_ARROW_KEY_CODE) handleGoToPreviousMessage();
-        else if (e.keyCode === RIGHT_ARROW_KEY_CODE) handleGoToNextMessage();
+        if (e.keyCode === LEFT_ARROW_KEY_CODE) this.handleGoToPreviousMessage();
+        else if (e.keyCode === RIGHT_ARROW_KEY_CODE) this.handleGoToNextMessage();
     };
 
     /**
