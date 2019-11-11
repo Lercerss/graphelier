@@ -27,7 +27,7 @@ EOD = 16 * 60 * 60 * 10**9  # 4:00 PM as ns
 
 
 def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book):
-    start_timestamp = start_time.timestamp() * 10**9  # in nanoseconds
+    start_timestamp = int(start_time.timestamp() * 10**9)  # in nanoseconds
     interval = 10 * 10**9  # in nanoseconds
 
     initial_top_of_book = (int(top_of_book[0]), int(top_of_book[1])) \
@@ -37,8 +37,8 @@ def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book
     for day in weekdays(start_timestamp, int(extend[0])):
         order_book = OrderBook(instrument)
         order_book.last_time = day
-        # day is a float, need to convert it to avoid floating point error
-        order_book.last_sod_offset = sod_offset_counter = int(day)
+
+        order_book.last_sod_offset = sod_offset_counter = day
         last_multiple = 1
         message_buffer = []
 
