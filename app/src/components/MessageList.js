@@ -176,10 +176,7 @@ class MessageList extends Component {
 
         return (
             <div className={classes.scrollContainer}>
-                <Box
-                    className={classes.tableHeaderRow}
-                    bgcolor={'primary.main'}
-                >
+                <Box className={classes.tableHeaderRow}>
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
                         <div>{'Timestamp'}</div>
                     </Box>

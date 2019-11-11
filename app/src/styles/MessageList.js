@@ -1,4 +1,4 @@
-import { Colors } from './App';
+import { Colors, LightThemeColors } from './App';
 
 export const Styles = {
     scrollContainer: {
@@ -9,24 +9,20 @@ export const Styles = {
         backgroundColor: Colors.yellow,
         display: 'flex',
         width: '100%',
-        border: '3px',
-        borderColor: Colors.black,
         textAlign: 'center',
     },
     tableDataRow: {
         display: 'flex',
         width: '100%',
-        border: '3px',
-        borderColor: Colors.black,
         textAlign: 'center',
     },
     tableHeaderRow: {
         display: 'flex',
         width: '100%',
-        border: '5px',
         textAlign: 'center',
         paddingTop: 10,
         paddingBottom: 10,
+        backgroundColor: LightThemeColors.palette.primary.main,
     },
     tableColumn: {
         maxWidth: '16.66%',
