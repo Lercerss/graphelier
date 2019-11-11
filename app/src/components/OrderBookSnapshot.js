@@ -18,6 +18,7 @@ import {
     epochToDateString,
     splitNanosecondEpochTimestamp,
     convertNanosecondsToUTC,
+    convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 
@@ -28,6 +29,7 @@ import {
     NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
+import MessageList from './MessageList';
 
 
 class OrderBookSnapshot extends Component {
@@ -147,6 +149,10 @@ class OrderBookSnapshot extends Component {
         }
     };
 
+    /**
+     * @desc handles the updates with deltas once a message is moved by a certain amount
+     * @param deltas
+     */
     handleUpdateWithDeltas = deltas => {
         const { listItems } = this.state;
         const {
@@ -161,8 +167,10 @@ class OrderBookSnapshot extends Component {
                 lastSodOffset: BigInt(last_sod_offset),
                 selectedDateNano: dateNanoseconds,
                 selectedDateString: epochToDateString(dateNanoseconds),
-                selectedTimeNano: BigInt(timeNanoseconds),
-                selectedTimeString: nanosecondsToString(timeNanoseconds),
+                selectedTimeNano: convertNanosecondsUTCToCurrentTimezone(BigInt(timeNanoseconds)),
+                selectedTimeString: nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(
+                    BigInt(timeNanoseconds),
+                ))),
                 selectedDateTimeNano: BigInt(timestamp),
                 listItems: newListItems,
                 maxQuantity: newMaxQuantity,
@@ -242,6 +250,7 @@ class OrderBookSnapshot extends Component {
                                     type={'date'}
                                     value={selectedDateString}
                                     onChange={this.handleChangeDate}
+                                    InputProps={{ inputProps: { max: '2100-01-01' } }}
                                 />
                             </div>
                             <div className={classes.inline}>
@@ -294,6 +303,13 @@ class OrderBookSnapshot extends Component {
                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                     />
                 </Card>
+                {(lastSodOffset !== null) && (
+                    <Card className={classes.messageListCard}>
+                        <MessageList
+                            lastSodOffset={lastSodOffset}
+                        />
+                    </Card>
+                )}
             </Typography>
         );
     }

@@ -58,7 +58,7 @@ func TestFetchMessagesSuccess(t *testing.T) {
 	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 25})
 	assert.Nil(t, err)
 	assert.Equal(t, int64(25), messagePage.PageInfo.NMessages)
-	assert.Equal(t, int64(100), messagePage.PageInfo.SodOffset)
+	assert.Equal(t, int64(125), messagePage.PageInfo.SodOffset)
 	assert.Equal(t, uint64(12), messagePage.Messages[0].OrderID)
 }
 
@@ -86,7 +86,7 @@ func TestFetchMessagesDefaultValues(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(20), messagePage.PageInfo.NMessages)
-	assert.Equal(t, int64(100), messagePage.PageInfo.SodOffset)
+	assert.Equal(t, int64(120), messagePage.PageInfo.SodOffset)
 	assert.Equal(t, uint64(12), messagePage.Messages[0].OrderID)
 }
 
@@ -114,7 +114,7 @@ func TestFetchMessagesNegativeNMessages(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(-25), messagePage.PageInfo.NMessages)
-	assert.Equal(t, int64(100), messagePage.PageInfo.SodOffset)
+	assert.Equal(t, int64(75), messagePage.PageInfo.SodOffset)
 	assert.Equal(t, 2, len(messagePage.Messages))
 	// Checking to see if slice is reversed
 	assert.Equal(t, uint64(13), messagePage.Messages[0].OrderID)

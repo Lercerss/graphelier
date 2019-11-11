@@ -209,8 +209,6 @@ func TestDeltaAskChange(t *testing.T) {
 	orderbook.ApplyMessagesToOrderbook(messages)
 	orderbook.BuildDeltabook(deltabook, offsetMessage, 1)
 
-	assert.Equal(t, uint64(99), deltabook.Timestamp)
-	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Asks))
 	assert.Equal(t, int(2), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[0].Quantity)
@@ -226,8 +224,6 @@ func TestDeltaBidChange(t *testing.T) {
 	orderbook.ApplyMessagesToOrderbook(messages)
 	orderbook.BuildDeltabook(deltabook, offsetMessage, 1)
 
-	assert.Equal(t, uint64(99), deltabook.Timestamp)
-	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Bids))
 	assert.Equal(t, int(2), len(deltabook.Bids[0].Orders))
 	assert.Equal(t, int64(10), deltabook.Bids[0].Orders[0].Quantity)
@@ -243,8 +239,6 @@ func TestEmptyLevel(t *testing.T) {
 	orderbook.ApplyMessagesToOrderbook(messages)
 	orderbook.BuildDeltabook(deltabook, offsetMessage, 1)
 
-	assert.Equal(t, uint64(99), deltabook.Timestamp)
-	assert.Equal(t, uint64(3), deltabook.LastSodOffset)
 	assert.Equal(t, int(1), len(deltabook.Asks))
 	assert.Equal(t, int(0), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, int(0), len(deltabook.Bids))
@@ -258,7 +252,7 @@ func TestApplyDeltaPositiveNumMessages(t *testing.T) {
 	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 26, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 7})
 	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 27, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 8})
 	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 28, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 9})
-	orderbook.ApplyMessagesToDeltabook(deltabook, messages, 2)
+	deltabook = orderbook.ApplyMessagesToDeltabook(messages, 2)
 
 	assert.Equal(t, int(1), len(deltabook.Asks[0].Orders))
 	assert.Equal(t, int(1), len(deltabook.Asks[1].Orders))
@@ -271,13 +265,13 @@ func TestApplyDeltaNegativeNumMessages(t *testing.T) {
 	var messages []*Message
 	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 25, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 6})
 	messages = append(messages, &Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 26, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 7})
+	orderbook.ApplyMessagesToOrderbook(messages)
 	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 27, Price: 100, ShareQuantity: 10, Timestamp: 101, SodOffset: 8})
-	messages = append(messages, &Message{Direction: 1, Instrument: "test", Type: 1, OrderID: 28, Price: 200, ShareQuantity: 10, Timestamp: 101, SodOffset: 9})
-	orderbook.ApplyMessagesToDeltabook(deltabook, messages, -2)
+	deltabook := orderbook.ApplyMessagesToDeltabook(messages, -2)
 
-	assert.Equal(t, int(1), len(deltabook.Asks[0].Orders))
-	assert.Equal(t, int(1), len(deltabook.Asks[1].Orders))
-	assert.Equal(t, int(0), len(deltabook.Bids))
+	assert.Equal(t, 1, len(deltabook.Asks[0].Orders))
+	assert.Equal(t, 1, len(deltabook.Asks[1].Orders))
+	assert.Equal(t, 0, len(deltabook.Bids))
 	clear()
 }
 
@@ -387,7 +381,7 @@ func TestOrderbookPriceSort(t *testing.T) {
 
 func TestDeltaPriceSort(t *testing.T) {
 	setup()
-	orderbook.ApplyMessagesToDeltabook(deltabook, messages, 4)
+	deltabook := orderbook.ApplyMessagesToDeltabook(messages, 4)
 
 	assert.Equal(t, float64(100), deltabook.Asks[0].Price)
 	assert.Equal(t, float64(200), deltabook.Asks[1].Price)

@@ -33,7 +33,10 @@ func FetchMessages(env *Env, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return StatusError{500, err}
 	}
-	messagePage := models.MessagePage{PageInfo: paginator, Messages: messages}
+
+	responsePaginator := models.Paginator{NMessages: intNMessages, SodOffset: paginator.SodOffset + intNMessages}
+	messagePage := models.MessagePage{PageInfo: responsePaginator, Messages: messages}
+
 	if intNMessages < 0 {
 		reverseMessageOrdering(&messagePage)
 	}

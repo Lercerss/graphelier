@@ -165,5 +165,33 @@ export const ORDER_BOOK_LIST_ITEMS = {
         type: 'ask',
         orders: ORDER_BOOK_FROM_BACKEND.asks[0].orders,
     },
+};
 
+export const MESSAGE_LIST = {
+    pageInfo: {
+        nMessages: 30,
+        sod_offset: LAST_SOD_OFFSET,
+    },
+    messages: [
+        {
+            instrument: 'SPY',
+            timestamp: TIMESTAMP,
+            message_type: 1,
+            order_id: 20933587,
+            share_qty: 598,
+            price: 135.66,
+            direction: -1,
+            sod_offset: LAST_SOD_OFFSET,
+        },
+        {
+            instrument: 'SPY',
+            timestamp: TIMESTAMP,
+            message_type: 1,
+            order_id: 20933587,
+            share_qty: 2100,
+            price: 135.66,
+            direction: -1,
+            sod_offset: LAST_SOD_OFFSET,
+        },
+    ],
 };
