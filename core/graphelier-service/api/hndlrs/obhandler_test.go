@@ -98,39 +98,6 @@ func TestFetchOrderbookDeltaBadInput(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestFetchOrderbookDeltaNegativeOffset(t *testing.T) {
-	mockedDB := &mockDBObHndlr{}
-	mockedEnv := &Env{mockedDB}
-	req := httptest.NewRequest("GET", "/delta/test/2/-1", nil)
-	vars := map[string]string{
-		"instrument":   "test",
-		"sod_offset":   "2",
-		"num_messages": "-1",
-	}
-	req = mux.SetURLVars(req, vars)
-	writer := httptest.NewRecorder()
-	mockedDB.On("GetSingleMessage", "test", int64(2))
-	mockedDB.On("GetOrderbook", "test", uint64(100))
-	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{NMessages: 2, SodOffset: 0})
-
-	err := FetchOrderbookDelta(mockedEnv, writer, req)
-	assert.Nil(t, err)
-	resp := writer.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
-	var deltabook models.Orderbook
-	err = json.Unmarshal(body, &deltabook)
-
-	mockedDB.AssertCalled(t, "GetSingleMessage", "test", int64(2))
-	mockedDB.AssertCalled(t, "GetOrderbook", "test", uint64(100))
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{NMessages: 2, SodOffset: 0})
-	assert.Nil(t, err)
-	assert.Equal(t, float64(100), deltabook.Asks[0].Price)
-	assert.Equal(t, int(1), len(deltabook.Asks[0].Orders))
-	assert.Equal(t, uint64(12), deltabook.Asks[0].Orders[0].ID)
-	assert.Equal(t, int64(10), deltabook.Asks[0].Orders[0].Quantity)
-	assert.Equal(t, int(0), len(deltabook.Bids))
-}
-
 func TestFetchOrderbookDeltaBadRequest(t *testing.T) {
 	mockedDB := &mockDBObHndlr{}
 	mockedEnv := &Env{mockedDB}

@@ -244,25 +244,26 @@ func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Messag
 			}
 		}
 	}
-	deltabook.Instrument = orderbook.Instrument
-	deltabook.Timestamp = orderbook.Timestamp
-	if numMessages < 0 {
-		deltabook.LastSodOffset = uint64(int64(orderbook.LastSodOffset) + numMessages)
-	} else {
-		deltabook.LastSodOffset = orderbook.LastSodOffset
-	}
 
 }
 
 // ApplyMessagesToDeltabook : Applies messages to build deltabook while also applying the message to the original orderbook
-func (orderbook *Orderbook) ApplyMessagesToDeltabook(deltabook *Orderbook, messages []*Message, numMessages int64) {
+func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMessages int64) (deltabook *Orderbook) {
+	deltabook = &Orderbook{}
 	for i := int64(0); i < utils.Abs(numMessages); i++ {
 		message := messages[i]
 		if message.OrderID == 0 || message.Type == Ignore {
 			continue
 		}
 		var messageSlice []*Message
-		orderbook.ApplyMessagesToOrderbook(append(messageSlice, message))
+		if numMessages > 0 {
+			orderbook.ApplyMessagesToOrderbook(append(messageSlice, message))
+		}
 		orderbook.BuildDeltabook(deltabook, message, numMessages)
 	}
+	deltabook.Instrument = orderbook.Instrument
+	deltabook.Timestamp = orderbook.Timestamp
+	deltabook.LastSodOffset = orderbook.LastSodOffset
+
+	return
 }

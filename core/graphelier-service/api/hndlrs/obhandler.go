@@ -104,8 +104,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 	postMessages := allMessages[preMessagesSize:]
 	orderbook.ApplyMessagesToOrderbook(preMessages)
 
-	var deltabook = &models.Orderbook{}
-	orderbook.ApplyMessagesToDeltabook(deltabook, postMessages, numMessages)
+	deltabook := orderbook.ApplyMessagesToDeltabook(postMessages, numMessages)
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(deltabook)
