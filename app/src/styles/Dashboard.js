@@ -1,13 +1,11 @@
-import { makeStyles } from '@material-ui/core/styles';
-
 const DRAWER_WIDTH = 240;
 
-export const Styles = makeStyles(theme => ({
+export const styles = theme => ({
     root: {
         display: 'flex',
     },
     toolbar: {
-        paddingRight: 24, // keep right padding when drawer closed
+        paddingRight: 24, // keep right padding when  drawer closed
     },
     toolbarIcon: {
         display: 'flex',
@@ -18,10 +16,11 @@ export const Styles = makeStyles(theme => ({
     },
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
+        transition:
+            theme.transitions.create(['width', 'margin'], {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+            }),
         backgroundColor: `#41aeff !important`,
     },
     appBarShift: {
@@ -39,7 +38,14 @@ export const Styles = makeStyles(theme => ({
         display: 'none',
     },
     title: {
-        flexGrow: 1,
+        display: 'contents',
+        textAlign: 'center',
+        '& a': {
+            padding: '1rem',
+        },
+        '& a:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.08)',
+        },
     },
     drawerPaper: {
         position: 'relative',
@@ -88,4 +94,4 @@ export const Styles = makeStyles(theme => ({
     paddingCopyright: {
         paddingBottom: theme.spacing(1),
     },
-}));
+});

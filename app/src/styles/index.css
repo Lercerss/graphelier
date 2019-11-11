@@ -11,3 +11,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.mainItemsList-active div:first-child{
+  background-color: #41aeff;
+}
+.mainItemsList-removeLink {
+  text-decoration: none;
+  color: black;
+}
