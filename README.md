@@ -8,3 +8,7 @@ Displays detailed exchange order book contents
 docker-compose build
 docker-compose up
 ```
+
+## README
+- [Front-end README](https://github.com/Lercerss/graphelier/blob/master/app/README.md)
+- [Back-end README](https://github.com/Lercerss/graphelier/blob/master/core/README.md)

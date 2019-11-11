@@ -250,6 +250,7 @@ class OrderBookSnapshot extends Component {
                                     type={'date'}
                                     value={selectedDateString}
                                     onChange={this.handleChangeDate}
+                                    InputProps={{ inputProps: { max: '2100-01-01' } }}
                                 />
                             </div>
                             <div className={classes.inline}>
