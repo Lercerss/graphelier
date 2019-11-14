@@ -1,3 +1,5 @@
+import { getOrderBookScrollerHeight } from '../utils/order-book-utils';
+
 export const Styles = {
     container: {
         width: '100%',
@@ -12,7 +14,7 @@ export const Styles = {
     },
     scrollContainer: {
         width: '100%',
-        height: 350,
+        height: getOrderBookScrollerHeight,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'flex-start',

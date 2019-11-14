@@ -1,9 +1,10 @@
 import { Colors, LightThemeColors } from './App';
+import { getMessageListTableHeight } from '../utils/order-book-utils';
 
 export const Styles = {
     scrollContainer: {
-        height: 300,
         width: '100%',
+        height: getMessageListTableHeight,
     },
     currentMessageRow: {
         backgroundColor: Colors.yellow,

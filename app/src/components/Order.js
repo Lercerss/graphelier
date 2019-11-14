@@ -12,7 +12,7 @@ class Order extends Component {
             classes, type, quantity, maxQuantity,
         } = this.props;
         const quantityBoxSize = (quantity / maxQuantity) * 100;
-        const minQuantityTextSize = 1.5;
+        const minQuantityTextSize = 2;
 
         return (
             quantityBoxSize > minQuantityTextSize ? (

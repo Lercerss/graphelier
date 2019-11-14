@@ -162,3 +162,15 @@ export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) =
 export const getMessageDirection = direction => {
     return (direction === 1) ? 'Bid' : 'Ask';
 };
+
+export const getMessageListTableHeight = () => {
+    let height = 0;
+    window.screen.height === 2160 ? height = 800 : height = 350;
+    return height;
+};
+
+export const getOrderBookScrollerHeight = () => {
+    let height = 0;
+    window.screen.height === 2160 ? height = 800 : height = 350;
+    return height;
+};
