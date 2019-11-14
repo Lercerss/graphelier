@@ -132,6 +132,10 @@ class OrderBook:
             or (msg.direction == 1 and
                 msg.price in self.bid_book and msg in self.bid_book[msg.price])
 
+    def is_valid_msg(self, msg: Message):
+        return msg.message_type in (MessageType.NEW_ORDER, MessageType.IGNORE) \
+            or self.has_order(msg)
+
     def __str__(self):
         return '<OrderBook bids={bids} asks={asks} time="{time}">'.format(
             bids='(count={}, best={})'.format(sum(len(l) for l

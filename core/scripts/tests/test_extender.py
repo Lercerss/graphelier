@@ -83,7 +83,7 @@ class ExtenderTest(unittest.TestCase):
             e = Extender(f, start, 1, (1356500, 1356300))
 
             sample_count = 9
-            extended_count = (9 + 7) * 2
+            extended_count = (9 + 4) * 2
 
             ob = OrderBook("SPY")
             for m in e.extend_sample(0, ob):
