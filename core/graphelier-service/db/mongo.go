@@ -18,6 +18,7 @@ type Datastore interface {
 	GetMessagesByTimestamp(instrument string, timestamp uint64) ([]*models.Message, error)
 	GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error)
 	GetSingleMessage(instrument string, sodOffset int64) (*models.Message, error)
+	GetInstruments() ([]string, error)
 }
 
 // Connector : A struct that represents the database
@@ -160,6 +161,23 @@ func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result
 	err = collection.FindOne(context.TODO(), filter, options).Decode(&result)
 	if err != nil {
 		return nil, err
+	}
+
+	return result, nil
+}
+
+// GetInstruments : Returns available instruments
+func (c *Connector) GetInstruments() (result []string, err error) {
+	collection := c.Database("graphelier-db").Collection("orderbooks")
+	filter := bson.D{} // No filter
+
+	res, err := collection.Distinct(context.TODO(), "instrument", filter, options.Distinct())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		result = append(result, r.(string))
 	}
 
 	return result, nil
