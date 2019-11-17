@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
-    Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container,
+    Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, Container, Select, InputLabel,
 } from '@material-ui/core';
 
 import {
@@ -11,12 +11,14 @@ import {
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
+import MenuItem from '@material-ui/core/MenuItem';
 import { mainListItems } from './listItems';
 import { Styles as OBStyles } from '../../styles/OrderBookSnapshot';
 import OrderBookSnapshot from '../OrderBookSnapshot';
 import Home from '../Home';
 import NotFound from '../NotFound';
 import { styles } from '../../styles/Dashboard';
+import OrderBookService from '../../services/OrderBookService';
 
 class Dashboard extends Component {
     constructor(props) {
@@ -24,7 +26,22 @@ class Dashboard extends Component {
 
         this.state = {
             open: false,
+            selectedInstrument: '',
+            instruments: [],
         };
+
+        const { instruments } = this.state;
+        const BEReady = false;
+        if (BEReady) {
+            OrderBookService.getInstrumentsList().then(response => {
+                response.map(value => {
+                    instruments.push(value);
+                });
+            });
+        } else {
+            instruments.push('SPY');
+            instruments.push('AAPL');
+        }
     }
 
     /**
@@ -35,8 +52,16 @@ class Dashboard extends Component {
         this.setState({ open: !open });
     };
 
+    /**
+     * @desc Handles the change in instrument
+     * @param event menu item that triggered change
+     */
+    handleInstrumentChange = event => {
+        this.setState({ selectedInstrument: event.target.value });
+    }
+
     render() {
-        const { open } = this.state;
+        const { open, selectedInstrument, instruments } = this.state;
         const { classes } = this.props;
 
         return (
@@ -93,6 +118,31 @@ class Dashboard extends Component {
                     <main className={classes.content}>
                         <div className={classes.appBarSpacer} />
                         <Container className={classes.container}>
+                            <InputLabel
+                                className={classes.selectInstrumentLabel}
+                                id={'selectInstrumentLabel'}
+                            >
+                                Select Instrument
+                            </InputLabel>
+                            <Select
+                                value={selectedInstrument}
+                                onChange={this.handleInstrumentChange}
+                                className={classes.selectInstrumentInput}
+                            >
+                                <MenuItem value={''}>
+                                    None
+                                </MenuItem>
+                                {
+                                    instruments.map(value => {
+                                        return (
+                                            <MenuItem value={value}>
+                                                {value}
+                                            </MenuItem>
+
+                                        );
+                                    })
+                                }
+                            </Select>
                             <Switch>
                                 <Route
                                     exact
@@ -101,7 +151,11 @@ class Dashboard extends Component {
                                 />
                                 <Route
                                     path={'/orderbook'}
-                                    component={OrderBookSnapshot}
+                                    render={props => (
+                                        <OrderBookSnapshot
+                                            instrument={selectedInstrument}
+                                        />
+                                    )}
                                 />
                                 <Route component={NotFound} />
                             </Switch>

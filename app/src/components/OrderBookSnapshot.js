@@ -24,7 +24,6 @@ import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    SNAPSHOT_INSTRUMENT,
     NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
     NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
@@ -125,11 +124,12 @@ class OrderBookSnapshot extends Component {
      *  change in the date or when the user stops sliding the time Slider
      */
     handleChangeDateTime = () => {
+        const { instrument } = this.props;
         const { selectedDateTimeNano, selectedDateNano, selectedTimeNano } = this.state;
 
         // eslint-disable-next-line eqeqeq
         if (selectedTimeNano != 0 && selectedDateNano != 0) {
-            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano.toString())
+            OrderBookService.getOrderBookPrices(instrument, selectedDateTimeNano.toString())
                 .then(response => {
                     // eslint-disable-next-line camelcase
                     const { asks, bids, last_sod_offset } = response.data;
@@ -187,7 +187,7 @@ class OrderBookSnapshot extends Component {
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, instrument } = this.props;
         const {
             expanded,
             listItems,
@@ -307,6 +307,7 @@ class OrderBookSnapshot extends Component {
                     <Card className={classes.messageListCard}>
                         <MessageList
                             lastSodOffset={lastSodOffset}
+                            instrument={instrument}
                         />
                     </Card>
                 )}

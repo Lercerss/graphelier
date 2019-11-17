@@ -8,4 +8,6 @@ export default class OrderBookService {
 
     static getMessageList = (instrument, sodOffset, nMessages = 20) => httpClient
         .get(`/messages/${instrument}/${sodOffset}?nMessages=${nMessages}`);
+
+    static getInstrumentsList = () => httpClient.get(`/instruments/`);
 }
