@@ -185,6 +185,8 @@ class Extender:
         for m in self.initial_messages:
             m_ = m.copy()
             m_.time += day_diff
+            if not ob_ref.is_valid_msg(m_):
+                continue
             yield from self._yield_n_copies(m_)
 
         prev_loop = 0
@@ -203,8 +205,7 @@ class Extender:
             m.price = m.price + \
                 (prev_diff if m.fake else diff_top_of_book).get(m.direction)
 
-            if m.fake and not ob_ref.has_order(m):
-                # Deleted through handle conflict
+            if not ob_ref.is_valid_msg(m):
                 continue
 
             # Delete all possible conflicts from the book first
