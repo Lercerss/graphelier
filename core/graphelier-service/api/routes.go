@@ -52,4 +52,10 @@ var routes = Routes{
 		"/messages/{instrument}/{sodOffset}",
 		hndlrs.CustomHandler{H: hndlrs.FetchMessages},
 	},
+	Route{
+		"Instruments",
+		"GET",
+		"/instruments/",
+		hndlrs.CustomHandler{H: hndlrs.FetchInstruments},
+	},
 }

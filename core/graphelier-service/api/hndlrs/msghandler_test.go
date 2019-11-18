@@ -18,6 +18,10 @@ type mockDBMsgHndlr struct {
 	mock.Mock
 }
 
+func (db *mockDBMsgHndlr) GetInstruments() (result []string, err error) {
+	return
+}
+
 func (db *mockDBMsgHndlr) GetSingleMessage(instrument string, sodOffset int64) (result *models.Message, err error) {
 	return &models.Message{}, nil
 }
