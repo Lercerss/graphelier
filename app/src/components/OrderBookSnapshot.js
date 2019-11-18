@@ -46,6 +46,13 @@ class OrderBookSnapshot extends Component {
         };
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const { instrument } = this.props;
+        if (prevProps.instrument !== instrument) {
+            this.updateOrderBook();
+        }
+    }
+
     /**
      * @desc Handles the date change for the TextField date picker
      * @param event The event object that caused the call
@@ -124,28 +131,10 @@ class OrderBookSnapshot extends Component {
      *  change in the date or when the user stops sliding the time Slider
      */
     handleChangeDateTime = () => {
-        const { instrument } = this.props;
-        const { selectedDateTimeNano, selectedDateNano, selectedTimeNano } = this.state;
-
+        const { selectedDateNano, selectedTimeNano } = this.state;
         // eslint-disable-next-line eqeqeq
         if (selectedTimeNano != 0 && selectedDateNano != 0) {
-            OrderBookService.getOrderBookPrices(instrument, selectedDateTimeNano.toString())
-                .then(response => {
-                    // eslint-disable-next-line camelcase
-                    const { asks, bids, last_sod_offset } = response.data;
-                    const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
-
-                    this.setState(
-                        {
-                            listItems,
-                            maxQuantity,
-                            lastSodOffset: BigInt(last_sod_offset),
-                        },
-                    );
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            this.updateOrderBook();
         }
     };
 
@@ -185,6 +174,31 @@ class OrderBookSnapshot extends Component {
         const { expanded } = this.state;
         this.setState({ expanded: !expanded });
     };
+
+    /**
+     * @desc Updates the Orderbook with new prices
+     */
+    updateOrderBook = () => {
+        const { instrument } = this.props;
+        const { selectedDateTimeNano } = this.state;
+        OrderBookService.getOrderBookPrices(instrument, selectedDateTimeNano.toString())
+            .then(response => {
+                // eslint-disable-next-line camelcase
+                const { asks, bids, last_sod_offset } = response.data;
+                const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
+
+                this.setState(
+                    {
+                        listItems,
+                        maxQuantity,
+                        lastSodOffset: BigInt(last_sod_offset),
+                    },
+                );
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
 
     render() {
         const { classes, instrument } = this.props;

@@ -14,6 +14,7 @@ code {
 
 .mainItemsList-active div:first-child{
   background-color: #41aeff;
+  color: white;
 }
 .mainItemsList-removeLink {
   text-decoration: none;

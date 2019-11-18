@@ -33,6 +33,7 @@ export const styles = theme => ({
     },
     menuButton: {
         marginRight: 36,
+        color: 'white',
     },
     menuButtonHidden: {
         display: 'none',
@@ -42,6 +43,7 @@ export const styles = theme => ({
         textAlign: 'center',
         '& a': {
             padding: '1rem',
+            color: 'white',
         },
         '& a:hover': {
             backgroundColor: 'rgba(0, 0, 0, 0.08)',
@@ -55,6 +57,11 @@ export const styles = theme => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
         }),
+        '& div': {
+            '& button': {
+                color: 'black',
+            },
+        },
     },
     drawerPaperClose: {
         overflowX: 'hidden',
@@ -99,6 +106,7 @@ export const styles = theme => ({
         marginBottom: theme.spacing(3),
         marginRight: theme.spacing(2),
         display: 'inline',
+        color: 'black',
     },
     selectInstrumentInput: {
         width: '10vh',
