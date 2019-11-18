@@ -1,6 +1,6 @@
 import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
-import { IconButton } from '@material-ui/core';
+import { IconButton, Select } from '@material-ui/core';
 import Dashboard from '../../components/template/Dashboard';
 
 describe('Dashboard functionality', () => {
@@ -22,5 +22,13 @@ describe('Dashboard functionality', () => {
         expect(wrapper.state().open).toBe(true);
         wrapper.find(IconButton).first().simulate('click');
         expect(wrapper.state().open).toBe(false);
+    });
+
+    it('renders a Dashboard component with drawer and simulate selecting instruments', () => {
+        const wrapper = shallow(<Dashboard />);
+
+        expect(wrapper.state().selectedInstrument).toBe('');
+        wrapper.find(Select).simulate('change', { target: { value: 'SPY' } });
+        expect(wrapper.state().selectedInstrument).toBe('SPY');
     });
 });

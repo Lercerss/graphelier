@@ -129,13 +129,13 @@ class Dashboard extends Component {
                                 onChange={this.handleInstrumentChange}
                                 className={classes.selectInstrumentInput}
                             >
-                                <MenuItem value={''}>
-                                    None
-                                </MenuItem>
                                 {
                                     instruments.map(value => {
                                         return (
-                                            <MenuItem value={value}>
+                                            <MenuItem
+                                                key={`menuitem-${value}`}
+                                                value={value}
+                                            >
                                                 {value}
                                             </MenuItem>
 
