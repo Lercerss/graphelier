@@ -31,17 +31,12 @@ class Dashboard extends Component {
         };
 
         const { instruments } = this.state;
-        const BEReady = false;
-        if (BEReady) {
-            OrderBookService.getInstrumentsList().then(response => {
-                response.map(value => {
-                    instruments.push(value);
-                });
+
+        OrderBookService.getInstrumentsList().then(response => {
+            response.map(value => {
+                instruments.push(value);
             });
-        } else {
-            instruments.push('SPY');
-            instruments.push('AAPL');
-        }
+        });
     }
 
     /**
