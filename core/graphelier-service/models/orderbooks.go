@@ -251,13 +251,13 @@ func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Messag
 func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMessages int64) (deltabook *Orderbook) {
 	deltabook = &Orderbook{}
 	for i := int64(0); i < utils.Abs(numMessages); i++ {
-		message := messages[i]
-		if message.OrderID == 0 || message.Type == Ignore {
-			continue
-		}
 		var messageSlice []*Message
+		message := messages[i]
 		if numMessages > 0 {
 			orderbook.ApplyMessagesToOrderbook(append(messageSlice, message))
+		}
+		if message.OrderID == 0 || message.Type == Ignore {
+			continue
 		}
 		orderbook.BuildDeltabook(deltabook, message, numMessages)
 	}
