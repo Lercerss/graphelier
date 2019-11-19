@@ -2,8 +2,8 @@ import { Colors, LightThemeColors } from './App';
 
 export const Styles = {
     scrollContainer: {
-        height: 300,
         width: '100%',
+        height: '35vh',
     },
     currentMessageRow: {
         backgroundColor: Colors.yellow,

@@ -81,6 +81,6 @@ export const Styles = {
         marginBottom: '10px',
     },
     messageListCard: {
-        marginTop: '10px',
+        marginTop: '15px',
     },
 };
