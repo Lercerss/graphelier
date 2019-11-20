@@ -5,4 +5,4 @@ docker-compose_windows.yml
 **/.vs
 
 #Webstorm folder
-.idea/*
+**/.idea

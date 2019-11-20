@@ -29,14 +29,17 @@ class Dashboard extends Component {
             selectedInstrument: '',
             instruments: [],
         };
+    }
 
+    componentDidMount() {
         const { instruments } = this.state;
-
+        const newInstruments = instruments.slice();
         OrderBookService.getInstrumentsList().then(response => {
             response.map(value => {
-                instruments.push(value);
+                newInstruments.push(value);
             });
         });
+        this.setState({ instruments: newInstruments });
     }
 
     /**

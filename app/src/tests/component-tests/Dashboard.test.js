@@ -2,9 +2,16 @@ import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { IconButton, Select } from '@material-ui/core';
 import Dashboard from '../../components/template/Dashboard';
+import OrderBookService from '../../services/OrderBookService';
 
 describe('Dashboard functionality', () => {
     let mount, shallow;
+
+    const getInstrumentsListSpy = jest.spyOn(OrderBookService, 'getInstrumentsList')
+        .mockClear(() => Promise.resolve({ data: ['SPY', 'AAPL', 'MSFT'] })
+            .catch(err => {
+                console.log(err);
+            }));
 
     beforeEach(() => {
         mount = createMount();
@@ -13,6 +20,7 @@ describe('Dashboard functionality', () => {
 
     afterEach(() => {
         mount.cleanUp();
+        getInstrumentsListSpy.mockClear();
     });
 
     it('renders a Dashboard component with drawer and simulate open and close', () => {
@@ -27,6 +35,7 @@ describe('Dashboard functionality', () => {
     it('renders a Dashboard component with drawer and simulate selecting instruments', () => {
         const wrapper = shallow(<Dashboard />);
 
+        expect(getInstrumentsListSpy).toHaveBeenCalledTimes(1);
         expect(wrapper.state().selectedInstrument).toBe('');
         wrapper.find(Select).simulate('change', { target: { value: 'SPY' } });
         expect(wrapper.state().selectedInstrument).toBe('SPY');
