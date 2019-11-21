@@ -93,4 +93,7 @@ export const Styles = theme => ({
     selectInstrumentInput: {
         width: '10vh',
     },
+    graph: {
+        width: '100%',
+    },
 });
