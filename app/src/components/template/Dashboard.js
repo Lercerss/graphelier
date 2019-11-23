@@ -37,7 +37,7 @@ class Dashboard extends Component {
             const newInstruments = instruments.slice();
             response.data.map(value => {
                 newInstruments.push(value);
-            })
+            });
             this.setState({ instruments: newInstruments });
         });
     }
