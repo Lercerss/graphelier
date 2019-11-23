@@ -32,14 +32,14 @@ class Dashboard extends Component {
     }
 
     componentDidMount() {
-        const { instruments } = this.state;
-        const newInstruments = instruments.slice();
         OrderBookService.getInstrumentsList().then(response => {
-            response.map(value => {
+            const { instruments } = this.state;
+            const newInstruments = instruments.slice();
+            response.data.map(value => {
                 newInstruments.push(value);
-            });
+            })
+            this.setState({ instruments: newInstruments });
         });
-        this.setState({ instruments: newInstruments });
     }
 
     /**
