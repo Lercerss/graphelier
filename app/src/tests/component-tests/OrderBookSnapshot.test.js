@@ -1,6 +1,6 @@
 import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
-import { TextField, Slider } from '@material-ui/core';
+import { TextField, Slider, Select } from '@material-ui/core';
 import OrderBookSnapshot from '../../components/OrderBookSnapshot';
 import {
     DATE_STRING,
@@ -14,6 +14,36 @@ import {
 } from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
 import { convertNanosecondsToUTC } from '../../utils/date-utils';
+
+describe('getting and selecting an instrument functionality', () => {
+    let mount, shallow;
+
+    const getInstrumentsListSpy = jest.spyOn(OrderBookService, 'getInstrumentsList')
+        .mockClear(() => Promise.resolve({ data: ['SPY', 'AAPL', 'MSFT'] })
+            .catch(err => {
+                console.log(err);
+            }));
+
+    beforeEach(() => {
+        mount = createMount();
+        shallow = createShallow({ dive: true });
+    });
+
+    afterEach(() => {
+        mount.cleanUp();
+        getInstrumentsListSpy.mockClear();
+    });
+
+    it('renders a OrderBookSnapshot component and simulate selecting instruments', () => {
+        const wrapper = shallow(<OrderBookSnapshot />);
+
+        wrapper.find(Select).first().simulate('click');
+        expect(getInstrumentsListSpy).toHaveBeenCalledTimes(1);
+        expect(wrapper.state().selectedInstrument).toBe('');
+        wrapper.find(Select).simulate('change', { target: { value: 'SPY' } });
+        expect(wrapper.state().selectedInstrument).toBe('SPY');
+    });
+});
 
 describe('date and time picker functionality', () => {
     let mount, shallow;

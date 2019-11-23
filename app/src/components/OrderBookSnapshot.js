@@ -7,7 +7,7 @@ import {
     Slider,
     Collapse,
     IconButton,
-    Card,
+    Card, InputLabel, Select, MenuItem,
 } from '@material-ui/core';
 import classNames from 'classnames';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -30,7 +30,6 @@ import {
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
 
-
 class OrderBookSnapshot extends Component {
     constructor(props) {
         super(props);
@@ -43,14 +42,37 @@ class OrderBookSnapshot extends Component {
             selectedTimeString: 'Select from slider',
             selectedDateString: '',
             expanded: true,
+            selectedInstrument: '',
+            instruments: [],
         };
     }
 
+    componentDidMount() {
+        OrderBookService.getInstrumentsList().then(response => {
+            const { instruments } = this.state;
+            const newInstruments = instruments.slice();
+            response.data.map(value => {
+                newInstruments.push(value);
+            });
+            this.setState({ instruments: newInstruments });
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { instrument } = this.props;
-        if (prevProps.instrument !== instrument) {
+        const { selectedInstrument } = this.state;
+        if (prevState.selectedInstrument !== selectedInstrument) {
             this.updateOrderBook();
         }
+    }
+
+    /**
+     * @desc Handles the change in instrument
+     * @param event menu item that triggered change
+     */
+    handleInstrumentChange = event => {
+        this.setState({ selectedInstrument: event.target.value });
     }
 
     /**
@@ -179,9 +201,8 @@ class OrderBookSnapshot extends Component {
      * @desc Updates the Orderbook with new prices
      */
     updateOrderBook = () => {
-        const { instrument } = this.props;
-        const { selectedDateTimeNano } = this.state;
-        OrderBookService.getOrderBookPrices(instrument, selectedDateTimeNano.toString())
+        const { selectedDateTimeNano, selectedInstrument } = this.state;
+        OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
             .then(response => {
                 // eslint-disable-next-line camelcase
                 const { asks, bids, last_sod_offset } = response.data;
@@ -201,7 +222,7 @@ class OrderBookSnapshot extends Component {
     }
 
     render() {
-        const { classes, instrument } = this.props;
+        const { classes } = this.props;
         const {
             expanded,
             listItems,
@@ -211,6 +232,8 @@ class OrderBookSnapshot extends Component {
             selectedDateString,
             selectedTimeString,
             lastSodOffset,
+            selectedInstrument,
+            instruments,
         } = this.state;
 
         return (
@@ -218,6 +241,31 @@ class OrderBookSnapshot extends Component {
                 component={'div'}
                 className={classes.container}
             >
+                <InputLabel
+                    className={classes.selectInstrumentLabel}
+                    id={'selectInstrumentLabel'}
+                >
+                    Select Instrument
+                </InputLabel>
+                <Select
+                    value={selectedInstrument}
+                    onChange={this.handleInstrumentChange}
+                    className={classes.selectInstrumentInput}
+                >
+                    {
+                        instruments.map(value => {
+                            return (
+                                <MenuItem
+                                    key={`menuitem-${value}`}
+                                    value={value}
+                                >
+                                    {value}
+                                </MenuItem>
+
+                            );
+                        })
+                    }
+                </Select>
                 <div className={classNames(classes.expandRow, classes.flex)}>
                     {/* eslint-disable-next-line eqeqeq */}
                     {(selectedTimeNano == 0 || selectedDateNano == 0) ? (
@@ -321,7 +369,7 @@ class OrderBookSnapshot extends Component {
                     <Card className={classes.messageListCard}>
                         <MessageList
                             lastSodOffset={lastSodOffset}
-                            instrument={instrument}
+                            instrument={selectedInstrument}
                         />
                     </Card>
                 )}

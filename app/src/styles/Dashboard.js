@@ -101,14 +101,4 @@ export const styles = theme => ({
     paddingCopyright: {
         paddingBottom: theme.spacing(1),
     },
-    selectInstrumentLabel: {
-        marginTop: theme.spacing(2),
-        marginBottom: theme.spacing(3),
-        marginRight: theme.spacing(2),
-        display: 'inline',
-        color: 'black',
-    },
-    selectInstrumentInput: {
-        width: '10vh',
-    },
 });
