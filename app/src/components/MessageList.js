@@ -5,7 +5,6 @@ import { Box } from '@material-ui/core';
 import classNames from 'classnames';
 import OrderBookService from '../services/OrderBookService';
 import {
-    SNAPSHOT_INSTRUMENT,
     MESSAGE_LIST_DEFAULT_PAGE_SIZE,
 } from '../constants/Constants';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
@@ -75,13 +74,13 @@ class MessageList extends Component {
      * significantly different from the current one
      */
     fetchInitialMessages = async () => {
-        const { lastSodOffset } = this.props;
+        const { lastSodOffset, instrument } = this.props;
         const nMessages = MESSAGE_LIST_DEFAULT_PAGE_SIZE * 2 + 1;
         const lowerSodOffset = lastSodOffset - BigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1);
 
         try {
             const reverseMessagesResponse = await OrderBookService.getMessageList(
-                SNAPSHOT_INSTRUMENT,
+                instrument,
                 lowerSodOffset.toString(),
                 nMessages,
             );
@@ -104,12 +103,13 @@ class MessageList extends Component {
      */
     handleHitEdge(direction) {
         const { lastSodOffsetTop, lastSodOffsetBottom } = this.state;
+        const { instrument } = this.props;
         // eslint-disable-next-line react/destructuring-assignment
         const existingMessages = this.state.messages;
 
         if (direction === 'top') {
             const nMessages = -MESSAGE_LIST_DEFAULT_PAGE_SIZE;
-            OrderBookService.getMessageList(SNAPSHOT_INSTRUMENT, lastSodOffsetTop.toString(), nMessages)
+            OrderBookService.getMessageList(instrument, lastSodOffsetTop.toString(), nMessages)
                 .then(response => {
                     const { pageInfo, messages } = response.data;
                     this.setState({
@@ -121,7 +121,7 @@ class MessageList extends Component {
                     console.log(err);
                 });
         } else if (direction === 'bottom') {
-            OrderBookService.getMessageList(SNAPSHOT_INSTRUMENT, lastSodOffsetBottom.toString())
+            OrderBookService.getMessageList(instrument, lastSodOffsetBottom.toString())
                 .then(response => {
                     const { pageInfo, messages } = response.data;
                     this.setState({

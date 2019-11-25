@@ -101,7 +101,9 @@ class Dashboard extends Component {
                                 />
                                 <Route
                                     path={'/orderbook'}
-                                    component={OrderBookSnapshot}
+                                    render={props => (
+                                        <OrderBookSnapshot />
+                                    )}
                                 />
                                 <Route component={NotFound} />
                             </Switch>

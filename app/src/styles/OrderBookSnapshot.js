@@ -1,4 +1,4 @@
-export const Styles = {
+export const Styles = theme => ({
     root: {
         backgroundColor: 'transparent',
     },
@@ -83,4 +83,14 @@ export const Styles = {
     messageListCard: {
         marginTop: '15px',
     },
-};
+    selectInstrumentLabel: {
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(3),
+        marginRight: theme.spacing(2),
+        display: 'inline',
+        color: 'black',
+    },
+    selectInstrumentInput: {
+        width: '10vh',
+    },
+});

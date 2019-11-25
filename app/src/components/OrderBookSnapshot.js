@@ -7,7 +7,7 @@ import {
     Slider,
     Collapse,
     IconButton,
-    Card,
+    Card, InputLabel, Select, MenuItem,
 } from '@material-ui/core';
 import classNames from 'classnames';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -24,13 +24,11 @@ import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    SNAPSHOT_INSTRUMENT,
     NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
     NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
-
 
 class OrderBookSnapshot extends Component {
     constructor(props) {
@@ -44,7 +42,37 @@ class OrderBookSnapshot extends Component {
             selectedTimeString: 'Select from slider',
             selectedDateString: '',
             expanded: true,
+            selectedInstrument: '',
+            instruments: [],
         };
+    }
+
+    componentDidMount() {
+        OrderBookService.getInstrumentsList().then(response => {
+            const { instruments } = this.state;
+            const newInstruments = instruments.slice();
+            response.data.map(value => {
+                newInstruments.push(value);
+            });
+            this.setState({ instruments: newInstruments });
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const { selectedInstrument } = this.state;
+        if (prevState.selectedInstrument !== selectedInstrument) {
+            this.updateOrderBook();
+        }
+    }
+
+    /**
+     * @desc Handles the change in instrument
+     * @param event menu item that triggered change
+     */
+    handleInstrumentChange = event => {
+        this.setState({ selectedInstrument: event.target.value });
     }
 
     /**
@@ -125,27 +153,10 @@ class OrderBookSnapshot extends Component {
      *  change in the date or when the user stops sliding the time Slider
      */
     handleChangeDateTime = () => {
-        const { selectedDateTimeNano, selectedDateNano, selectedTimeNano } = this.state;
-
+        const { selectedDateNano, selectedTimeNano } = this.state;
         // eslint-disable-next-line eqeqeq
         if (selectedTimeNano != 0 && selectedDateNano != 0) {
-            OrderBookService.getOrderBookPrices(SNAPSHOT_INSTRUMENT, selectedDateTimeNano.toString())
-                .then(response => {
-                    // eslint-disable-next-line camelcase
-                    const { asks, bids, last_sod_offset } = response.data;
-                    const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
-
-                    this.setState(
-                        {
-                            listItems,
-                            maxQuantity,
-                            lastSodOffset: BigInt(last_sod_offset),
-                        },
-                    );
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            this.updateOrderBook();
         }
     };
 
@@ -186,6 +197,30 @@ class OrderBookSnapshot extends Component {
         this.setState({ expanded: !expanded });
     };
 
+    /**
+     * @desc Updates the Orderbook with new prices
+     */
+    updateOrderBook = () => {
+        const { selectedDateTimeNano, selectedInstrument } = this.state;
+        OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
+            .then(response => {
+                // eslint-disable-next-line camelcase
+                const { asks, bids, last_sod_offset } = response.data;
+                const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
+
+                this.setState(
+                    {
+                        listItems,
+                        maxQuantity,
+                        lastSodOffset: BigInt(last_sod_offset),
+                    },
+                );
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
+
     render() {
         const { classes } = this.props;
         const {
@@ -197,6 +232,8 @@ class OrderBookSnapshot extends Component {
             selectedDateString,
             selectedTimeString,
             lastSodOffset,
+            selectedInstrument,
+            instruments,
         } = this.state;
 
         return (
@@ -204,6 +241,31 @@ class OrderBookSnapshot extends Component {
                 component={'div'}
                 className={classes.container}
             >
+                <InputLabel
+                    className={classes.selectInstrumentLabel}
+                    id={'selectInstrumentLabel'}
+                >
+                    Select Instrument
+                </InputLabel>
+                <Select
+                    value={selectedInstrument}
+                    onChange={this.handleInstrumentChange}
+                    className={classes.selectInstrumentInput}
+                >
+                    {
+                        instruments.map(value => {
+                            return (
+                                <MenuItem
+                                    key={`menuitem-${value}`}
+                                    value={value}
+                                >
+                                    {value}
+                                </MenuItem>
+
+                            );
+                        })
+                    }
+                </Select>
                 <div className={classNames(classes.expandRow, classes.flex)}>
                     {/* eslint-disable-next-line eqeqeq */}
                     {(selectedTimeNano == 0 || selectedDateNano == 0) ? (
@@ -307,6 +369,7 @@ class OrderBookSnapshot extends Component {
                     <Card className={classes.messageListCard}>
                         <MessageList
                             lastSodOffset={lastSodOffset}
+                            instrument={selectedInstrument}
                         />
                     </Card>
                 )}
