@@ -39,6 +39,9 @@ func (db *mockDBMsgHndlr) GetMessagesWithPagination(instrument string, paginator
 	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
 	return messages, nil
 }
+func (db *mockDBMsgHndlr) RefreshCache() (err error) {
+	return
+}
 
 func TestFetchMessagesSuccess(t *testing.T) {
 	mockedDB := &mockDBMsgHndlr{}

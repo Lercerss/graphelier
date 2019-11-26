@@ -36,7 +36,10 @@ class LobsterMessageParser:
         return Message(**kwargs)
 
 
-def parse_top_of_book(ob_file_path: str) -> Tuple[int, int]:
+def parse_top_of_book(ob_file_path: str, top_of_book: Tuple[str, str]) -> Tuple[int, int]:
+    if top_of_book:
+        return (int(top_of_book[0]), int(top_of_book[1]))
+
     line = ''
     with open(ob_file_path, 'r') as f:
         line = f.readline()

@@ -58,4 +58,10 @@ var routes = Routes{
 		"/instruments/",
 		hndlrs.CustomHandler{H: hndlrs.FetchInstruments},
 	},
+	Route{
+		"RefreshCache",
+		"GET",
+		"/_refresh/",
+		hndlrs.CustomHandler{H: hndlrs.RefreshCache},
+	},
 }

@@ -19,11 +19,32 @@ type Datastore interface {
 	GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error)
 	GetSingleMessage(instrument string, sodOffset int64) (*models.Message, error)
 	GetInstruments() ([]string, error)
+	RefreshCache() error
 }
 
 // Connector : A struct that represents the database
 type Connector struct {
 	*mongo.Client
+	cache cache
+}
+
+type cache struct {
+	meta map[string]meta
+}
+
+type meta struct {
+	Instrument string
+	Interval   uint64
+}
+
+// InstrumentNotFoundError : error type for missing instrument in database
+type InstrumentNotFoundError struct {
+	error
+	Instrument string
+}
+
+func (err InstrumentNotFoundError) Error() string {
+	return "Instrument not found: " + err.Instrument
 }
 
 // NewConnection : The database connection
@@ -38,9 +59,15 @@ func NewConnection() (*Connector, error) {
 	if err = client.Ping(context.TODO(), nil); err != nil {
 		return nil, err
 	}
+
+	c := &Connector{client, cache{}}
+	if err = c.RefreshCache(); err != nil {
+		return nil, err
+	}
+
 	log.Println("Connected to MongoDB :)")
 
-	return &Connector{client}, nil
+	return c, nil
 }
 
 // GetOrderbook : Finds the Orderbook of an instrument based on the timestamp requested in the db
@@ -65,8 +92,11 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 
 // GetMessagesByTimestamp : Finds the Message of an instrument based on the timestamp requested
 func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
-	divisor := uint64(10000000000)
-	latestFullSnapshot := timestamp / divisor * divisor
+	instrumentMeta, found := c.cache.meta[instrument]
+	if !found {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	latestFullSnapshot := timestamp / instrumentMeta.Interval * instrumentMeta.Interval
 
 	collection := c.Database("graphelier-db").Collection("messages")
 	filter := bson.D{
@@ -168,17 +198,36 @@ func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result
 
 // GetInstruments : Returns available instruments
 func (c *Connector) GetInstruments() (result []string, err error) {
-	collection := c.Database("graphelier-db").Collection("orderbooks")
-	filter := bson.D{} // No filter
-
-	res, err := collection.Distinct(context.TODO(), "instrument", filter, options.Distinct())
-	if err != nil {
-		return nil, err
-	}
-
-	for _, r := range res {
-		result = append(result, r.(string))
+	for r := range c.cache.meta {
+		result = append(result, r)
 	}
 
 	return result, nil
+}
+
+// RefreshCache : Updates in-memory cache of meta db values
+func (c *Connector) RefreshCache() error {
+	collection := c.Database("graphelier-db").Collection("meta")
+	filter := bson.D{}
+	options := options.Find()
+
+	cursor, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		return err
+	}
+
+	result := make(map[string]meta)
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var m meta
+		err := cursor.Decode(&m)
+		if err != nil {
+			return err
+		}
+
+		result[m.Instrument] = m
+	}
+	c.cache.meta = result
+	return nil
 }
