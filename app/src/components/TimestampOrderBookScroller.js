@@ -11,7 +11,7 @@ import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
 import { getOrderBookListItemsAsArray, listItemsEquals } from '../utils/order-book-utils';
 
-import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE, SNAPSHOT_INSTRUMENT } from '../constants/Constants';
+import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
 
 const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
@@ -85,8 +85,8 @@ class TimestampOrderBookScroller extends Component {
      * @param offset The number of messages to skip forward or backward to
      */
     handleGoToMessageByOffset = offset => {
-        const { lastSodOffset, handleUpdateWithDeltas } = this.props;
-        OrderBookService.getPriceLevelsByMessageOffset(SNAPSHOT_INSTRUMENT, lastSodOffset, offset)
+        const { lastSodOffset, handleUpdateWithDeltas, instrument } = this.props;
+        OrderBookService.getPriceLevelsByMessageOffset(instrument, lastSodOffset, offset)
             .then(response => {
                 handleUpdateWithDeltas(response.data);
             })

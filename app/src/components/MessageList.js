@@ -137,9 +137,9 @@ class MessageList extends Component {
     }
 
     handleOnMessageClick(sodOffset) {
-        const { handleUpdateWithDeltas, lastSodOffset } = this.props;
+        const { handleUpdateWithDeltas, lastSodOffset, instrument } = this.props;
         const currentSodOffset = BigInt(sodOffset) - BigInt(lastSodOffset.toString());
-        OrderBookService.getPriceLevelsByMessageOffset(SNAPSHOT_INSTRUMENT, lastSodOffset, currentSodOffset.toString())
+        OrderBookService.getPriceLevelsByMessageOffset(instrument, lastSodOffset, currentSodOffset.toString())
             .then(response => {
                 handleUpdateWithDeltas(response.data);
             })

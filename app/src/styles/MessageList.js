@@ -20,6 +20,7 @@ export const Styles = {
         display: 'flex',
         width: '100%',
         textAlign: 'center',
+        color: Colors.white,
         paddingTop: 10,
         paddingBottom: 10,
         backgroundColor: LightThemeColors.palette.primary.main,
