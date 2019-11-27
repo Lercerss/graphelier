@@ -6,3 +6,5 @@ docker-compose_windows.yml
 
 #Webstorm folder
 **/.idea
+
+core/scripts/env
