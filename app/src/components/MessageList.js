@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import classNames from 'classnames';
+import Button from '@material-ui/core/Button';
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE,
@@ -135,6 +136,18 @@ class MessageList extends Component {
         }
     }
 
+    handleOnMessageClick(timestamp, sodOffset) {
+        const { handleUpdateWithDeltas, lastSodOffset } = this.props;
+        const currentSodOffset = BigInt(sodOffset) - BigInt(lastSodOffset.toString());
+        OrderBookService.getPriceLevelsByMessageOffset(SNAPSHOT_INSTRUMENT, timestamp, currentSodOffset.toString())
+            .then(response => {
+                handleUpdateWithDeltas(response.data);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
+
     /**
      * @desc Renders every row of the message list table. every row corresponds to a message
      * @returns {*}
@@ -152,11 +165,12 @@ class MessageList extends Component {
             const time = nanosecondsToString(timeNanoseconds);
 
             return (
-                <Box
+                <Button
                     key={`${sod_offset} ${timestamp}`}
                     className={lastSodOffset.toString() === sod_offset
                         ? classes.currentMessageRow
                         : classes.tableDataRow}
+                    onClick={() => { this.handleOnMessageClick(timestamp, sod_offset); }}
                 >
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
                         {`${date} ${time}`}
@@ -166,7 +180,7 @@ class MessageList extends Component {
                     <Box className={classes.tableColumn}>{share_qty}</Box>
                     <Box className={classes.tableColumn}>{roundNumber(price, 2)}</Box>
                     <Box className={classes.tableColumn}>{getMessageDirection(direction)}</Box>
-                </Box>
+                </Button>
             );
         });
     }

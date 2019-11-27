@@ -370,6 +370,7 @@ class OrderBookSnapshot extends Component {
                         <MessageList
                             lastSodOffset={lastSodOffset}
                             instrument={selectedInstrument}
+                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                         />
                     </Card>
                 )}
