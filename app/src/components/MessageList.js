@@ -136,10 +136,10 @@ class MessageList extends Component {
         }
     }
 
-    handleOnMessageClick(timestamp, sodOffset) {
+    handleOnMessageClick(sodOffset) {
         const { handleUpdateWithDeltas, lastSodOffset } = this.props;
         const currentSodOffset = BigInt(sodOffset) - BigInt(lastSodOffset.toString());
-        OrderBookService.getPriceLevelsByMessageOffset(SNAPSHOT_INSTRUMENT, timestamp, currentSodOffset.toString())
+        OrderBookService.getPriceLevelsByMessageOffset(SNAPSHOT_INSTRUMENT, lastSodOffset, currentSodOffset.toString())
             .then(response => {
                 handleUpdateWithDeltas(response.data);
             })
@@ -170,7 +170,7 @@ class MessageList extends Component {
                     className={lastSodOffset.toString() === sod_offset
                         ? classes.currentMessageRow
                         : classes.tableDataRow}
-                    onClick={() => { this.handleOnMessageClick(timestamp, sod_offset); }}
+                    onClick={() => { this.handleOnMessageClick(sod_offset); }}
                 >
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
                         {`${date} ${time}`}
