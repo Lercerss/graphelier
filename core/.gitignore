@@ -12,6 +12,7 @@ tmp/
 **/venv/
 **/__pycache__/
 **/.vscode/
+**/env
 
 # data
 *.csv*

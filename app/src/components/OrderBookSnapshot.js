@@ -363,6 +363,7 @@ class OrderBookSnapshot extends Component {
                         lastSodOffset={lastSodOffset}
                         timeOrDateIsNotSet={selectedTimeNano === 0 || selectedDateNano === 0}
                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                        instrument={selectedInstrument}
                     />
                 </Card>
                 {(lastSodOffset !== null) && (
@@ -370,6 +371,7 @@ class OrderBookSnapshot extends Component {
                         <MessageList
                             lastSodOffset={lastSodOffset}
                             instrument={selectedInstrument}
+                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                         />
                     </Card>
                 )}
