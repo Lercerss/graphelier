@@ -12,7 +12,11 @@ import { Styles } from '../styles/MessageList';
 import { roundNumber } from '../utils/number-utils';
 import { getMessageDirection } from '../utils/order-book-utils';
 import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
-import { nanosecondsToString, splitNanosecondEpochTimestamp, epochToDateString } from '../utils/date-utils';
+import {
+    nanosecondsToString,
+    splitNanosecondEpochTimestamp,
+    convertNanosecondsUTCToCurrentTimezone,
+} from '../utils/date-utils';
 
 class MessageList extends Component {
     constructor(props) {
@@ -147,9 +151,8 @@ class MessageList extends Component {
                 timestamp, message_type, order_id, share_qty, price, direction, sod_offset,
             } = message;
 
-            const { timeNanoseconds, dateNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
-            const date = epochToDateString(dateNanoseconds);
-            const time = nanosecondsToString(timeNanoseconds);
+            const { timeNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
+            const time = nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(BigInt(timeNanoseconds))));
 
             return (
                 <Box
@@ -159,7 +162,7 @@ class MessageList extends Component {
                         : classes.tableDataRow}
                 >
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
-                        {`${date} ${time}`}
+                        {time}
                     </Box>
                     <Box className={classes.tableColumn}>{MESSAGE_TYPE_ENUM[message_type].name}</Box>
                     <Box className={classes.tableColumn}>{order_id}</Box>

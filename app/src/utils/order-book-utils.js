@@ -84,6 +84,7 @@ export const listItemsEquals = (listItemsObject1, listItemsObject2) => {
         if (listItem) {
             const siblingListItem = listItemsObject2[listItem.price];
             const { orders } = listItem;
+            if (!siblingListItem) return false;
             const siblingOrders = siblingListItem.orders;
 
             return (
