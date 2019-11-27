@@ -5,7 +5,7 @@ from datetime import datetime
 from lobster.extender import Extender, weekdays, TZ
 from lobster.parser import parse_top_of_book
 from models.order_book import OrderBook
-from mongo_db.db_connector import save_messages, save_order_book, check_interval
+from mongo_db.db_connector import save_messages, save_order_book, check_interval, upsert_order_book
 
 parser = argparse.ArgumentParser(
     description='Import dataset into mongodb', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -69,6 +69,7 @@ class _Loader:
         self.sod_offset_counter += 1
 
     def load_single_day(self, day):
+        """Loads messages for a single day"""
         self._new_book(day)
 
         self.last_multiple = 1
@@ -97,12 +98,25 @@ class _Loader:
 
 
 def load(**kwargs):
-    """Loads the given messages file into the database. """
+    """Loads the given messages file into the database.
+    Args:
+        message_file: File object containing sample messages as csv
+        ob_file_path: optional path to the order book csv data
+        top_of_book: optional values for the best bid and ask before the sample
+        interval: number of nanoseconds between order book snapshots
+        instrument: string representing the name of the instrument
+        duplicate: number of times to duplicate messages
+        extend: number of days to extend the sample over
+        start_time: datetime representing the first day of the sample
+
+    Note: at least one of `top_of_book` or `ob_file_path` must be provided
+    """
     start_time = kwargs['start_time'].replace(tzinfo=TZ)
     start_timestamp = int(start_time.timestamp() * 10**9)  # in nanoseconds
 
     instrument = kwargs['instrument']
     interval = check_interval(kwargs['interval'], instrument)
+    upsert_order_book(OrderBook(instrument))
 
     initial_top_of_book = parse_top_of_book(
         kwargs['ob_file_path'], kwargs['top_of_book'])
@@ -123,7 +137,7 @@ def main():
             ob_file_path = input(
                 'Please provide the path to the orderbook file: ')
 
-    load(**args.__dict__)
+    load(**args.__dict__, ob_file_path=ob_file_path)
 
 
 if __name__ == '__main__':

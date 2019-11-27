@@ -61,7 +61,7 @@ var routes = Routes{
 	Route{
 		"RefreshCache",
 		"GET",
-		"/_refresh/",
+		"/_refresh_cache/",
 		hndlrs.CustomHandler{H: hndlrs.RefreshCache},
 	},
 }

@@ -128,6 +128,5 @@ func RefreshCache(env *Env, w http.ResponseWriter, r *http.Request) error {
 		return StatusError{500, err}
 	}
 
-	w.WriteHeader(http.StatusOK)
 	return nil
 }
