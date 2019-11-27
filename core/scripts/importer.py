@@ -2,7 +2,7 @@ import argparse
 import os
 from datetime import datetime
 
-from lobster.extender import Extender, weekdays
+from lobster.extender import Extender, weekdays, TZ
 from lobster.parser import parse_top_of_book
 from models.order_book import OrderBook
 from mongo_db.db_connector import save_messages, save_order_book
@@ -27,6 +27,7 @@ EOD = 16 * 60 * 60 * 10**9  # 4:00 PM as ns
 
 
 def load(message_file, ob_file_path, start_time, instrument, extend, top_of_book):
+    start_time = start_time.replace(tzinfo=TZ)
     start_timestamp = int(start_time.timestamp() * 10**9)  # in nanoseconds
     interval = 10 * 10**9  # in nanoseconds
 

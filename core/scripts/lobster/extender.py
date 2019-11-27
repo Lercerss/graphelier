@@ -1,7 +1,7 @@
 import csv
 import random
 from collections import defaultdict, namedtuple
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 
 from lobster.parser import LobsterMessageParser
 from models.message import Message, MessageType
@@ -9,6 +9,7 @@ from models.order_book import OrderBook
 
 Placement = namedtuple('Placement', ['index', 'message'])
 
+TZ = timezone(timedelta(hours=-4)) # EST
 
 class _TopOfBook:
     def __init__(self, ask, bid):
@@ -47,9 +48,9 @@ def _mix_by_index(base, mix):
 
 
 def weekdays(start: int, n):
-    current = datetime.fromtimestamp(start / 10 ** 9).date()
+    current = datetime.fromtimestamp(start / 10 ** 9, tz=TZ).date()
     for _ in range(n):
-        yield int(datetime.combine(current, time()).timestamp() * 10 ** 9)
+        yield int(datetime.combine(current, time(), tzinfo=TZ).timestamp() * 10 ** 9)
         offset = 3 if current.weekday() == 4 else 1
         current = current + timedelta(days=offset)
 
