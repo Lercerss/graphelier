@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
+import bigInt from 'big-integer';
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE,
@@ -25,8 +26,8 @@ class MessageList extends Component {
 
         this.state = {
             messages: [],
-            lastSodOffsetTop: BigInt(0),
-            lastSodOffsetBottom: BigInt(0),
+            lastSodOffsetTop: bigInt(0),
+            lastSodOffsetBottom: bigInt(0),
         };
     }
 
@@ -81,7 +82,7 @@ class MessageList extends Component {
     fetchInitialMessages = async () => {
         const { lastSodOffset, instrument } = this.props;
         const nMessages = MESSAGE_LIST_DEFAULT_PAGE_SIZE * 2 + 1;
-        const lowerSodOffset = lastSodOffset - BigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1);
+        const lowerSodOffset = lastSodOffset - bigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1);
 
         try {
             const reverseMessagesResponse = await OrderBookService.getMessageList(
@@ -95,7 +96,7 @@ class MessageList extends Component {
             this.setState({
                 messages,
                 lastSodOffsetTop: lowerSodOffset,
-                lastSodOffsetBottom: BigInt(pageInfo.sod_offset),
+                lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
             });
         } catch (e) {
             console.log(e);
@@ -119,7 +120,7 @@ class MessageList extends Component {
                     const { pageInfo, messages } = response.data;
                     this.setState({
                         messages: messages ? messages.concat(existingMessages) : existingMessages,
-                        lastSodOffsetTop: BigInt(pageInfo.sod_offset),
+                        lastSodOffsetTop: bigInt(pageInfo.sod_offset),
                     });
                 })
                 .catch(err => {
@@ -131,7 +132,7 @@ class MessageList extends Component {
                     const { pageInfo, messages } = response.data;
                     this.setState({
                         messages: messages ? existingMessages.concat(messages) : existingMessages,
-                        lastSodOffsetBottom: BigInt(pageInfo.sod_offset),
+                        lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
                     });
                 })
                 .catch(err => {
@@ -142,7 +143,7 @@ class MessageList extends Component {
 
     handleOnMessageClick(sodOffset) {
         const { handleUpdateWithDeltas, lastSodOffset, instrument } = this.props;
-        const currentSodOffset = BigInt(sodOffset) - BigInt(lastSodOffset.toString());
+        const currentSodOffset = bigInt(sodOffset) - bigInt(lastSodOffset.toString());
         OrderBookService.getPriceLevelsByMessageOffset(instrument, lastSodOffset, currentSodOffset.toString())
             .then(response => {
                 handleUpdateWithDeltas(response.data);
