@@ -39,8 +39,5 @@
         "react/static-property-placement": "off",
         "react/prefer-stateless-function": "off"
     },
-    "plugins": ["react"],
-    "globals": {
-        "BigInt": true
-    }
+    "plugins": ["react"]
 }
