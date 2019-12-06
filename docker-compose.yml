@@ -3,7 +3,7 @@ services:
   graphelier-app:
     build:
       context: ./app
-      target: dev
+      target: prod
     ports:
       - "3000:3000"
     depends_on:

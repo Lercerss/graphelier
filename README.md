@@ -9,6 +9,14 @@ docker-compose build
 docker-compose up
 ```
 
+## Running the Application in a Production Environment
+
+```sh
+docker-compose -f docker-compose.yml build
+docker-compose -f docker-compose.yml up
+```
+
 ## README
-- [Front-end README](https://github.com/Lercerss/graphelier/blob/master/app/README.md)
-- [Back-end README](https://github.com/Lercerss/graphelier/blob/master/core/README.md)
+
+-   [Front-end README](https://github.com/Lercerss/graphelier/blob/master/app/README.md)
+-   [Back-end README](https://github.com/Lercerss/graphelier/blob/master/core/README.md)
