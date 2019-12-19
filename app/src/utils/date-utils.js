@@ -7,6 +7,8 @@ import {
     NANOSECONDS_IN_ONE_MILLISECOND,
 } from '../constants/Constants';
 
+const EDT_TIMEZONE_OFFSET_IN_MINUTES = 240;
+
 /**
  * @desc Given a utc date string in the format YYYY-MM-DD HH:mm:ssZ, returns epoch time in nanoseconds
  * @param date
@@ -46,7 +48,7 @@ export const nanosecondsToString = nanosecondTimestamp => {
  * @returns {BigInt}
  */
 export const convertNanosecondsToUTC = nanosecondTimestamp => {
-    const offsetNS = BigInt(new Date().getTimezoneOffset()) * BigInt(60 * 10 ** 9);
+    const offsetNS = BigInt(EDT_TIMEZONE_OFFSET_IN_MINUTES) * BigInt(60 * 10 ** 9);
     return nanosecondTimestamp + offsetNS;
 };
 
@@ -56,7 +58,7 @@ export const convertNanosecondsToUTC = nanosecondTimestamp => {
  * @returns {BigInt}
  */
 export const convertNanosecondsUTCToCurrentTimezone = nanosecondTimestamp => {
-    const offsetNS = BigInt(new Date().getTimezoneOffset()) * BigInt(60 * 10 ** 9);
+    const offsetNS = BigInt(EDT_TIMEZONE_OFFSET_IN_MINUTES) * BigInt(60 * 10 ** 9);
     return nanosecondTimestamp - offsetNS;
 };
 
