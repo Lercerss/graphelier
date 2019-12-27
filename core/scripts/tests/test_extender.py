@@ -6,13 +6,13 @@ from datetime import datetime
 from models.message import Message, MessageType
 from models.order_book import OrderBook
 from lobster.extender import (
-    weekdays, Placement, Extender,
+    weekdays, Placement, Extender, TZ,
     _initial_qty_for_messages, _mix_by_index, _unfilled_qty_for_messages
 )
 
 
-def _datetime_ts(*args):
-    return datetime(*args).timestamp() * 10**9
+def _datetime_ts(*args, **kwargs):
+    return datetime(*args, **kwargs).timestamp() * 10**9
 
 
 class ExtenderTest(unittest.TestCase):
@@ -27,15 +27,15 @@ class ExtenderTest(unittest.TestCase):
 
     def test_weekdays(self):
 
-        ts = _datetime_ts(2019, 10, 24, 0, 0, 0, 1)
+        ts = _datetime_ts(2019, 10, 24, 0, 0, 0, 1, tzinfo=TZ)
         w = weekdays(ts, 4)
 
         self.assertEqual(ts - 10**3, next(w))
-        friday = _datetime_ts(2019, 10, 25)
+        friday = _datetime_ts(2019, 10, 25, tzinfo=TZ)
         self.assertEqual(friday, next(w))
-        monday = _datetime_ts(2019, 10, 28)
+        monday = _datetime_ts(2019, 10, 28, tzinfo=TZ)
         self.assertEqual(monday, next(w))
-        tuesday = _datetime_ts(2019, 10, 29)
+        tuesday = _datetime_ts(2019, 10, 29, tzinfo=TZ)
         self.assertEqual(tuesday, next(w))
         with self.assertRaises(StopIteration):
             next(w)
