@@ -175,7 +175,7 @@ class Extender:
                 m_copy.id += i * self.id_diff
             yield m_copy
 
-    def handle_conflicts(self, conflicts, msg):
+    def _handle_conflicts(self, conflicts, msg):
         return [
             Message(msg.time, MessageType.DELETE, order.id, order.qty,
                     order.price, order.direction)
@@ -210,5 +210,5 @@ class Extender:
                 continue
 
             # Delete all possible conflicts from the book first
-            yield from self.handle_conflicts(ob_ref.conflicts(m), m)
+            yield from self._handle_conflicts(ob_ref.conflicts(m), m)
             yield from self._yield_n_copies(m)

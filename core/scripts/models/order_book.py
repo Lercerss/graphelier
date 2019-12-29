@@ -22,7 +22,7 @@ class OrderBook:
         self.bid_book: Dict[int, List[Order]] = defaultdict(list)
         self.ask_book: Dict[int, List[Order]] = defaultdict(list)
         self.bid = 0
-        self.ask = float('inf')
+        self.ask = 0
         self.id_map: Dict[int, Order] = {}
         self.last_time = 0
         self.msg_handlers = {
@@ -38,10 +38,10 @@ class OrderBook:
         o = Order(msg.id, msg.share_quantity, msg.price, msg.direction)
         if msg.direction == -1:
             self.ask_book[msg.price].append(o)
-            self.ask = min(self.ask, msg.price)
+            self.ask = min(self.ask_book.keys())
         elif msg.direction == 1:
             self.bid_book[msg.price].append(o)
-            self.bid = max(self.bid, msg.price)
+            self.bid = max(self.bid_book.keys())
         else:
             return
 
@@ -127,14 +127,16 @@ class OrderBook:
         return ret
 
     def has_order(self, msg: Message):
+        order = Order(msg.id, msg.share_quantity, msg.price, msg.direction)
         return (msg.direction == -1 and
-                msg.price in self.ask_book and msg in self.ask_book[msg.price]) \
+                msg.price in self.ask_book and order in self.ask_book[msg.price]) \
             or (msg.direction == 1 and
-                msg.price in self.bid_book and msg in self.bid_book[msg.price])
+                msg.price in self.bid_book and order in self.bid_book[msg.price])
 
     def is_valid_msg(self, msg: Message):
         return msg.message_type in (MessageType.NEW_ORDER, MessageType.IGNORE) \
-            or self.has_order(msg)
+            or self.has_order(msg) \
+            or msg.id == 0 and msg.message_type == MessageType.EXECUTE
 
     def __str__(self):
         return '<OrderBook bids={bids} asks={asks} time="{time}">'.format(
