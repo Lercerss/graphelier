@@ -1,16 +1,24 @@
-import React, { Component } from 'react';
+import * as React from 'react';
 import { connect } from 'react-redux';
-import { withStyles, MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import {
+    withStyles, MuiThemeProvider, createMuiTheme, createStyles, WithStyles,
+} from '@material-ui/core/styles';
 
 
+import { Dispatch } from 'redux';
 import { Styles, LightThemeColors } from './styles/App';
 
 import { saveReactAppName } from './actions/actions';
 import Dashboard from './components/template/Dashboard';
 
 const lightTheme = createMuiTheme(LightThemeColors);
+const styles = createStyles(Styles);
 
-class App extends Component {
+interface Props extends WithStyles<typeof styles>{
+    onAppMounted: Function,
+}
+
+class App extends React.Component<Props> {
     componentDidMount() {
         const { onAppMounted } = this.props;
         onAppMounted('graphelier');
@@ -27,8 +35,8 @@ class App extends Component {
 
 const mapStateToProps = () => ({});
 
-const mapDispatchToProps = dispatch => ({
-    onAppMounted: name => dispatch(saveReactAppName(name)),
+const mapDispatchToProps = (dispatch : Dispatch) => ({
+    onAppMounted: (name : string) => dispatch(saveReactAppName(name)),
 });
 
-export default withStyles(Styles)(connect(mapStateToProps, mapDispatchToProps)(App));
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(App));
