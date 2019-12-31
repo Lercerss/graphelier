@@ -15,7 +15,7 @@ const EDT_TIMEZONE_OFFSET_IN_MINUTES = 240;
  * @param date
  * @returns {bigInt}
  */
-export const dateStringToEpoch = date => {
+export const dateStringToEpoch = (date: string) => {
     const dateObj = moment.utc(date);
     const nanoDate = new NanoDate(dateObj.valueOf());
     return bigInt(nanoDate.getTime());
@@ -26,7 +26,7 @@ export const dateStringToEpoch = date => {
  * @param nanosecondTimestamp {Number}
  * @returns {string}
  */
-export const nanosecondsToString = nanosecondTimestamp => {
+export const nanosecondsToString = (nanosecondTimestamp: number) => {
     const nanoseconds = Math.floor(nanosecondTimestamp % NANOSECONDS_IN_ONE_SECOND);
     const seconds = Math.floor((nanosecondTimestamp / NANOSECONDS_IN_ONE_SECOND) % 60);
     const minutes = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60)) % 60);
@@ -68,7 +68,7 @@ export const convertNanosecondsUTCToCurrentTimezone = nanosecondTimestamp => {
  * @param nanosecondDate {bigInt}
  * @returns {string}
  */
-export const epochToDateString = nanosecondDate => {
+export const epochToDateString = (nanosecondDate: bigint) => {
     // We only need day precision, so get the date in milliseconds
     const millisecondDate = nanosecondDate.over(bigInt(NANOSECONDS_IN_ONE_MILLISECOND));
     return moment.utc(Number(millisecondDate)).format('YYYY-MM-DD');

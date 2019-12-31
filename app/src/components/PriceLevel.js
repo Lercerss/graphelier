@@ -8,6 +8,7 @@ import { Styles } from '../styles/PriceLevel';
 import Order from './Order';
 import { ordersEquals } from '../utils/order-book-utils';
 import { roundNumber } from '../utils/number-utils';
+import { TransactionType } from '../models/OrderBook';
 
 class PriceLevel extends Component {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -23,7 +24,7 @@ class PriceLevel extends Component {
         const formattedPrice = roundNumber(price, 2);
 
         return (
-            <Box className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
+            <Box className={classNames(classes.row, type === TransactionType.Bid ? classes.bid : classes.ask)}>
                 <span className={classes.price}>{formattedPrice}</span>
                 <Box className={classes.quantitiesBox}>
                     {orders.map((order, index) => (

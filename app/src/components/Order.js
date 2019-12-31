@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { Typography, Box, Tooltip } from '@material-ui/core';
 import Zoom from '@material-ui/core/Zoom';
 import { Styles } from '../styles/Order';
+import { TransactionType } from '../models/OrderBook';
 
 class Order extends Component {
     render() {
@@ -17,7 +18,7 @@ class Order extends Component {
         return (
             quantityBoxSize > minQuantityTextSize ? (
                 <Box
-                    className={classNames(classes.rectangle, type === 'bid' ? classes.bid : classes.ask)}
+                    className={classNames(classes.rectangle, type === TransactionType.Bid ? classes.bid : classes.ask)}
                     style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}
                 >
                     <Typography className={classes.text}>{quantity}</Typography>
@@ -31,7 +32,7 @@ class Order extends Component {
                 >
                     <span
                         className={`${classes.quantity} ${classNames(
-                            classes.rectangle, type === 'bid' ? classes.bid : classes.ask,
+                            classes.rectangle, type === TransactionType.Bid ? classes.bid : classes.ask,
                         )}`}
                         style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}
                     />

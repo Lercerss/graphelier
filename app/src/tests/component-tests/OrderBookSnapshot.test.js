@@ -14,6 +14,7 @@ import {
 } from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
 import { convertNanosecondsToUTC } from '../../utils/date-utils';
+import { TransactionType } from '../../models/OrderBook';
 
 describe('getting and selecting an instrument functionality', () => {
     let mount, shallow;
@@ -151,7 +152,7 @@ describe('updating price level by message offset functionality', () => {
             .toEqual({
                 price: 135.66,
                 isMiddle: false,
-                type: 'ask',
+                type: TransactionType.Ask,
                 orders: MESSAGE_DELTAS_FROM_BACKEND_MODIFY.asks[0].orders,
             });
 
@@ -180,7 +181,7 @@ describe('updating price level by message offset functionality', () => {
             .toEqual({
                 price: 135.68,
                 isMiddle: false,
-                type: 'ask',
+                type: TransactionType.Ask,
                 orders: MESSAGE_DELTAS_FROM_BACKEND_ADD.asks[0].orders,
             });
     });

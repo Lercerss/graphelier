@@ -1,10 +1,14 @@
+import {
+    Ask, Bid, ListItems, Order, TransactionType,
+} from '../models/OrderBook';
+
 /**
  * @desc creates data structure for orderbook with asks on top and bids on bottom
  * given data from the back-end
- * @param asks
- * @param bids
+ * @param asks {Array<Ask>}
+ * @param bids {Array<Bid>}
  */
-export const processOrderBookFromScratch = (asks, bids) => {
+export const processOrderBookFromScratch = (asks: Array<Ask>, bids: Array<Bid>) => {
     const listItems = {};
     let firstBid = 0;
     let maxQuantity = 0;
@@ -14,7 +18,7 @@ export const processOrderBookFromScratch = (asks, bids) => {
 
         listItems[asks[i].price] = {
             ...asks[i],
-            type: 'ask',
+            type: TransactionType.Ask,
             isMiddle: false,
         };
 
@@ -29,7 +33,7 @@ export const processOrderBookFromScratch = (asks, bids) => {
 
         listItems[bid.price] = {
             ...bid,
-            type: 'bid',
+            type: TransactionType.Bid,
             isMiddle: firstBid++ === 0,
         };
 
@@ -44,22 +48,21 @@ export const processOrderBookFromScratch = (asks, bids) => {
 
 
 /**
- * @desc Given the orderBook list items stored as an object in the redux store, return
- * a render-friendly array
- * @param listItemsObject
+ * @desc Given the orderBook list items stored as an object, returns a render-friendly array
+ * @param listItemsObject {ListItems}
  * @returns {any[]}
  */
-export const getOrderBookListItemsAsArray = listItemsObject => {
+export const getOrderBookListItemsAsArray = (listItemsObject: ListItems) => {
     return Object.values(listItemsObject).sort((listItem1, listItem2) => listItem2.price - listItem1.price);
 };
 
 
 /**
  * @desc Checks whether two arrays are the same in terms of orders
- * @param ordersArray1
- * @param ordersArray2
+ * @param ordersArray1 Array<Order>
+ * @param ordersArray2 Array<Order>
  */
-export const ordersEquals = (ordersArray1, ordersArray2) => {
+export const ordersEquals = (ordersArray1: Array<Order>, ordersArray2: Array<Order>) => {
     if (ordersArray1.length !== ordersArray2.length) return false;
 
     return ordersArray1.every((order, index) => {
@@ -69,12 +72,11 @@ export const ordersEquals = (ordersArray1, ordersArray2) => {
 
 
 /**
- * @desc Give the orderBook list items stored as an object in the redux store, determines whether
- * or not the contents are the same
- * @param listItemsObject1 {}
- * @param listItemsObject2 {}
+ * @desc Given the orderBook list items stored as an object, determines whether the contents are the same
+ * @param listItemsObject1 {ListItems}
+ * @param listItemsObject2 {ListItems}
  */
-export const listItemsEquals = (listItemsObject1, listItemsObject2) => {
+export const listItemsEquals = (listItemsObject1: ListItems, listItemsObject2: ListItems) => {
     const listItems1 = getOrderBookListItemsAsArray(listItemsObject1);
     const listItems2 = getOrderBookListItemsAsArray(listItemsObject2);
 
@@ -99,12 +101,12 @@ export const listItemsEquals = (listItemsObject1, listItemsObject2) => {
 
 /**
  * @desc Given a single price with new orders, updates listItems object with new value for that price
- * @param type
- * @param newArray
- * @param listItems
+ * @param type {TransactionType}
+ * @param newArray {}
+ * @param listItems {ListItems}
  * @returns {*}
  */
-const updateListItems = (type, newArray, listItems) => {
+const updateListItems = (type: TransactionType, newArray: Array<Ask|Bid>, listItems: ListItems) => {
     const newListItems = listItems;
 
     if (!newArray) {
@@ -120,6 +122,7 @@ const updateListItems = (type, newArray, listItems) => {
                 price,
                 orders,
                 type,
+                isMiddle: false,
             };
         }
     });
@@ -128,17 +131,21 @@ const updateListItems = (type, newArray, listItems) => {
 
 /**
  * @desc Processes existing listItems to compute new max quantity and new middle
- * @param currentListItems
- * @param newAsks
- * @param newBids
- * @returns {{newMaxQuantity: number, newListItems: *}}
+ * @param currentListItems {ListItems}
+ * @param newAsks {Array<Ask>}
+ * @param newBids {Array<Bid>}
+ * @returns {{newMaxQuantity: number, newListItems: {ListItems}}}
  */
-export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) => {
+export const processOrderBookWithDeltas = (
+    currentListItems: ListItems,
+    newAsks: Array<Ask>,
+    newBids: Array<Bid>,
+) => {
     let firstBid = 0;
     let maxQuantity = 0;
 
-    let updatedListItems = updateListItems('ask', newAsks, currentListItems);
-    updatedListItems = updateListItems('bid', newBids, updatedListItems);
+    let updatedListItems = updateListItems(TransactionType.Ask, newAsks, currentListItems);
+    updatedListItems = updateListItems(TransactionType.Bid, newBids, updatedListItems);
 
     Object.keys(updatedListItems).forEach(key => {
         const priceLevel = key;
@@ -147,7 +154,7 @@ export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) =
         );
         if (sum > maxQuantity) maxQuantity = sum; // Compute max quantity
 
-        if (updatedListItems[priceLevel].type === 'bid') { // Determine middle element
+        if (updatedListItems[priceLevel].type === TransactionType.Bid) { // Determine middle element
             updatedListItems[priceLevel].isMiddle = firstBid++ === 0;
         } else updatedListItems[priceLevel].isMiddle = false;
     });
@@ -157,9 +164,9 @@ export const processOrderBookWithDeltas = (currentListItems, newAsks, newBids) =
 
 /**
  * @desc based on values for direction returned by the backend, returns verbose direction
- * @param direction
+ * @param direction {number}
  * @returns {string}
  */
-export const getMessageDirection = direction => {
+export const getMessageDirection = (direction: number) => {
     return (direction === 1) ? 'Bid' : 'Ask';
 };

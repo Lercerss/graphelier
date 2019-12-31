@@ -1,3 +1,5 @@
+import { TransactionType } from '../../models/OrderBook';
+
 import bigInt from 'big-integer';
 
 export const DATE_STRING = '2012-06-21';
@@ -158,13 +160,13 @@ export const ORDER_BOOK_LIST_ITEMS = {
     [ORDER_BOOK_FROM_BACKEND.bids[0].price]: {
         price: ORDER_BOOK_FROM_BACKEND.bids[0].price,
         isMiddle: false,
-        type: 'bid',
+        type: TransactionType.Bid,
         orders: ORDER_BOOK_FROM_BACKEND.bids[0].orders,
     },
     [ORDER_BOOK_FROM_BACKEND.asks[0].price]: {
         price: ORDER_BOOK_FROM_BACKEND.asks[0].price,
         isMiddle: true,
-        type: 'ask',
+        type: TransactionType.Ask,
         orders: ORDER_BOOK_FROM_BACKEND.asks[0].orders,
     },
 };
