@@ -70,7 +70,7 @@ export const convertNanosecondsUTCToCurrentTimezone = nanosecondTimestamp => {
  */
 export const epochToDateString = nanosecondDate => {
     // We only need day precision, so get the date in milliseconds
-    const millisecondDate = nanosecondDate / bigInt(NANOSECONDS_IN_ONE_MILLISECOND);
+    const millisecondDate = nanosecondDate.over(bigInt(NANOSECONDS_IN_ONE_MILLISECOND));
     return moment.utc(Number(millisecondDate)).format('YYYY-MM-DD');
 };
 
