@@ -82,7 +82,7 @@ class MessageList extends Component {
     fetchInitialMessages = async () => {
         const { lastSodOffset, instrument } = this.props;
         const nMessages = MESSAGE_LIST_DEFAULT_PAGE_SIZE * 2 + 1;
-        const lowerSodOffset = lastSodOffset - bigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1);
+        const lowerSodOffset = lastSodOffset.minus(bigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1));
 
         try {
             const reverseMessagesResponse = await OrderBookService.getMessageList(
