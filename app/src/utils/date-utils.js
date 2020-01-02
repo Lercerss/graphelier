@@ -83,7 +83,7 @@ export const epochToDateString = nanosecondDate => {
 export const splitNanosecondEpochTimestamp = nanosecondTimestamp => {
     const timestamp = bigInt(nanosecondTimestamp);
     const timeNanoseconds = timestamp.mod(bigInt(NANOSECONDS_IN_ONE_DAY));
-    const dateNanoseconds = timestamp - timeNanoseconds;
+    const dateNanoseconds = timestamp.minus(timeNanoseconds);
     return {
         timeNanoseconds: Number(timeNanoseconds),
         dateNanoseconds,
