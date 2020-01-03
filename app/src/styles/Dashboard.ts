@@ -1,6 +1,6 @@
 const DRAWER_WIDTH = 240;
 
-export const styles = theme => ({
+export const Styles = theme => ({
     root: {
         display: 'flex',
     },
@@ -40,7 +40,7 @@ export const styles = theme => ({
     },
     title: {
         display: 'contents',
-        textAlign: 'center',
+        textAlign: 'center' as const,
         '& a': {
             padding: '1rem',
             color: 'white',
@@ -50,8 +50,8 @@ export const styles = theme => ({
         },
     },
     drawerPaper: {
-        position: 'relative',
-        whiteSpace: 'nowrap',
+        position: 'relative' as const,
+        whiteSpace: 'nowrap' as const,
         width: DRAWER_WIDTH,
         transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
@@ -64,7 +64,7 @@ export const styles = theme => ({
         },
     },
     drawerPaperClose: {
-        overflowX: 'hidden',
+        overflowX: 'hidden' as const,
         transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
@@ -90,7 +90,7 @@ export const styles = theme => ({
     paper: {
         display: 'flex',
         overflow: 'auto',
-        flexDirection: 'column',
+        flexDirection: 'column' as const,
     },
     fixedHeight: {
         height: 240,

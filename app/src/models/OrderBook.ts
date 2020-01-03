@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export enum TransactionType { Ask, Bid }
 
 export interface Order {
@@ -20,7 +21,6 @@ export interface OrderBook {
     asks: Array<Ask>,
     instrument: string,
     timestamp: string,
-    // eslint-disable-next-line camelcase
     last_sod_offset: string
 }
 
@@ -31,4 +31,15 @@ export interface ListItems {
         type: TransactionType.Ask | TransactionType.Bid,
         isMiddle: boolean
     }
+}
+
+export interface Message {
+    instrument: string,
+    timestamp: string,
+    message_type: number,
+    order_id: number,
+    share_qty: number,
+    price: number,
+    direction: number,
+    sod_offset: string
 }

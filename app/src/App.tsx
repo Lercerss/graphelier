@@ -20,11 +20,7 @@ interface Props extends WithStyles<typeof styles>{
     appName: string
 }
 
-interface State {
-    appName: string
-}
-
-class App extends React.Component<Props, State> {
+class App extends React.Component<Props> {
     componentDidMount() {
         const { onAppMounted } = this.props;
         onAppMounted('graphelier');

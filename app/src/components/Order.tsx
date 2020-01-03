@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 
 import { Typography, Box, Tooltip } from '@material-ui/core';
@@ -7,7 +7,15 @@ import Zoom from '@material-ui/core/Zoom';
 import { Styles } from '../styles/Order';
 import { TransactionType } from '../models/OrderBook';
 
-class Order extends Component {
+const styles = createStyles(Styles);
+
+interface Props extends WithStyles<typeof styles> {
+    type: TransactionType,
+    quantity: number,
+    maxQuantity: number
+}
+
+class Order extends Component<Props> {
     render() {
         const {
             classes, type, quantity, maxQuantity,
@@ -42,4 +50,4 @@ class Order extends Component {
     }
 }
 
-export default withStyles(Styles)(Order);
+export default withStyles(styles)(Order);

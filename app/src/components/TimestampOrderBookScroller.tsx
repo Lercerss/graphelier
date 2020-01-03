@@ -1,5 +1,5 @@
 import React, { Component, createRef } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 
 import {
     Button, Box, Typography, ButtonGroup,
@@ -13,11 +13,24 @@ import { getOrderBookListItemsAsArray, listItemsEquals } from '../utils/order-bo
 
 import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
+import { ListItems } from '../models/OrderBook';
 
 const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
 
-class TimestampOrderBookScroller extends Component {
-    middleReferenceItem = null;
+const styles = createStyles(Styles);
+
+interface Props extends WithStyles<typeof styles> {
+    listItems: ListItems,
+    maxQuantity: number
+    timeOrDateIsNotSet: boolean,
+    lastSodOffset: bigint,
+    handleUpdateWithDeltas: Function,
+    instrument: string
+}
+
+
+class TimestampOrderBookScroller extends Component<Props> {
+    middleReferenceItem;
 
     componentDidMount() {
         window.addEventListener('keyup', this.onKeyUp);
@@ -84,9 +97,13 @@ class TimestampOrderBookScroller extends Component {
      * @desc Gets the message for the given offset and updates the order book with the message's timestamp
      * @param offset The number of messages to skip forward or backward to
      */
-    handleGoToMessageByOffset = offset => {
+    handleGoToMessageByOffset = (offset: number) => {
         const { lastSodOffset, handleUpdateWithDeltas, instrument } = this.props;
-        OrderBookService.getPriceLevelsByMessageOffset(instrument, lastSodOffset, offset)
+        OrderBookService.getPriceLevelsByMessageOffset(
+            instrument,
+            lastSodOffset.toString(),
+            offset.toString(),
+        )
             .then(response => {
                 handleUpdateWithDeltas(response.data);
             })
@@ -150,11 +167,14 @@ class TimestampOrderBookScroller extends Component {
                             <MultiDirectionalScroll position={50}>
                                 {getOrderBookListItemsAsArray(listItems).map(listItem => {
                                     if (listItem.isMiddle) {
+                                        // TODO: Investigate callback refs in TS
+                                        // @ts-ignore
                                         this.middleReferenceItem = createRef();
                                     }
                                     return (
                                         <Box
                                             key={listItem.price}
+                                            // @ts-ignore
                                             ref={listItem.isMiddle ? this.middleReferenceItem : null}
                                             className={classes.pricePoint}
                                         >
@@ -176,4 +196,4 @@ class TimestampOrderBookScroller extends Component {
     }
 }
 
-export default withStyles(Styles)(TimestampOrderBookScroller);
+export default withStyles(styles)(TimestampOrderBookScroller);

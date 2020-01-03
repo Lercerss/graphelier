@@ -2,7 +2,7 @@ export const Styles = {
     container: {
         width: '100%',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column' as const,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#ffffff',
@@ -14,13 +14,13 @@ export const Styles = {
         width: '100%',
         height: '35vh',
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
         justifyContent: 'flex-start',
     },
     header: {
         display: 'flex',
         width: '100%',
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
         justifyContent: 'space-between',
         alignItems: 'flex-end',
         borderBottom: '0.5px solid #cacaca',
@@ -39,7 +39,7 @@ export const Styles = {
     },
     messagesDiv: {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column' as const,
         alignItems: 'center',
     },
 };

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
@@ -19,8 +19,23 @@ import {
     splitNanosecondEpochTimestamp,
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
+import { Message } from '../models/OrderBook';
 
-class MessageList extends Component {
+const styles = createStyles(Styles);
+
+interface Props extends WithStyles<typeof styles>{
+    lastSodOffset: bigint,
+    instrument: string,
+    handleUpdateWithDeltas: Function,
+}
+
+interface State {
+    messages: Array<Message>,
+    lastSodOffsetTop: bigint,
+    lastSodOffsetBottom: bigint,
+}
+
+class MessageList extends Component<Props, State> {
     constructor(props) {
         super(props);
 
@@ -144,7 +159,11 @@ class MessageList extends Component {
     handleOnMessageClick(sodOffset) {
         const { handleUpdateWithDeltas, lastSodOffset, instrument } = this.props;
         const currentSodOffset = bigInt(sodOffset).minus(lastSodOffset);
-        OrderBookService.getPriceLevelsByMessageOffset(instrument, lastSodOffset, currentSodOffset.toString())
+        OrderBookService.getPriceLevelsByMessageOffset(
+            instrument,
+            lastSodOffset.toString(),
+            currentSodOffset.toString(),
+        )
             .then(response => {
                 handleUpdateWithDeltas(response.data);
             })
@@ -216,4 +235,4 @@ class MessageList extends Component {
     }
 }
 
-export default withStyles(Styles)(MessageList);
+export default withStyles(styles)(MessageList);

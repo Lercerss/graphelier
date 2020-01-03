@@ -4,15 +4,15 @@ export const Styles = {
     row: {
         flex: 1,
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
         alignContent: 'flex-start',
         padding: '5px 0px',
         margin: '0px 10px',
     },
     price: {
-        float: 'left',
+        float: 'left' as const,
         width: '50px',
-        textAlign: 'left',
+        textAlign: 'left' as const,
         paddingRight: 15,
         color: Colors.darkGrey,
     },
@@ -28,7 +28,7 @@ export const Styles = {
     },
     quantitiesBox: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
         paddingLeft: 30,
         width: '100%',
     },

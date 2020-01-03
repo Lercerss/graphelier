@@ -9,7 +9,7 @@ import {
  * @param bids {Array<Bid>}
  */
 export const processOrderBookFromScratch = (asks: Array<Ask>, bids: Array<Bid>) => {
-    const listItems = {};
+    const listItems: ListItems = {};
     let firstBid = 0;
     let maxQuantity = 0;
 

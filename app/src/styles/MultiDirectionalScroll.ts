@@ -3,7 +3,7 @@ export const Styles = {
         overflow: 'auto',
         height: 'inherit',
         width: '100%',
-        WebkitOverflowScrolling: 'inherit',
+        WebkitOverflowScrolling: 'inherit' as const,
         whitespace: 'normal',
     },
 };

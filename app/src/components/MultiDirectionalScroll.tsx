@@ -1,11 +1,21 @@
 import React, { Component } from 'react';
 
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import { Styles } from '../styles/MultiDirectionalScroll';
 
-class MultiDirectionalScroll extends Component {
-    scroller = null;
+const styles = createStyles(Styles);
+
+interface Props extends WithStyles<typeof styles>{
+    position: number,
+    onScroll: Function,
+    onReachTop: Function,
+    onReachBottom: Function,
+    children: any
+}
+
+class MultiDirectionalScroll extends Component<Props> {
+    scroller;
 
     lastPosition = 0;
 
@@ -34,7 +44,7 @@ class MultiDirectionalScroll extends Component {
      * @desc sets position for scroller instance, as well as the previous scroller position
      * @param position
      */
-    setScrollPosition(position = 0) {
+    setScrollPosition(position: number = 0) {
         this.scroller.scrollTop = position;
         this.lastPosition = position;
     }
@@ -43,7 +53,7 @@ class MultiDirectionalScroll extends Component {
      * @desc assigns the reference of the scroll to an instance
      * @param reference
      */
-    handleScrollerRef = reference => {
+    handleScrollerRef = (reference: HTMLElement) => {
         this.scroller = reference;
     };
 
@@ -85,12 +95,14 @@ class MultiDirectionalScroll extends Component {
     };
 
     render() {
-        const { children } = this.props;
+        const { children, classes } = this.props;
 
         return (
             <Box
+                // TODO: investigate callback refs with TS
+                // @ts-ignore
                 ref={this.handleScrollerRef}
-                style={Styles.scroller}
+                className={classes.scroller}
                 onScroll={this.handleScroll}
             >
                 {children}
@@ -99,4 +111,4 @@ class MultiDirectionalScroll extends Component {
     }
 }
 
-export default withStyles(Styles)(MultiDirectionalScroll);
+export default withStyles(styles)(MultiDirectionalScroll);
