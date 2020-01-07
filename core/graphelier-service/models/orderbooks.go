@@ -19,8 +19,8 @@ type Level struct {
 // Orderbook : A struct that represents the entire orderbook to send as json
 type Orderbook struct {
 	Instrument    string   `json:"instrument"`
-	Bids          []*Level `json:"bids,omitempty"`
-	Asks          []*Level `json:"asks,omitempty"`
+	Bids          []*Level `json:"bids"`
+	Asks          []*Level `json:"asks"`
 	Timestamp     uint64   `json:"timestamp,string"`
 	LastSodOffset uint64   `json:"last_sod_offset,string" bson:"last_sod_offset"`
 }

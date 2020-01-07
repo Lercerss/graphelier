@@ -36,6 +36,10 @@ func (db *mockDBIHndlr) GetMessagesWithPagination(instrument string, paginator *
 	return
 }
 
+func (db *mockDBIHndlr) RefreshCache() (err error) {
+	return
+}
+
 func TestFetchInstruments(t *testing.T) {
 	mockedDB := &mockDBIHndlr{}
 	mockedEnv := &Env{mockedDB}

@@ -2,6 +2,7 @@ package hndlrs
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -34,7 +35,6 @@ func FetchOrderbook(env *Env, w http.ResponseWriter, r *http.Request) error {
 	}
 	orderbook.ApplyMessagesToOrderbook(messages)
 
-	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(orderbook)
 	if err != nil {
 		return StatusError{500, err}
@@ -75,7 +75,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 
 	// get previous book for high number of backward messages
 	for totalOffset < 0 {
-		prevSnapTime := int64(orderbook.Timestamp - 10000000000)
+		prevSnapTime := int64(orderbook.Timestamp - 1)
 		if prevSnapTime < 0 {
 			return StatusError{400, err}
 		}
@@ -108,6 +108,22 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(deltabook)
+	if err != nil {
+		return StatusError{500, err}
+	}
+
+	return nil
+}
+
+// RefreshCache : Updates the db connector's cache to reflect database state changes
+func RefreshCache(env *Env, w http.ResponseWriter, r *http.Request) error {
+	err := env.Connector.RefreshCache()
+	if err != nil {
+		return StatusError{500, err}
+	}
+
+	log.Println("Cache refreshed.")
+	err = json.NewEncoder(w).Encode(make(map[string]string))
 	if err != nil {
 		return StatusError{500, err}
 	}
