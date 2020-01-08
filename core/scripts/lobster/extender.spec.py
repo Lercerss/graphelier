@@ -61,7 +61,7 @@ with description('Extender:') as self:
         expect(list(_mix_by_index(base, mix))).should.equal(
             [6, 1, 7, 2, 3, 8, 4, 5])
 
-    with description('calculating properties of orders based on given messages'):
+    with description('when calculating properties of orders based on given messages'):
         with it('finds the initial share quantity from a NEW_ORDER'):
             _initial_qty_for_messages(self.messages).should.equal(123)
 

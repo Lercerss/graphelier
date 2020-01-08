@@ -2,6 +2,7 @@ import argparse
 import os
 from datetime import datetime
 
+from utils import logger
 from lobster.extender import Extender, weekdays, TZ
 from lobster.parser import parse_top_of_book
 from models.order_book import OrderBook
@@ -57,7 +58,7 @@ class _Loader:
         message.sod_offset = self.sod_offset_counter
         current_multiple = message.time // self.interval
         if current_multiple > self.last_multiple:
-            print(str(self.order_book))
+            logger.debug(str(self.order_book))
             self.last_multiple = current_multiple
             save_order_book(self.order_book)
         self.message_buffer.append(message)
@@ -91,10 +92,10 @@ class _Loader:
         # save an empty order_book at the end of the day
         save_order_book(eod_clear)
 
-        print('best bid volume={}\tbest ask volume={}'.format(
+        logger.info('best bid volume=%d\tbest ask volume=%d',
             sum(o.qty for o in self.order_book.bid_book[self.order_book.bid]),
             sum(o.qty for o in self.order_book.ask_book[self.order_book.ask])
-        ))
+        )
 
 
 def load(**kwargs):
@@ -132,8 +133,8 @@ def main():
     ob_file_path = args.message_file.name.replace('message', 'orderbook')
     if not args.top_of_book:
         while not os.path.exists(ob_file_path):
-            print(
-                'Could not find an orderbook file provided by Lobster in the same path as the message file.')
+            logger.error('Could not find an orderbook file provided by '
+                          'Lobster in the same path as the message file.')
             ob_file_path = input(
                 'Please provide the path to the orderbook file: ')
 

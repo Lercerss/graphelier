@@ -1,15 +1,18 @@
 import csv
 import random
+
 from collections import defaultdict, namedtuple
 from datetime import datetime, time, timedelta, timezone
 
+from utils import logger
 from lobster.parser import LobsterMessageParser
 from models.message import Message, MessageType
 from models.order_book import OrderBook
 
 Placement = namedtuple('Placement', ['index', 'message'])
 
-TZ = timezone(timedelta(hours=-4)) # EST
+TZ = timezone(timedelta(hours=-4))  # EST
+
 
 class _TopOfBook:
     def __init__(self, ask, bid):
@@ -149,22 +152,23 @@ class Extender:
     def __init__(self, file, start_time: int, n_duplicates: int, initial_top_of_book):
         self.n_duplicates = n_duplicates
         self.initial_top_of_book = _TopOfBook(*initial_top_of_book)
-        print('Parsing sample set of messages...')
+        logger.info('Parsing sample set of messages...')
         message_parser = LobsterMessageParser(start_time)
         self.initial_messages = [
             message_parser.parse(l) for l in csv.reader(file)]
-        print('Found {} messages in sample.\n'.format(
-            len(self.initial_messages)))
+        logger.debug('Found %s messages in sample.',
+                     len(self.initial_messages))
 
         self.time_diff = int(self.initial_messages[-1].time -
                              self.initial_messages[0].time)
 
-        print('Backfilling for missing messages in sample...')
+        logger.info('Backfilling for missing messages in sample...')
         backfilled, self.id_diff = _backfill(
             self.initial_messages, n_duplicates)
         self.mixed_messages = sorted(_mix_by_index(self.initial_messages, backfilled),
                                      key=lambda x: x.time)
-        print('Added {} messages to fill holes in sample.\n'.format(len(backfilled)))
+        logger.debug(
+            'Added %s messages to fill holes in sample.', len(backfilled))
 
     def _yield_n_copies(self, m):
         yield m
