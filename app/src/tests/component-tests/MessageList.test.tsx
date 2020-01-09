@@ -2,12 +2,14 @@ import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import MessageList from '../../components/MessageList';
 import OrderBookService from '../../services/OrderBookService';
-import { MESSAGE_LIST, ORDER_BOOK_FROM_BACKEND } from '../utils/mock-data';
+import {
+    INSTRUMENT, LAST_SOD_OFFSET_CLIENT, MESSAGE_LIST, ORDER_BOOK_FROM_BACKEND,
+} from '../utils/mock-data';
 
 describe('MessageList', () => {
     let mount, shallow, messageList;
     const getMessageListSpy = jest.spyOn(OrderBookService, 'getMessageList')
-        .mockClear((instrument, sodOffset, nMessages = 20) => Promise.resolve(
+        .mockImplementation((instrument, sodOffset, nMessages = 20): Promise<any> => Promise.resolve(
             {
                 data: ORDER_BOOK_FROM_BACKEND,
             },
@@ -15,6 +17,7 @@ describe('MessageList', () => {
             .catch(err => {
                 console.log(err);
             }));
+
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
@@ -27,7 +30,11 @@ describe('MessageList', () => {
     });
 
     it('should render a messageList without crashing', () => {
-        mount(<MessageList />);
+        mount(<MessageList
+            lastSodOffset={LAST_SOD_OFFSET_CLIENT}
+            instrument={INSTRUMENT}
+            handleUpdateWithDeltas={jest.fn()}
+        />);
     });
 
     it('should not send a request to get message list when the date is not selected', () => {
@@ -35,7 +42,11 @@ describe('MessageList', () => {
     });
 
     it('should get the correct data when the messageList request is made', () => {
-        const wrapper = shallow(<MessageList />);
+        const wrapper = shallow(<MessageList
+            lastSodOffset={LAST_SOD_OFFSET_CLIENT}
+            instrument={INSTRUMENT}
+            handleUpdateWithDeltas={jest.fn()}
+        />);
         wrapper.instance().setState(
             {
                 messageList,

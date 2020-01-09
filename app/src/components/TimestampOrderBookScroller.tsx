@@ -6,6 +6,7 @@ import {
 } from '@material-ui/core';
 import ChevronLeftSharpIcon from '@material-ui/icons/ChevronLeftSharp';
 import ChevronRightSharpIcon from '@material-ui/icons/ChevronRightSharp';
+import bigInt from 'big-integer';
 import { Styles } from '../styles/TimestampOrderBookScroller';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
@@ -23,7 +24,7 @@ interface Props extends WithStyles<typeof styles> {
     listItems: ListItems,
     maxQuantity: number
     timeOrDateIsNotSet: boolean,
-    lastSodOffset: bigint,
+    lastSodOffset: bigInt.BigInteger,
     handleUpdateWithDeltas: Function,
     instrument: string
 }
@@ -39,7 +40,7 @@ class TimestampOrderBookScroller extends Component<Props> {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         const { lastSodOffset } = this.props;
         if (lastSodOffset && nextProps.lastSodOffset) {
-            return (lastSodOffset.toString() !== nextProps.lastSodOffset.toString());
+            return (lastSodOffset.neq(nextProps.lastSodOffset));
         }
         return true;
     }

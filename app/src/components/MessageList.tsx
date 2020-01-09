@@ -5,6 +5,7 @@ import { Box } from '@material-ui/core';
 import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
 import bigInt from 'big-integer';
+
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE,
@@ -24,15 +25,15 @@ import { Message } from '../models/OrderBook';
 const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
-    lastSodOffset: bigint,
+    lastSodOffset: bigInt.BigInteger,
     instrument: string,
     handleUpdateWithDeltas: Function,
 }
 
 interface State {
     messages: Array<Message>,
-    lastSodOffsetTop: bigint,
-    lastSodOffsetBottom: bigint,
+    lastSodOffsetTop: bigInt.BigInteger,
+    lastSodOffsetBottom: bigInt.BigInteger,
 }
 
 class MessageList extends Component<Props, State> {
@@ -50,13 +51,18 @@ class MessageList extends Component<Props, State> {
         this.fetchInitialMessages();
     }
 
+    shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+        const { lastSodOffset } = this.props;
+        const { messages } = this.state;
+
+        return (lastSodOffset.neq(nextProps.lastSodOffset) || messages !== nextState.messages);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { lastSodOffset } = this.props;
         const { messages } = this.state;
 
-        if (typeof prevProps.lastSodOffset !== 'bigint' || (typeof lastSodOffset === 'bigint'
-            && typeof prevProps.lastSodOffset === 'bigint'
-            && lastSodOffset.toString() !== prevProps.lastSodOffset.toString())) {
+        if (lastSodOffset.neq(prevProps.lastSodOffset)) {
             const messageIndex = this.getPotentialIndexOfLastSodOffsetFromProps();
             if (messageIndex !== -1) {
                 const messagesLength = messages.length;
@@ -185,7 +191,7 @@ class MessageList extends Component<Props, State> {
             } = message;
 
             const { timeNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
-            const time = nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds))));
+            const time = nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf());
 
             return (
                 <Button
