@@ -166,7 +166,7 @@ class MessageList extends Component {
             } = message;
 
             const { timeNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
-            const time = nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(BigInt(timeNanoseconds))));
+            const time = nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds))));
 
             return (
                 <Button
