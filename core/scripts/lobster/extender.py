@@ -26,28 +26,28 @@ class _TopOfBook:
         return _TopOfBook(self.ask - o.ask, self.bid - o.bid)
 
 
-def _endless_copies(l):
+def _endless_copies(list_):
     i = 0
     while True:
         i += 1
-        for m in l:
-            yield i, m.copy()
+        for msg in list_:
+            yield i, msg.copy()
 
 
 def _rand_range(left, right):
     return random.randrange(left, right) if left < right else left
 
 
-def _mix_by_index(base, mix):
+def _mix_by_index(base_list, mix):
     j = 0
-    l = len(mix)
+    length = len(mix)
     placement = mix[j]
-    for i, b in enumerate(base):
-        while j < l and placement.index <= i:
+    for i, base in enumerate(base_list):
+        while j < length and placement.index <= i:
             yield placement.message
             j += 1
-            placement = mix[j] if j < l else Placement(-1, -1)
-        yield b
+            placement = mix[j] if j < length else Placement(-1, -1)
+        yield base
 
 
 def weekdays(start: int, n):
@@ -63,15 +63,15 @@ def _initial_qty_for_messages(messages):
     If the order has a NEW_ORDER, return its quantity
     Otherwise, sum up the executions, cancels and deletes"""
     total = 0
-    for _, m in messages:
-        if m.message_type == MessageType.NEW_ORDER:
-            return m.share_quantity
-        elif m.message_type == MessageType.EXECUTE:
-            total += m.share_quantity
-        elif m.message_type == MessageType.DELETE:
-            return total + m.share_quantity
-        elif m.message_type == MessageType.MODIFY:
-            total += m.share_quantity
+    for _, msg in messages:
+        if msg.message_type == MessageType.NEW_ORDER:
+            return msg.share_quantity
+        elif msg.message_type == MessageType.EXECUTE:
+            total += msg.share_quantity
+        elif msg.message_type == MessageType.DELETE:
+            return total + msg.share_quantity
+        elif msg.message_type == MessageType.MODIFY:
+            total += msg.share_quantity
 
     # Order has no NEW or DELETE, we will generate a delete for the same amount
     return total * 2
@@ -82,16 +82,16 @@ def _unfilled_qty_for_messages(messages):
     If the order has a DELETE, return 0
     Otherwise, subtract cancels and executions from its initial quantity"""
     total = 0
-    for _, m in reversed(messages):
+    for _, msg in reversed(messages):
         # Reversed so NEW_ORDER appears on the last index
-        if m.message_type == MessageType.NEW_ORDER:
-            return m.share_quantity - total
-        elif m.message_type == MessageType.EXECUTE:
-            total += m.share_quantity
-        elif m.message_type == MessageType.DELETE:
+        if msg.message_type == MessageType.NEW_ORDER:
+            return msg.share_quantity - total
+        elif msg.message_type == MessageType.EXECUTE:
+            total += msg.share_quantity
+        elif msg.message_type == MessageType.DELETE:
             return 0
-        elif m.message_type == MessageType.MODIFY:
-            total += m.share_quantity
+        elif msg.message_type == MessageType.MODIFY:
+            total += msg.share_quantity
 
     return total
 
@@ -100,10 +100,10 @@ def _backfill(initial_messages, n_duplicates):
     """Backfills for order ids found in the sample, but without a NEW_ORDER message.
     Also adds executions/deletions for order ids that are not closed in the sample."""
     id_map = defaultdict(list)
-    for i, m in enumerate(initial_messages):
-        if m.id == 0:
+    for i, msg in enumerate(initial_messages):
+        if msg.id == 0:
             continue
-        id_map[m.id].append(Placement(i, m))
+        id_map[msg.id].append(Placement(i, msg))
 
     id_diff = max(id_map) - min(id_map) + 1
     backfilled = []
@@ -144,7 +144,14 @@ def _backfill(initial_messages, n_duplicates):
                 )
             )
 
-    return sorted(backfilled, key=lambda x: (x.index, x.message.time, x.message.id)), id_diff
+    return sorted(
+        backfilled,
+        key=lambda msg: (
+            msg.index,
+            msg.message.time,
+            msg.message.id
+        )
+    ), id_diff
 
 
 class Extender:
@@ -155,7 +162,7 @@ class Extender:
         logger.info('Parsing sample set of messages...')
         message_parser = LobsterMessageParser(start_time)
         self.initial_messages = [
-            message_parser.parse(l) for l in csv.reader(file)]
+            message_parser.parse(line) for line in csv.reader(file)]
         logger.debug('Found %s messages in sample.',
                      len(self.initial_messages))
 
@@ -166,18 +173,18 @@ class Extender:
         backfilled, self.id_diff = _backfill(
             self.initial_messages, n_duplicates)
         self.mixed_messages = sorted(_mix_by_index(self.initial_messages, backfilled),
-                                     key=lambda x: x.time)
+                                     key=lambda msg: msg.time)
         logger.debug(
             'Added %s messages to fill holes in sample.', len(backfilled))
 
-    def _yield_n_copies(self, m):
-        yield m
+    def _yield_n_copies(self, msg):
+        yield msg
 
         for i in range(1, self.n_duplicates):
-            m_copy = m.copy()
-            if m_copy.id != 0:
-                m_copy.id += i * self.id_diff
-            yield m_copy
+            msg_copy = msg.copy()
+            if msg_copy.id != 0:
+                msg_copy.id += i * self.id_diff
+            yield msg_copy
 
     def _handle_conflicts(self, conflicts, msg):
         return [
@@ -187,8 +194,8 @@ class Extender:
         ]
 
     def extend_sample(self, day_diff: int, ob_ref: OrderBook):
-        for m in self.initial_messages:
-            m_ = m.copy()
+        for msg in self.initial_messages:
+            m_ = msg.copy()
             m_.time += day_diff
             if not ob_ref.is_valid_msg(m_):
                 continue
@@ -197,22 +204,22 @@ class Extender:
         prev_loop = 0
         prev_diff = None
         diff_top_of_book = _TopOfBook(0, 0)
-        for loop_count, m in _endless_copies(self.mixed_messages):
+        for loop_count, msg in _endless_copies(self.mixed_messages):
             if loop_count > prev_loop:
                 prev_loop = loop_count
                 prev_diff = diff_top_of_book
                 diff_top_of_book = _TopOfBook(ob_ref.ask, ob_ref.bid) - \
                     self.initial_top_of_book
-            m.time += day_diff + self.time_diff * loop_count
-            if m.id != 0:
-                m.id += self.id_diff * loop_count * self.n_duplicates
+            msg.time += day_diff + self.time_diff * loop_count
+            if msg.id != 0:
+                msg.id += self.id_diff * loop_count * self.n_duplicates
 
-            m.price = m.price + \
-                (prev_diff if m.fake else diff_top_of_book).get(m.direction)
+            msg.price = msg.price + \
+                (prev_diff if msg.fake else diff_top_of_book).get(msg.direction)
 
-            if not ob_ref.is_valid_msg(m):
+            if not ob_ref.is_valid_msg(msg):
                 continue
 
             # Delete all possible conflicts from the book first
-            yield from self._handle_conflicts(ob_ref.conflicts(m), m)
-            yield from self._yield_n_copies(m)
+            yield from self._handle_conflicts(ob_ref.conflicts(msg), msg)
+            yield from self._yield_n_copies(msg)
