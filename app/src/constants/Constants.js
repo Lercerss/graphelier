@@ -1,7 +1,11 @@
 export const ENVIRONMENT = 'DEV';
 
 export const BACKEND_PORT = 5050;
-export const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
+let host = 'localhost';
+if (process.env.NODE_ENV === 'production') {
+    host = 'ec2-18-188-177-125.us-east-2.compute.amazonaws.com';
+}
+export const BACKEND_URL = `http://${host}:${BACKEND_PORT}`;
 
 export const LEFT_ARROW_KEY_CODE = 37;
 export const RIGHT_ARROW_KEY_CODE = 39;
