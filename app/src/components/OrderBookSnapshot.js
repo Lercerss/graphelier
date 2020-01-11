@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import classNames from 'classnames';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import bigInt from 'big-integer';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     dateStringToEpoch,
@@ -30,15 +31,16 @@ import {
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
 
+
 class OrderBookSnapshot extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
             lastSodOffset: null,
-            selectedDateNano: BigInt(0),
-            selectedTimeNano: BigInt(0),
-            selectedDateTimeNano: BigInt(0),
+            selectedDateNano: bigInt(0),
+            selectedTimeNano: bigInt(0),
+            selectedDateTimeNano: bigInt(0),
             selectedTimeString: 'Select from slider',
             selectedDateString: '',
             expanded: true,
@@ -116,7 +118,7 @@ class OrderBookSnapshot extends Component {
      */
     handleChangeTime = (event, value) => {
         if (value) {
-            const selectedTimeNano = BigInt(value);
+            const selectedTimeNano = bigInt(value);
             const selectedTimeString = nanosecondsToString(parseInt(value));
 
             this.setState({
@@ -134,7 +136,7 @@ class OrderBookSnapshot extends Component {
     handleCommitTime = (event, value) => {
         const { selectedDateNano } = this.state;
 
-        const selectedTimeNano = BigInt(value);
+        const selectedTimeNano = bigInt(value);
         const selectedTimeString = nanosecondsToString(parseInt(value));
         const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano + selectedDateNano);
 
@@ -175,14 +177,14 @@ class OrderBookSnapshot extends Component {
 
         this.setState(
             {
-                lastSodOffset: BigInt(last_sod_offset),
+                lastSodOffset: bigInt(last_sod_offset),
                 selectedDateNano: dateNanoseconds,
                 selectedDateString: epochToDateString(dateNanoseconds),
-                selectedTimeNano: convertNanosecondsUTCToCurrentTimezone(BigInt(timeNanoseconds)),
+                selectedTimeNano: convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)),
                 selectedTimeString: nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(
-                    BigInt(timeNanoseconds),
+                    bigInt(timeNanoseconds),
                 ))),
-                selectedDateTimeNano: BigInt(timestamp),
+                selectedDateTimeNano: bigInt(timestamp),
                 listItems: newListItems,
                 maxQuantity: newMaxQuantity,
             },
@@ -212,7 +214,7 @@ class OrderBookSnapshot extends Component {
                     {
                         listItems,
                         maxQuantity,
-                        lastSodOffset: BigInt(last_sod_offset),
+                        lastSodOffset: bigInt(last_sod_offset),
                     },
                 );
             })
