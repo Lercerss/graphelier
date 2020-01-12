@@ -1,0 +1,10 @@
+version: "3.4"
+services:
+  graphelier-app:
+    build:
+      target: prod
+    ports:
+      - "80:80"
+  graphelier-service:
+    build:
+      target: prod

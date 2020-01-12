@@ -3,19 +3,13 @@ services:
   graphelier-app:
     build:
       context: ./app
-      target: prod
-    ports:
-      - "80:80"
     depends_on:
       - "graphelier-service"
   graphelier-service:
     build:
       context: ./core
-      target: prod
     ports:
       - "5050:5050"
-    volumes:
-      - ./core/graphelier-service:/go/src/graphelier/core/graphelier-service
     depends_on:
       - "mongo"
   mongo:
