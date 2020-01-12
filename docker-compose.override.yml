@@ -5,6 +5,8 @@ services:
       target: dev
     volumes:
       - ./app/src:/app/src
+    ports:
+      - "3000:3000"
   graphelier-service:
     build:
       target: dev

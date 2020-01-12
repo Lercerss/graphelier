@@ -11,7 +11,7 @@ FROM builder AS test
 CMD ["go", "test", "graphelier/core/graphelier-service/..."]
 
 FROM builder AS dev
-RUN go get github.com/pilu/fresh
+RUN go get github.com/gravityblast/fresh
 EXPOSE 5050
 CMD [ "fresh" ]
 

@@ -116,6 +116,7 @@ workflows:
     push_and_deploy:
         jobs:
             - aws-ecr/build-and-push-image:
+                  name: build_service_ecr
                   filters:
                       branches:
                           only:
@@ -127,6 +128,7 @@ workflows:
                   extra-build-args: "--target prod"
                   path: ./core
             - aws-ecr/build-and-push-image:
+                  name: build_app_ecr
                   filters:
                       branches:
                           only:
@@ -138,6 +140,7 @@ workflows:
                   extra-build-args: "--target prod"
                   path: ./app
             - aws-ecr/build-and-push-image:
+                  name: build_mongo_ecr
                   filters:
                       branches:
                           only:
@@ -148,6 +151,10 @@ workflows:
                   tag: "${CIRCLE_SHA1}"
                   path: ./core/db
             - aws-ecs/deploy-service-update:
+                  requires:
+                      - build_service_ecr
+                      - build_app_ecr
+                      - build_mongo_ecr
                   filters:
                       branches:
                           only:
