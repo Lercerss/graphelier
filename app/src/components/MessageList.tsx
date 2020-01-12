@@ -1,10 +1,11 @@
 /* eslint-disable camelcase */
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
 import bigInt from 'big-integer';
+
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE,
@@ -19,8 +20,23 @@ import {
     splitNanosecondEpochTimestamp,
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
+import { Message } from '../models/OrderBook';
 
-class MessageList extends Component {
+const styles = createStyles(Styles);
+
+interface Props extends WithStyles<typeof styles>{
+    lastSodOffset: bigInt.BigInteger,
+    instrument: string,
+    handleUpdateWithDeltas: Function,
+}
+
+interface State {
+    messages: Array<Message>,
+    lastSodOffsetTop: bigInt.BigInteger,
+    lastSodOffsetBottom: bigInt.BigInteger,
+}
+
+class MessageList extends Component<Props, State> {
     constructor(props) {
         super(props);
 
@@ -35,13 +51,18 @@ class MessageList extends Component {
         this.fetchInitialMessages();
     }
 
+    shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+        const { lastSodOffset } = this.props;
+        const { messages } = this.state;
+
+        return (lastSodOffset.neq(nextProps.lastSodOffset) || messages !== nextState.messages);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { lastSodOffset } = this.props;
         const { messages } = this.state;
 
-        if (typeof prevProps.lastSodOffset !== 'bigint' || (typeof lastSodOffset === 'bigint'
-            && typeof prevProps.lastSodOffset === 'bigint'
-            && lastSodOffset.toString() !== prevProps.lastSodOffset.toString())) {
+        if (lastSodOffset.neq(prevProps.lastSodOffset)) {
             const messageIndex = this.getPotentialIndexOfLastSodOffsetFromProps();
             if (messageIndex !== -1) {
                 const messagesLength = messages.length;
@@ -144,7 +165,11 @@ class MessageList extends Component {
     handleOnMessageClick(sodOffset) {
         const { handleUpdateWithDeltas, lastSodOffset, instrument } = this.props;
         const currentSodOffset = bigInt(sodOffset).minus(lastSodOffset);
-        OrderBookService.getPriceLevelsByMessageOffset(instrument, lastSodOffset, currentSodOffset.toString())
+        OrderBookService.getPriceLevelsByMessageOffset(
+            instrument,
+            lastSodOffset.toString(),
+            currentSodOffset.toString(),
+        )
             .then(response => {
                 handleUpdateWithDeltas(response.data);
             })
@@ -166,7 +191,7 @@ class MessageList extends Component {
             } = message;
 
             const { timeNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
-            const time = nanosecondsToString(Number(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds))));
+            const time = nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf());
 
             return (
                 <Button
@@ -216,4 +241,4 @@ class MessageList extends Component {
     }
 }
 
-export default withStyles(Styles)(MessageList);
+export default withStyles(styles)(MessageList);

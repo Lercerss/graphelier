@@ -1,15 +1,25 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 
 import { Box } from '@material-ui/core';
 import { Styles } from '../styles/PriceLevel';
-
 import Order from './Order';
+
 import { ordersEquals } from '../utils/order-book-utils';
 import { roundNumber } from '../utils/number-utils';
+import { TransactionType, Order as OrderType } from '../models/OrderBook';
 
-class PriceLevel extends Component {
+const styles = createStyles(Styles);
+
+interface Props extends WithStyles<typeof styles>{
+    orders: Array<OrderType>,
+    maxQuantity: number,
+    type: TransactionType,
+    price: number,
+}
+
+class PriceLevel extends Component<Props> {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         const { orders, maxQuantity } = this.props;
 
@@ -23,7 +33,7 @@ class PriceLevel extends Component {
         const formattedPrice = roundNumber(price, 2);
 
         return (
-            <Box className={classNames(classes.row, type === 'bid' ? classes.bid : classes.ask)}>
+            <Box className={classNames(classes.row, type === TransactionType.Bid ? classes.bid : classes.ask)}>
                 <span className={classes.price}>{formattedPrice}</span>
                 <Box className={classes.quantitiesBox}>
                     {orders.map((order, index) => (
@@ -40,4 +50,4 @@ class PriceLevel extends Component {
     }
 }
 
-export default withStyles(Styles)(PriceLevel);
+export default withStyles(styles)(PriceLevel);

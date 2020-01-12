@@ -11,14 +11,22 @@ import {
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
+import { createStyles, WithStyles } from '@material-ui/styles';
 import { mainListItems } from './listItems';
-import { Styles as OBStyles } from '../../styles/OrderBookSnapshot';
 import OrderBookSnapshot from '../OrderBookSnapshot';
 import Home from '../Home';
 import NotFound from '../NotFound';
-import { styles } from '../../styles/Dashboard';
+import { Styles } from '../../styles/Dashboard';
 
-class Dashboard extends Component {
+const styles = theme => createStyles(Styles(theme));
+
+interface Props extends WithStyles<typeof styles> {}
+
+interface State {
+    open: boolean
+}
+
+class Dashboard extends Component<Props, State> {
     constructor(props) {
         super(props);
 
@@ -46,7 +54,6 @@ class Dashboard extends Component {
                     <AppBar
                         position={'absolute'}
                         className={classNames(classes.appBar, open && classes.appBarShift)}
-                        theme={OBStyles.themeBackground}
                     >
                         <Toolbar className={classes.toolbar}>
                             <IconButton

@@ -6,20 +6,21 @@ import {
     DATE_STRING,
     TIME_VALUE,
     TIME_STRING,
-    DATE_VALUE,
+    DATE_VALUE_BIG_INT,
     ORDER_BOOK_LIST_ITEMS,
     MESSAGE_DELTAS_FROM_BACKEND_MODIFY,
     MESSAGE_DELTAS_FROM_BACKEND_ADD,
-    MESSAGE_DELTAS_FROM_BACKEND_REMOVE, ORDER_BOOK_FROM_BACKEND,
+    MESSAGE_DELTAS_FROM_BACKEND_REMOVE, ORDER_BOOK_FROM_BACKEND, TIME_VALUE_BIG_INT,
 } from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
 import { convertNanosecondsToUTC } from '../../utils/date-utils';
+import { TransactionType } from '../../models/OrderBook';
 
 describe('getting and selecting an instrument functionality', () => {
     let mount, shallow;
 
     const getInstrumentsListSpy = jest.spyOn(OrderBookService, 'getInstrumentsList')
-        .mockClear(() => Promise.resolve({ data: ['SPY', 'AAPL', 'MSFT'] })
+        .mockImplementation((): Promise<any> => Promise.resolve({ data: ['SPY', 'AAPL', 'MSFT'] })
             .catch(err => {
                 console.log(err);
             }));
@@ -48,7 +49,7 @@ describe('getting and selecting an instrument functionality', () => {
 describe('date and time picker functionality', () => {
     let mount, shallow;
     const getOrderBookPricesSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices')
-        .mockImplementation((instrument, timestamp) => Promise.resolve(
+        .mockImplementation((instrument, timestamp): Promise<any> => Promise.resolve(
             {
                 data: ORDER_BOOK_FROM_BACKEND,
             },
@@ -109,7 +110,7 @@ describe('date and time picker functionality', () => {
         wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
 
         const { selectedDateNano } = wrapper.state();
-        expect(selectedDateNano).toEqual(DATE_VALUE);
+        expect(selectedDateNano).toEqual(DATE_VALUE_BIG_INT);
     });
 
     it('should store the proper epoch timestamp in nanoseconds when the date and time are selected', () => {
@@ -119,7 +120,9 @@ describe('date and time picker functionality', () => {
         wrapper.instance().handleCommitTime('change', TIME_VALUE);
 
         const selectedDateNano = wrapper.state().selectedDateTimeNano;
-        expect(selectedDateNano).toEqual(convertNanosecondsToUTC(DATE_VALUE + TIME_VALUE));
+        expect(selectedDateNano).toEqual(convertNanosecondsToUTC(
+            DATE_VALUE_BIG_INT.plus(TIME_VALUE_BIG_INT),
+        ));
     });
 });
 
@@ -151,7 +154,7 @@ describe('updating price level by message offset functionality', () => {
             .toEqual({
                 price: 135.66,
                 isMiddle: false,
-                type: 'ask',
+                type: TransactionType.Ask,
                 orders: MESSAGE_DELTAS_FROM_BACKEND_MODIFY.asks[0].orders,
             });
 
@@ -180,7 +183,7 @@ describe('updating price level by message offset functionality', () => {
             .toEqual({
                 price: 135.68,
                 isMiddle: false,
-                type: 'ask',
+                type: TransactionType.Ask,
                 orders: MESSAGE_DELTAS_FROM_BACKEND_ADD.asks[0].orders,
             });
     });

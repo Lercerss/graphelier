@@ -1,5 +1,5 @@
 {
-    "parser": "babel-eslint",
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 6,
         "sourceType": "module",
@@ -39,5 +39,13 @@
         "react/static-property-placement": "off",
         "react/prefer-stateless-function": "off"
     },
-    "plugins": ["react"]
+    "plugins": ["react"],
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "extensions": [".js", ".jsx", ".ts", ".tsx"]
+            }
+        }
+    },
+    "ignorePatterns": ["react-app-env.d.ts"]
 }

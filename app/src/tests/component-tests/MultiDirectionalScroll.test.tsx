@@ -42,25 +42,41 @@ describe('multidirectional scroll functionality', () => {
                 onScroll={scrollProps.onScroll}
                 onReachBottom={scrollProps.onReachBottom}
                 onReachTop={scrollProps.onReachTop}
-            />,
+            >
+                <div />
+            </MultiDirectionalScroll>,
         );
         expect(wrapper.props().position).toEqual(10);
         expect(wrapper.props().onScroll).toBeDefined();
     });
 
     it('renders a MultiDirectionalScroll component without optional props and without crashing', () => {
+        // @ts-ignore
         shallow(<MultiDirectionalScroll />);
     });
 
 
     it('renders a MultiDirectionalScroll component with correct amount of boxes', () => {
-        const wrapper = mount(<MultiDirectionalScroll />);
+        const wrapper = mount(
+            <MultiDirectionalScroll
+                position={scrollProps.position}
+                onScroll={scrollProps.onScroll}
+                onReachBottom={scrollProps.onReachBottom}
+                onReachTop={scrollProps.onReachTop}
+            >
+                <div />
+            </MultiDirectionalScroll>,
+        );
         expect(wrapper.find(Box).length).toEqual(1);
     });
 
 
     it('should trigger onScroll on scroll', () => {
-        const wrapper = shallow(<MultiDirectionalScroll />);
+        const wrapper = shallow(
+            <MultiDirectionalScroll>
+                <div />
+            </MultiDirectionalScroll>,
+        );
         wrapper.instance().scroller = scroller;
 
         wrapper.setProps(scrollProps);

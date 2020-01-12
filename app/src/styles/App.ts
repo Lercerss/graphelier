@@ -20,11 +20,11 @@ export const LightThemeColors = {
 
 export const Styles = {
     app: {
-        textAlign: 'center',
+        textAlign: 'center' as const,
         minWidth: '100%',
         backgroundColor: Colors.empty,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column' as const,
         flex: 1,
         width: '100%',
         justifyContent: 'center',

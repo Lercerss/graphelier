@@ -1,11 +1,16 @@
 import bigInt from 'big-integer';
+import { TransactionType } from '../../models/OrderBook';
 
 export const DATE_STRING = '2012-06-21';
-export const DATE_VALUE = bigInt(1340236800000000000); // 2012-06-21 UTC in epoch nanoseconds
+export const INSTRUMENT = 'SPY';
+export const DATE_VALUE_BIG_INT = bigInt(1340236800000000000); // 2012-06-21 UTC in epoch nanoseconds (bigInt)
 export const TIME_STRING = '12:00:00.000000000';
-export const TIME_VALUE = bigInt(43200000000000); // number of nanoseconds in 12 hours
+export const TIME_VALUE_BIG_INT = bigInt(43200000000000); // number of nanoseconds in 12 hours (bigInt)
+export const TIME_VALUE = 43200000000000; // number of nanoseconds in 12 hours
 export const TIMESTAMP = 1340280000000000000; // 2012-06-21 at 12 pm
 export const LAST_SOD_OFFSET = '3';
+export const LAST_SOD_OFFSET_CLIENT = bigInt(3);
+export const MAX_QUANTITY = 20000;
 
 export const ORDER_BOOK_FROM_BACKEND = {
     timestamp: TIMESTAMP,
@@ -158,13 +163,13 @@ export const ORDER_BOOK_LIST_ITEMS = {
     [ORDER_BOOK_FROM_BACKEND.bids[0].price]: {
         price: ORDER_BOOK_FROM_BACKEND.bids[0].price,
         isMiddle: false,
-        type: 'bid',
+        type: TransactionType.Bid,
         orders: ORDER_BOOK_FROM_BACKEND.bids[0].orders,
     },
     [ORDER_BOOK_FROM_BACKEND.asks[0].price]: {
         price: ORDER_BOOK_FROM_BACKEND.asks[0].price,
         isMiddle: true,
-        type: 'ask',
+        type: TransactionType.Ask,
         orders: ORDER_BOOK_FROM_BACKEND.asks[0].orders,
     },
 };

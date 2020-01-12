@@ -7,7 +7,7 @@ export const Styles = {
         paddingRight: 3,
         borderRadius: 3,
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
