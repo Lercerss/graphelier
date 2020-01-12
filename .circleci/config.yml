@@ -91,6 +91,7 @@ jobs:
                   command: |
                       source venv/bin/activate
                       python -m unittest
+                      mamba `find . -name *.spec.py` --format=documentation
             - run:
                   name: Lint scripts
                   command: |

@@ -31,3 +31,16 @@ class Message:
 
     def copy(self):
         return Message(**self.__dict__)
+
+    def __eq__(self, o):
+        return self.time == o.time and \
+            self.message_type == o.message_type and \
+            self.id == o.id and \
+            self.share_quantity == o.share_quantity and \
+            self.price == o.price and \
+            self.direction == o.direction and \
+            self.sod_offset == o.sod_offset and \
+            self.fake == o.fake
+
+    def __hash__(self):
+        return id(self)

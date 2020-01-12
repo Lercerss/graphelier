@@ -97,7 +97,7 @@ class ExtenderTest(unittest.TestCase):
 
         new_orders = [m for m in extended
                       if m.message_type == MessageType.NEW_ORDER]
-        self.assertEqual(14, len(new_orders))
+        self.assertEqual(11, len(new_orders))
 
         id_map = defaultdict(list)
         sample_ids = set(m.id for m in sample if m.id > 0)

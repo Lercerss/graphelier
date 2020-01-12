@@ -22,7 +22,7 @@ class OrderBook:
         self.bid_book: Dict[int, List[Order]] = defaultdict(list)
         self.ask_book: Dict[int, List[Order]] = defaultdict(list)
         self.bid = 0
-        self.ask = float('inf')
+        self.ask = 0
         self.id_map: Dict[int, Order] = {}
         self.last_time = 0
         self.msg_handlers = {
@@ -35,51 +35,53 @@ class OrderBook:
         self.last_sod_offset = 0
 
     def _do_new(self, msg: Message):
-        o = Order(msg.id, msg.share_quantity, msg.price, msg.direction)
+        order = Order(msg.id, msg.share_quantity, msg.price, msg.direction)
         if msg.direction == -1:
-            self.ask_book[msg.price].append(o)
-            self.ask = min(self.ask, msg.price)
+            self.ask_book[msg.price].append(order)
+            self.ask = min(self.ask_book.keys())
         elif msg.direction == 1:
-            self.bid_book[msg.price].append(o)
-            self.bid = max(self.bid, msg.price)
+            self.bid_book[msg.price].append(order)
+            self.bid = max(self.bid_book.keys())
         else:
             return
 
-        self.id_map[msg.id] = o
+        self.id_map[msg.id] = order
 
     def _do_modify(self, msg: Message):
-        o = self.id_map.get(msg.id)
-        if not o:
+        order = self.id_map.get(msg.id)
+        if not order:
             return
 
-        if 0 <= msg.share_quantity < o.qty:
+        if 0 <= msg.share_quantity < order.qty:
             # Partial cancel, keep priority and reduce quantity
-            o.qty -= msg.share_quantity
+            order.qty -= msg.share_quantity
         else:
             self._do_delete(Message(msg.time, MessageType.DELETE,
-                                    o.id, o.qty, o.price, o.direction))
+                                    order.id, order.qty, order.price,
+                                    order.direction))
             if msg.share_quantity < 0:
                 # Increasing order size, reset its priority
                 self._do_new(Message(msg.time, MessageType.NEW_ORDER,
-                                     o.id, o.qty - msg.share_quantity, msg.price, msg.direction))
+                                     order.id, order.qty - msg.share_quantity,
+                                     msg.price, msg.direction))
 
     def _do_delete(self, msg: Message):
-        o = self.id_map.get(msg.id)
-        if not o:
+        order = self.id_map.get(msg.id)
+        if not order:
             return
 
-        if o.direction == -1:
-            self.ask_book[o.price].remove(o)
-            del self.id_map[o.id]
-            if len(self.ask_book[o.price]) == 0:
-                del self.ask_book[o.price]
+        if order.direction == -1:
+            self.ask_book[order.price].remove(order)
+            del self.id_map[order.id]
+            if len(self.ask_book[order.price]) == 0:
+                del self.ask_book[order.price]
                 self.ask = min(self.ask_book.keys()) if len(
                     self.ask_book) > 0 else 0
-        elif o.direction == 1:
-            self.bid_book[o.price].remove(o)
-            del self.id_map[o.id]
-            if len(self.bid_book[o.price]) == 0:
-                del self.bid_book[o.price]
+        elif order.direction == 1:
+            self.bid_book[order.price].remove(order)
+            del self.id_map[order.id]
+            if len(self.bid_book[order.price]) == 0:
+                del self.bid_book[order.price]
                 self.bid = max(self.bid_book.keys()) if len(
                     self.bid_book) > 0 else 0
 
@@ -87,12 +89,12 @@ class OrderBook:
         if msg.id == 0:
             return
 
-        o = self.id_map.get(msg.id)
-        if not o:
+        order = self.id_map.get(msg.id)
+        if not order:
             return
 
-        if o.qty > msg.share_quantity:
-            o.qty -= msg.share_quantity
+        if order.qty > msg.share_quantity:
+            order.qty -= msg.share_quantity
         else:
             self._do_delete(msg)
 
@@ -127,14 +129,16 @@ class OrderBook:
         return ret
 
     def has_order(self, msg: Message):
+        order = Order(msg.id, msg.share_quantity, msg.price, msg.direction)
         return (msg.direction == -1 and
-                msg.price in self.ask_book and msg in self.ask_book[msg.price]) \
+                msg.price in self.ask_book and order in self.ask_book[msg.price]) \
             or (msg.direction == 1 and
-                msg.price in self.bid_book and msg in self.bid_book[msg.price])
+                msg.price in self.bid_book and order in self.bid_book[msg.price])
 
     def is_valid_msg(self, msg: Message):
         return msg.message_type in (MessageType.NEW_ORDER, MessageType.IGNORE) \
-            or self.has_order(msg)
+            or self.has_order(msg) \
+            or msg.id == 0 and msg.message_type == MessageType.EXECUTE
 
     def __str__(self):
         return '<OrderBook bids={bids} asks={asks} time="{time}">'.format(
