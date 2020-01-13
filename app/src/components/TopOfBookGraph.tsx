@@ -7,6 +7,7 @@ import dateFormat from 'dateformat';
 
 import { LineSeries } from 'react-stockcharts/lib/series';
 import { ChartCanvas, Chart } from 'react-stockcharts';
+import { ClickCallback } from 'react-stockcharts/lib/interactive';
 import { XAxis, YAxis } from 'react-stockcharts/lib/axes';
 import { discontinuousTimeScaleProvider } from 'react-stockcharts/lib/scale';
 import {
@@ -146,12 +147,13 @@ class TopOfBookGraph extends Component<Props> {
                     />
                     <MouseCoordinateY
                         at={'right'}
-                        orient={'right'}
+                        orient={'bottom'}
                         displayFormat={format('.2f')}
                     />
                     <SingleValueTooltip
                         yLabel={'Date'}
-                        yAccessor={d => dateFormat(new Date(d.key), 'dddd, mmmm dS, yyyy, h:MM:ss TT')}
+                        yAccessor={d => d.key}
+                        yDisplayFormat={timeFormat('%Y-%m-%d')}
                         labelStroke={Colors.green}
                         origin={[0, -10]}
                     />
@@ -168,6 +170,9 @@ class TopOfBookGraph extends Component<Props> {
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.green}
                         origin={[175, -10]}
+                    />
+                    <ClickCallback
+                        onClick={(moreProps, e) => { console.log(moreProps.currentItem.key); }}
                     />
                 </Chart>
                 <CrossHairCursor />
