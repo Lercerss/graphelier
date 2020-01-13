@@ -8,7 +8,6 @@ import { Styles } from '../styles/TopOfBookGraphWrapper';
 function TopOfBookGraphWrapper(props) {
     const { classes } = props;
     const [ref, { width, height }] = useDimensions();
-    console.log(width, height);
     return (
         <div className={classes.graph}>
             <div

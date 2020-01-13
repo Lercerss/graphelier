@@ -28,8 +28,7 @@ import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-// NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
-// NANOSECONDS_IN_SIXTEEN_HOURS,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -60,7 +59,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             selectedDateNano: bigInt(0),
             selectedTimeNano: bigInt(0),
             selectedDateTimeNano: bigInt(0),
-            selectedTimeString: 'Select from slider',
+            selectedTimeString: '00:00:00',
             selectedDateString: '',
             expanded: true,
             selectedInstrument: '',
@@ -115,13 +114,17 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 },
             );
         } else {
-            const { selectedTimeNano } = this.state;
+            // TODO request best asks/bids over time, set selectedTimeNano to first data point
+            const selectedTimeNano = bigInt(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const selectedTimeString = nanosecondsToString(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
             const selectedDateString = event.target.value;
             const selectedDateNano = dateStringToEpoch(`${selectedDateString} 00:00:00`);
             const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano.plus(selectedDateNano));
 
             this.setState(
                 {
+                    selectedTimeNano,
+                    selectedTimeString,
                     selectedDateNano,
                     selectedDateString,
                     selectedDateTimeNano,
@@ -339,21 +342,21 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 InputProps={{ inputProps: { max: '2100-01-01' } }}
                             />
                         </div>
-                        {/* <div className={classes.inline}> */}
-                        {/*    <Typography */}
-                        {/*        variant={'body1'} */}
-                        {/*        className={classes.inputLabel} */}
-                        {/*        color={'textSecondary'} */}
-                        {/*    > */}
-                        {/*        {'Time'} */}
-                        {/*    </Typography> */}
-                        {/*    <Typography */}
-                        {/*        variant={'body1'} */}
-                        {/*        className={classes.timestampDisplay} */}
-                        {/*    > */}
-                        {/*        {selectedTimeString} */}
-                        {/*    </Typography> */}
-                        {/* </div> */}
+                        <div className={classes.inline}>
+                            <Typography
+                                variant={'body1'}
+                                className={classes.inputLabel}
+                                color={'textSecondary'}
+                            >
+                                {'Time'}
+                            </Typography>
+                            <Typography
+                                variant={'body1'}
+                                className={classes.timestampDisplay}
+                            >
+                                {selectedTimeString}
+                            </Typography>
+                        </div>
                         {/* <div className={classes.inline}> */}
                         {/*    <Typography */}
                         {/*        variant={'body1'} */}
