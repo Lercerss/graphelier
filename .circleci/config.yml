@@ -164,4 +164,4 @@ workflows:
                   family: "app"
                   cluster-name: "Graphelier-cluster"
                   service-name: "Graphelier-service"
-                  container-image-name-updates: "container=graphelier-app,image-and-tag=graphelier-app:${CIRCLE_SHA1},container=graphelier-service,image-and-tag=graphelier-service:${CIRCLE_SHA1},container=mongo,image-and-tag=mongo:${CIRCLE_SHA1}"
+                  container-image-name-updates: "container=graphelier-app,image-and-tag=${AWS_ECR_URL}/graphelier-app:${CIRCLE_SHA1},container=graphelier-service,image-and-tag=${AWS_ECR_URL}/graphelier-service:${CIRCLE_SHA1},container=mongo,image-and-tag=${AWS_ECR_URL}/mongo:${CIRCLE_SHA1}"
