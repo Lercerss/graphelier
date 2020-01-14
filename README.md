@@ -12,9 +12,14 @@ docker-compose up
 ## Running the Application in a Production Environment
 
 ```sh
-docker-compose -f docker-compose.yml build
-docker-compose -f docker-compose.yml up
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 ```
+
+## Application URL
+
+http://ec2-18-188-177-125.us-east-2.compute.amazonaws.com/
+
 
 ## README
 
