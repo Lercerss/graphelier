@@ -4,14 +4,14 @@ import {
     Typography,
     FormControl,
     TextField,
-    Slider,
-    Collapse,
-    IconButton,
+    // Slider,
+    // Collapse,
+    // IconButton,
     Card, InputLabel, Select, MenuItem,
 } from '@material-ui/core';
-import classNames from 'classnames';
+// import classNames from 'classnames';
 import { WithStyles, createStyles } from '@material-ui/core/styles';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import bigInt from 'big-integer';
 
 import { Styles } from '../styles/OrderBookSnapshot';
@@ -24,11 +24,12 @@ import {
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
+import TopOfBookGraph from './TopOfBookGraph';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
-    NANOSECONDS_IN_SIXTEEN_HOURS,
+// NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
+// NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -247,12 +248,13 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     render() {
         const { classes } = this.props;
         const {
-            expanded,
+            // expanded,
             listItems,
             maxQuantity,
             selectedTimeNano,
             selectedDateNano,
             selectedDateString,
+            // eslint-disable-next-line no-unused-vars
             selectedTimeString,
             lastSodOffset,
             selectedInstrument,
@@ -289,95 +291,96 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         })
                     }
                 </Select>
-                <div className={classNames(classes.expandRow, classes.flex)}>
-                    {(selectedTimeNano.equals(0) || selectedDateNano.equals(0)) ? (
-                        <Typography
-                            variant={'body1'}
-                            className={classNames(classes.pleaseSelectMessage, classes.flex)}
-                        >
-                            Please select Date and Time
-                        </Typography>
-                    ) : (
-                        <Typography
-                            variant={'body1'}
-                            color={'textPrimary'}
-                            className={classNames(classes.selectMessage, classes.flex)}
-                        >
-                            Select Date and Time
-                        </Typography>
-                    )}
-                    <IconButton
-                        className={classNames(classes.expand, expanded && classes.expandOpen)}
-                        onClick={this.handleExpandClick}
-                        aria-expanded={expanded}
-                        aria-label={'show more'}
-                    >
-                        <ExpandMoreIcon />
-                    </IconButton>
+                {/* <div className={classNames(classes.expandRow, classes.flex)}> */}
+                {/*    {(selectedTimeNano.equals(0) || selectedDateNano.equals(0)) ? ( */}
+                {/*        <Typography */}
+                {/*            variant={'body1'} */}
+                {/*            className={classNames(classes.pleaseSelectMessage, classes.flex)} */}
+                {/*        > */}
+                {/*            Please select Date and Time */}
+                {/*        </Typography> */}
+                {/*    ) : ( */}
+                {/*        <Typography */}
+                {/*            variant={'body1'} */}
+                {/*            color={'textPrimary'} */}
+                {/*            className={classNames(classes.selectMessage, classes.flex)} */}
+                {/*        > */}
+                {/*            Select Date and Time */}
+                {/*        </Typography> */}
+                {/*    )} */}
+                {/*    <IconButton */}
+                {/*        className={classNames(classes.expand, expanded && classes.expandOpen)} */}
+                {/*        onClick={this.handleExpandClick} */}
+                {/*        aria-expanded={expanded} */}
+                {/*        aria-label={'show more'} */}
+                {/*    > */}
+                {/*        <ExpandMoreIcon /> */}
+                {/*    </IconButton> */}
+                {/* </div> */}
+                {/* <Collapse in={expanded}> */}
+                <div
+                    id={'ButtonHeader'}
+                    className={classes.divTopBook}
+                >
+                    <FormControl className={classes.formControl}>
+                        <div className={classes.inline}>
+                            <Typography
+                                variant={'body1'}
+                                className={classes.inputLabel}
+                                color={'textSecondary'}
+                            >
+                                {'Date'}
+                            </Typography>
+                            <TextField
+                                className={classes.datePicker}
+                                type={'date'}
+                                value={selectedDateString}
+                                onChange={this.handleChangeDate}
+                                InputProps={{ inputProps: { max: '2100-01-01' } }}
+                            />
+                        </div>
+                        {/* <div className={classes.inline}> */}
+                        {/*    <Typography */}
+                        {/*        variant={'body1'} */}
+                        {/*        className={classes.inputLabel} */}
+                        {/*        color={'textSecondary'} */}
+                        {/*    > */}
+                        {/*        {'Time'} */}
+                        {/*    </Typography> */}
+                        {/*    <Typography */}
+                        {/*        variant={'body1'} */}
+                        {/*        className={classes.timestampDisplay} */}
+                        {/*    > */}
+                        {/*        {selectedTimeString} */}
+                        {/*    </Typography> */}
+                        {/* </div> */}
+                        {/* <div className={classes.inline}> */}
+                        {/*    <Typography */}
+                        {/*        variant={'body1'} */}
+                        {/*        color={'textSecondary'} */}
+                        {/*    > */}
+                        {/*        9:30 */}
+                        {/*    </Typography> */}
+                        {/*    <Slider */}
+                        {/*        className={classes.timestampSlider} */}
+                        {/*        min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am */}
+                        {/*        max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm */}
+                        {/*        step={1} */}
+                        {/*        value={selectedTimeNano.valueOf()} */}
+                        {/*        onChange={this.handleChangeTime} */}
+                        {/*        onChangeCommitted={this.handleCommitTime} */}
+                        {/*    /> */}
+                        {/*    <Typography */}
+                        {/*        variant={'body1'} */}
+                        {/*        color={'textSecondary'} */}
+                        {/*    > */}
+                        {/*        16:00 */}
+                        {/*    </Typography> */}
+                        {/* </div> */}
+                        <TopOfBookGraph className={classes.graph} />
+                    </FormControl>
                 </div>
-                <Collapse in={expanded}>
-                    <div
-                        id={'ButtonHeader'}
-                        className={classes.divTopBook}
-                    >
-                        <FormControl className={classes.formControl}>
-                            <div className={classes.inline}>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.inputLabel}
-                                    color={'textSecondary'}
-                                >
-                                    {'Date'}
-                                </Typography>
-                                <TextField
-                                    className={classes.datePicker}
-                                    type={'date'}
-                                    value={selectedDateString}
-                                    onChange={this.handleChangeDate}
-                                    InputProps={{ inputProps: { max: '2100-01-01' } }}
-                                />
-                            </div>
-                            <div className={classes.inline}>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.inputLabel}
-                                    color={'textSecondary'}
-                                >
-                                    {'Time'}
-                                </Typography>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.timestampDisplay}
-                                >
-                                    {selectedTimeString}
-                                </Typography>
-                            </div>
-                            <div className={classes.inline}>
-                                <Typography
-                                    variant={'body1'}
-                                    color={'textSecondary'}
-                                >
-                                    9:30
-                                </Typography>
-                                <Slider
-                                    className={classes.timestampSlider}
-                                    min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am
-                                    max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm
-                                    step={1}
-                                    value={selectedTimeNano.valueOf()}
-                                    onChange={this.handleChangeTime}
-                                    onChangeCommitted={this.handleCommitTime}
-                                />
-                                <Typography
-                                    variant={'body1'}
-                                    color={'textSecondary'}
-                                >
-                                    16:00
-                                </Typography>
-                            </div>
-                        </FormControl>
-                    </div>
-                </Collapse>
+                {/* </Collapse> */}
                 <Card>
                     <TimestampOrderBookScroller
                         listItems={listItems}
