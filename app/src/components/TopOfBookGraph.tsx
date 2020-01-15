@@ -31,6 +31,8 @@ const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles> {
     className: string
+    height: number
+    width: number
 }
 
 class TopOfBookGraph extends Component<Props> {
