@@ -18,6 +18,9 @@
         "axios-logger": "^2.2.1",
         "big-integer": "^1.6.48",
         "classnames": "^2.2.6",
+        "d3-format": "^1.4.2",
+        "d3-time-format": "^2.2.2",
+        "dateformat": "^3.0.3",
         "enzyme": "^3.10.0",
         "enzyme-adapter-react-16": "^1.15.1",
         "moment": "^2.24.0",
@@ -28,6 +31,8 @@
         "react-redux": "^7.1.1",
         "react-router-dom": "^5.1.2",
         "react-scripts": "^3.1.2",
+        "react-stockcharts": "^0.7.8",
+        "react-use-dimensions": "^1.2.1",
         "redux": "^4.0.4",
         "redux-thunk": "^2.3.0",
         "typescript": "^3.7.4"

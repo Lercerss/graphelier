@@ -1,7 +1,5 @@
 export const Styles = {
     graph: {
-    },
-    tooltip: {
-
+        paddingTop: 20,
     },
 };

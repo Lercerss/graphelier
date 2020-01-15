@@ -24,7 +24,7 @@ import {
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
-import TopOfBookGraph from './TopOfBookGraph';
+import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
@@ -377,7 +377,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         {/*        16:00 */}
                         {/*    </Typography> */}
                         {/* </div> */}
-                        <TopOfBookGraph className={classes.graph} />
+                        <TopOfBookGraphWrapper className={classes.graph} />
+
                     </FormControl>
                 </div>
                 {/* </Collapse> */}
