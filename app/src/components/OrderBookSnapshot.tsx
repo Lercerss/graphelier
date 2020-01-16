@@ -59,7 +59,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             selectedDateNano: bigInt(0),
             selectedTimeNano: bigInt(0),
             selectedDateTimeNano: bigInt(0),
-            selectedTimeString: '00:00:00',
+            selectedTimeString: '00:00:00.000000000',
             selectedDateString: '',
             expanded: true,
             selectedInstrument: '',

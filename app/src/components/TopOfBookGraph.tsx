@@ -153,28 +153,21 @@ class TopOfBookGraph extends Component<Props> {
                         displayFormat={format('.2f')}
                     />
                     <SingleValueTooltip
-                        yLabel={'Date'}
-                        yAccessor={d => d.key}
-                        yDisplayFormat={timeFormat('%Y-%m-%d')}
-                        labelStroke={Colors.green}
-                        origin={[0, -10]}
-                    />
-                    <SingleValueTooltip
                         yLabel={'Ask'}
                         yAccessor={d => d.best_ask}
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.red}
-                        origin={[100, -10]}
+                        origin={[10, -10]}
                     />
                     <SingleValueTooltip
                         yLabel={'Bid'}
                         yAccessor={d => d.best_bid}
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.green}
-                        origin={[175, -10]}
+                        origin={[85, -10]}
                     />
                     <ClickCallback
-                        onClick={(moreProps, e) => { console.log(moreProps.currentItem.key); }}
+                        onClick={(moreProps, e) => { console.log(moreProps); }}
                     />
                 </Chart>
                 <CrossHairCursor />
