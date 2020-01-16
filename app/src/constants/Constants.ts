@@ -3,7 +3,7 @@ export const ENVIRONMENT = 'DEV';
 export const BACKEND_PORT = 5050;
 let host = 'localhost';
 if (process.env.NODE_ENV === 'production') {
-    host = 'ec2-18-188-177-125.us-east-2.compute.amazonaws.com';
+    host = '18.218.121.174';
 }
 export const BACKEND_URL = `http://${host}:${BACKEND_PORT}`;
 
