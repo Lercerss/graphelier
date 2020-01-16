@@ -18,7 +18,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 
 ## Application URL
 
-http://ec2-18-188-177-125.us-east-2.compute.amazonaws.com/
+http://18.218.121.174/
 
 
 ## README
