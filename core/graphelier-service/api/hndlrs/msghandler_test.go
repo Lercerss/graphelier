@@ -1,95 +1,66 @@
-package hndlrs
+package hndlrs_test
 
 import (
-	"encoding/json"
+	"graphelier/core/graphelier-service/api/hndlrs"
 	"graphelier/core/graphelier-service/models"
-	"io/ioutil"
-	"net/http/httptest"
+	. "graphelier/core/graphelier-service/utils/test_utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/gorilla/mux"
-
-	"github.com/stretchr/testify/mock"
 )
 
-type mockDBMsgHndlr struct {
-	mock.Mock
-}
-
-func (db *mockDBMsgHndlr) GetInstruments() (result []string, err error) {
-	return
-}
-
-func (db *mockDBMsgHndlr) GetSingleMessage(instrument string, sodOffset int64) (result *models.Message, err error) {
-	return &models.Message{}, nil
-}
-func (db *mockDBMsgHndlr) GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error) {
-	return &models.Orderbook{}, nil
-}
-func (db *mockDBMsgHndlr) GetMessagesByTimestamp(instrument string, timestamp uint64) ([]*models.Message, error) {
-	messages := make([]*models.Message, 0)
-	return messages, nil
-}
-func (db *mockDBMsgHndlr) GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error) {
-	db.Called(instrument, paginator)
-	messages := make([]*models.Message, 0)
-	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 12, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 1})
-	messages = append(messages, &models.Message{Direction: -1, Instrument: "test", Type: 1, OrderID: 13, Price: 100, ShareQuantity: 10, Timestamp: 100, SodOffset: 2})
-	return messages, nil
-}
-func (db *mockDBMsgHndlr) RefreshCache() (err error) {
-	return
+var messages []*models.Message = []*models.Message{
+	MakeMsg(DirectionAsk, OrderID(12), SodOffset(1)),
+	MakeMsg(DirectionAsk, OrderID(13), SodOffset(2)),
 }
 
 func TestFetchMessagesSuccess(t *testing.T) {
-	mockedDB := &mockDBMsgHndlr{}
-	mockedEnv := &Env{mockedDB}
-	req := httptest.NewRequest("GET", "/messages/test/100?nMessages=25", nil)
-	vars := map[string]string{
-		"instrument": "test",
-		"sodOffset":  "100",
-	}
-	req = mux.SetURLVars(req, vars)
-	writer := httptest.NewRecorder()
-	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 25})
+	mockedDB := MockDb(t)
+	defer Ctrl.Finish()
 
-	err := FetchMessages(mockedEnv, writer, req)
-	assert.Nil(t, err)
-	resp := writer.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
+	mockedDB.EXPECT().
+		GetMessagesWithPagination("test", &models.Paginator{SodOffset: 100, NMessages: 25}).
+		Return(messages, nil)
+
 	var messagePage models.MessagePage
-	err = json.Unmarshal(body, &messagePage)
-
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 25})
+	err := MakeRequest(
+		hndlrs.FetchMessages, // Function under test
+		mockedDB,
+		"GET",
+		"/messages/test/100?nMessages=25",
+		map[string]string{
+			"instrument": "test",
+			"sodOffset":  "100",
+		},
+		&messagePage,
+	)
 	assert.Nil(t, err)
+
 	assert.Equal(t, int64(25), messagePage.PageInfo.NMessages)
 	assert.Equal(t, int64(125), messagePage.PageInfo.SodOffset)
 	assert.Equal(t, uint64(12), messagePage.Messages[0].OrderID)
 }
 
 func TestFetchMessagesDefaultValues(t *testing.T) {
-	mockedDB := &mockDBMsgHndlr{}
-	mockedEnv := &Env{mockedDB}
-	req := httptest.NewRequest("GET", "/messages/test/100", nil)
-	vars := map[string]string{
-		"instrument": "test",
-		"sodOffset":  "100",
-	}
-	req = mux.SetURLVars(req, vars)
-	writer := httptest.NewRecorder()
+	mockedDB := MockDb(t)
+	defer Ctrl.Finish()
 
-	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 20})
+	mockedDB.EXPECT().
+		GetMessagesWithPagination("test", &models.Paginator{SodOffset: 100, NMessages: 20}).
+		Return(messages, nil)
 
-	err := FetchMessages(mockedEnv, writer, req)
-	assert.Nil(t, err)
-	resp := writer.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
 	var messagePage models.MessagePage
-	err = json.Unmarshal(body, &messagePage)
-
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: 20})
+	err := MakeRequest(
+		hndlrs.FetchMessages, // Function under test
+		mockedDB,
+		"GET",
+		"/messages/test/100", // No value for `nMessages`
+		map[string]string{
+			"instrument": "test",
+			"sodOffset":  "100",
+		},
+		&messagePage,
+	)
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(20), messagePage.PageInfo.NMessages)
@@ -98,26 +69,26 @@ func TestFetchMessagesDefaultValues(t *testing.T) {
 }
 
 func TestFetchMessagesNegativeNMessages(t *testing.T) {
-	mockedDB := &mockDBMsgHndlr{}
-	mockedEnv := &Env{mockedDB}
-	req := httptest.NewRequest("GET", "/messages/test/100?nMessages=-25", nil)
-	vars := map[string]string{
-		"instrument": "test",
-		"sodOffset":  "100",
-	}
-	req = mux.SetURLVars(req, vars)
-	writer := httptest.NewRecorder()
+	mockedDB := MockDb(t)
+	defer Ctrl.Finish()
 
-	mockedDB.On("GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: -25})
+	mockedDB.EXPECT().
+		GetMessagesWithPagination("test", &models.Paginator{SodOffset: 100, NMessages: -25}).
+		Return(messages, nil)
 
-	err := FetchMessages(mockedEnv, writer, req)
-	assert.Nil(t, err)
-	resp := writer.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
 	var messagePage models.MessagePage
-	err = json.Unmarshal(body, &messagePage)
-
-	mockedDB.AssertCalled(t, "GetMessagesWithPagination", "test", &models.Paginator{SodOffset: 100, NMessages: -25})
+	err := MakeRequest(
+		hndlrs.FetchMessages, // Function under test
+		mockedDB,
+		"GET",
+		"/messages/test/100?nMessages=-25",
+		map[string]string{
+			"instrument": "test",
+			"sodOffset":  "100",
+		},
+		&messagePage,
+	)
+	assert.Nil(t, err)
 
 	assert.Nil(t, err)
 	assert.Equal(t, int64(-25), messagePage.PageInfo.NMessages)
@@ -129,20 +100,24 @@ func TestFetchMessagesNegativeNMessages(t *testing.T) {
 }
 
 func TestFetchMessagesBadInput(t *testing.T) {
-	mockedDB := &mockDBMsgHndlr{}
-	mockedEnv := &Env{mockedDB}
-	req := httptest.NewRequest("GET", "/messages/test/10aa0", nil)
-	vars := map[string]string{
-		"instrument": "test",
-		"sodOffset":  "10aa0",
-	}
-	req = mux.SetURLVars(req, vars)
-	writer := httptest.NewRecorder()
+	mockedDB := MockDb(t)
+	defer Ctrl.Finish()
 
-	mockedDB.On("GetMessagesWithPagination", "test", mock.Anything, mock.Anything)
+	mockedDB.EXPECT().
+		GetMessagesWithPagination("test", &models.Paginator{SodOffset: 100, NMessages: 20}).
+		MaxTimes(0)
 
-	err := FetchMessages(mockedEnv, writer, req)
-
-	mockedDB.AssertNotCalled(t, "GetMessagesWithPagination", mock.Anything, mock.Anything)
+	var messagePage models.MessagePage
+	err := MakeRequest(
+		hndlrs.FetchMessages, // Function under test
+		mockedDB,
+		"GET",
+		"/messages/test/10aa0",
+		map[string]string{
+			"instrument": "test",
+			"sodOffset":  "10aa0",
+		},
+		&messagePage,
+	)
 	assert.NotNil(t, err)
 }

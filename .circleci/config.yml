@@ -63,7 +63,7 @@ jobs:
                       - ~/.cache/go-build
             - run:
                   name: Test service
-                  command: go test graphelier/core/graphelier-service/...
+                  command: go test -v graphelier/core/graphelier-service/...
 
     build_scripts:
         docker:

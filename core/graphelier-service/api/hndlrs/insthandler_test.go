@@ -1,62 +1,49 @@
-package hndlrs
+package hndlrs_test
 
 import (
-	"encoding/json"
-	"graphelier/core/graphelier-service/models"
-	"io/ioutil"
-	"net/http/httptest"
+	"graphelier/core/graphelier-service/api/hndlrs"
+	. "graphelier/core/graphelier-service/utils/test_utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-type mockDBIHndlr struct {
-	mock.Mock
-}
-
-func (db *mockDBIHndlr) GetInstruments() (result []string, err error) {
-	result = []string{"TEST", "SPY", "AAPL"}
-	return
-}
-
-func (db *mockDBIHndlr) GetSingleMessage(instrument string, sodOffset int64) (result *models.Message, err error) {
-	return
-}
-
-func (db *mockDBIHndlr) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
-	return
-}
-
-func (db *mockDBIHndlr) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
-	return
-}
-
-func (db *mockDBIHndlr) GetMessagesWithPagination(instrument string, paginator *models.Paginator) (result []*models.Message, err error) {
-	return
-}
-
-func (db *mockDBIHndlr) RefreshCache() (err error) {
-	return
-}
-
 func TestFetchInstruments(t *testing.T) {
-	mockedDB := &mockDBIHndlr{}
-	mockedEnv := &Env{mockedDB}
+	mockedDB := MockDb(t)
+	defer Ctrl.Finish()
 
-	req := httptest.NewRequest("GET", "/instruments/", nil)
-	writer := httptest.NewRecorder()
+	mockedDB.EXPECT().GetInstruments().Return([]string{"TEST", "SPY", "AAPL"}, nil)
 
-	mockedDB.On("GetInstruments")
-
-	err := FetchInstruments(mockedEnv, writer, req)
-	assert.Nil(t, err)
-
-	resp := writer.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
 	var instruments []string
-	err = json.Unmarshal(body, &instruments)
+	err := MakeRequest(
+		hndlrs.FetchInstruments, // Function under test
+		mockedDB,
+		"GET",
+		"/instruments/",
+		nil,
+		&instruments,
+	)
 	assert.Nil(t, err)
 
 	assert.Equal(t, 3, len(instruments))
+}
+
+func TestFetchInstrumentsNoValues(t *testing.T) {
+	mockedDB := MockDb(t)
+	defer Ctrl.Finish()
+
+	mockedDB.EXPECT().GetInstruments().Return(make([]string, 0), nil)
+
+	var instruments []string
+	err := MakeRequest(
+		hndlrs.FetchInstruments, // Function under test
+		mockedDB,
+		"GET",
+		"/instruments/",
+		nil,
+		&instruments,
+	)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 0, len(instruments))
 }
