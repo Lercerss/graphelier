@@ -39,7 +39,6 @@ const styles = createStyles(Styles);
 interface State {
     lastSodOffset: bigInt.BigInteger,
     selectedDateNano: bigInt.BigInteger,
-    selectedTimeNano: bigInt.BigInteger,
     selectedDateTimeNano: bigInt.BigInteger,
     selectedTimeString: string,
     selectedDateString: string,
@@ -57,7 +56,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         this.state = {
             lastSodOffset: bigInt(0),
             selectedDateNano: bigInt(0),
-            selectedTimeNano: bigInt(0),
             selectedDateTimeNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
             selectedDateString: '',
@@ -114,16 +112,24 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 },
             );
         } else {
-            // TODO request best asks/bids over time, set selectedTimeNano to first data point
-            const selectedTimeNano = bigInt(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-            const selectedTimeString = nanosecondsToString(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            // TODO request TOB over time, set selectedDateTimeNano to selected day at 9:30 edt (epoch nanoseconds)
+            // (this means 1:30 pm)
+            // eslint-disable-next-line max-len
+            const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
+            const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
             const selectedDateString = event.target.value;
             const selectedDateNano = dateStringToEpoch(`${selectedDateString} 00:00:00`);
-            const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano.plus(selectedDateNano));
+            const selectedDateTimeNano = convertNanosecondsToUTC(selectedDateNano.plus(selectedTimeNano));
+
+            console.log('handleChangeDate selectedTimeNano', selectedTimeNano);
+            console.log('handleChangeDate selectedTimeString', selectedTimeString);
+            console.log('handleChangeDate selectedDateNano', selectedDateNano);
+            console.log('handleChangeDate selectedDateString', selectedDateString);
+            console.log('handleChangeDate selectedDateTimeNano', selectedDateTimeNano);
+
 
             this.setState(
                 {
-                    selectedTimeNano,
                     selectedTimeString,
                     selectedDateNano,
                     selectedDateString,
@@ -137,38 +143,24 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     };
 
     /**
-     * @desc Handles the time change when sliding the time Slider
-     * @param event The event object that caused the call
-     * @param value {number} The new time value that represents the nanoseconds between 12 am and the chosen time of
-     * day.
+     * @desc Handles the datetime change when the user clicks on a time in the graph
+     * @param value {number} The new datetime value that represents the date and time clicked on in the graph,
+     * in utc nanoseconds
      */
-    handleChangeTime = (event: React.ChangeEvent<any>, value: any) => {
-        if (value) {
-            const selectedTimeNano = bigInt(value);
-            const selectedTimeString = nanosecondsToString(value);
+    handleSelectGraphDateTime = (value: any) => {
+        // TODO the graph allows you to select a date AND time, so selectedTimeNano/String are no longer needed.
+        //  Also update the selectedDateString when this is selected. SelectedDateNano may also no longer be needed.
 
-            this.setState({
-                selectedTimeNano,
-                selectedTimeString,
-            });
-        }
-    };
+        const selectedDateTimeNano = convertNanosecondsToUTC(value);
+        // eslint-disable-next-line no-unused-vars
+        const { dateNanoseconds, timeNanoseconds } = splitNanosecondEpochTimestamp(value);
+        console.log('handleSelectGraphDateTime date', dateNanoseconds);
+        console.log('handleSelectGraphDateTime time', timeNanoseconds);
 
-    /**
-     * @desc Handles the time change when the user stops sliding the time Slider
-     * @param event The event object that caused the call
-     * @param value {number} The new time value that represents the nanoseconds between 12 am and the chosen time of day
-     */
-    handleCommitTime = (event: React.ChangeEvent<any>, value: any) => {
-        const { selectedDateNano } = this.state;
-
-        const selectedTimeNano = bigInt(value);
-        const selectedTimeString = nanosecondsToString(value);
-        const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano.plus(selectedDateNano));
+        const selectedTimeString = nanosecondsToString(timeNanoseconds);
 
         this.setState(
             {
-                selectedTimeNano,
                 selectedTimeString,
                 selectedDateTimeNano,
             },
@@ -181,8 +173,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      *  change in the date or when the user stops sliding the time Slider
      */
     handleChangeDateTime = () => {
-        const { selectedDateNano, selectedTimeNano } = this.state;
-        if (selectedTimeNano.neq(0) && selectedDateNano.neq(0)) {
+        const { selectedDateTimeNano } = this.state;
+        if (selectedDateTimeNano.neq(0)) {
             this.updateOrderBook();
         }
     };
@@ -205,7 +197,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 lastSodOffset: bigInt(last_sod_offset),
                 selectedDateNano: dateNanoseconds,
                 selectedDateString: epochToDateString(dateNanoseconds),
-                selectedTimeNano: convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)),
                 selectedTimeString: nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(
                     bigInt(timeNanoseconds),
                 ).valueOf()),
@@ -251,13 +242,10 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     render() {
         const { classes } = this.props;
         const {
-            // expanded,
             listItems,
             maxQuantity,
-            selectedTimeNano,
-            selectedDateNano,
+            selectedDateTimeNano,
             selectedDateString,
-            // eslint-disable-next-line no-unused-vars
             selectedTimeString,
             lastSodOffset,
             selectedInstrument,
@@ -294,33 +282,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         })
                     }
                 </Select>
-                {/* <div className={classNames(classes.expandRow, classes.flex)}> */}
-                {/*    {(selectedTimeNano.equals(0) || selectedDateNano.equals(0)) ? ( */}
-                {/*        <Typography */}
-                {/*            variant={'body1'} */}
-                {/*            className={classNames(classes.pleaseSelectMessage, classes.flex)} */}
-                {/*        > */}
-                {/*            Please select Date and Time */}
-                {/*        </Typography> */}
-                {/*    ) : ( */}
-                {/*        <Typography */}
-                {/*            variant={'body1'} */}
-                {/*            color={'textPrimary'} */}
-                {/*            className={classNames(classes.selectMessage, classes.flex)} */}
-                {/*        > */}
-                {/*            Select Date and Time */}
-                {/*        </Typography> */}
-                {/*    )} */}
-                {/*    <IconButton */}
-                {/*        className={classNames(classes.expand, expanded && classes.expandOpen)} */}
-                {/*        onClick={this.handleExpandClick} */}
-                {/*        aria-expanded={expanded} */}
-                {/*        aria-label={'show more'} */}
-                {/*    > */}
-                {/*        <ExpandMoreIcon /> */}
-                {/*    </IconButton> */}
-                {/* </div> */}
-                {/* <Collapse in={expanded}> */}
                 <div
                     id={'ButtonHeader'}
                     className={classes.divTopBook}
@@ -357,40 +318,19 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 {selectedTimeString}
                             </Typography>
                         </div>
-                        {/* <div className={classes.inline}> */}
-                        {/*    <Typography */}
-                        {/*        variant={'body1'} */}
-                        {/*        color={'textSecondary'} */}
-                        {/*    > */}
-                        {/*        9:30 */}
-                        {/*    </Typography> */}
-                        {/*    <Slider */}
-                        {/*        className={classes.timestampSlider} */}
-                        {/*        min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am */}
-                        {/*        max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm */}
-                        {/*        step={1} */}
-                        {/*        value={selectedTimeNano.valueOf()} */}
-                        {/*        onChange={this.handleChangeTime} */}
-                        {/*        onChangeCommitted={this.handleCommitTime} */}
-                        {/*    /> */}
-                        {/*    <Typography */}
-                        {/*        variant={'body1'} */}
-                        {/*        color={'textSecondary'} */}
-                        {/*    > */}
-                        {/*        16:00 */}
-                        {/*    </Typography> */}
-                        {/* </div> */}
-                        <TopOfBookGraphWrapper className={classes.graph} />
+                        <TopOfBookGraphWrapper
+                            className={classes.graph}
+                            onTimeSelect={this.handleSelectGraphDateTime}
+                        />
 
                     </FormControl>
                 </div>
-                {/* </Collapse> */}
                 <Card>
                     <TimestampOrderBookScroller
                         listItems={listItems}
                         maxQuantity={maxQuantity}
                         lastSodOffset={lastSodOffset}
-                        timeOrDateIsNotSet={selectedTimeNano.equals(0) || selectedDateNano.equals(0)}
+                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                         instrument={selectedInstrument}
                     />

@@ -4,9 +4,8 @@ import { withStyles } from '@material-ui/core';
 import TopOfBookGraph from './TopOfBookGraph';
 import { Styles } from '../styles/TopOfBookGraphWrapper';
 
-
 function TopOfBookGraphWrapper(props) {
-    const { classes } = props;
+    const { classes, onTimeSelect } = props;
     const [ref, { width, height }] = useDimensions();
     return (
         <div className={classes.graph}>
@@ -18,6 +17,7 @@ function TopOfBookGraphWrapper(props) {
                     className={classes.graph}
                     height={height}
                     width={width}
+                    onTimeSelect={onTimeSelect}
                 />
             </div>
         </div>
