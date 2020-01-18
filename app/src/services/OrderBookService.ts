@@ -16,4 +16,10 @@ export default class OrderBookService {
     static getInstrumentsList = () => {
         return httpClient.get(`/instruments/`);
     };
+
+    // TODO replace placeholder url with real url
+    static getTopOfBookOverTime = (instrument: string, startTime: string, endTime: string, nDataPoints: number) => {
+        return httpClient
+            .get(`/tob/${instrument}/?startTime=${startTime}?endTime=${endTime}?nDataPoints=${nDataPoints}`);
+    };
 }

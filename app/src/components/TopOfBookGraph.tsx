@@ -33,6 +33,7 @@ interface Props extends WithStyles<typeof styles> {
     className: string
     height: number
     width: number
+    onTimeSelect: (any) => void
 }
 
 class TopOfBookGraph extends Component<Props> {
@@ -61,36 +62,44 @@ class TopOfBookGraph extends Component<Props> {
     };
 
     render() {
-        const { width, height, classes } = this.props;
+        const {
+            width, height, classes, onTimeSelect,
+        } = this.props;
 
         const initialData = [
             {
-                key: new Date(Number(bigInt(32400000000000).divide(1000000))),
+                date: bigInt(1340269200000000),
+                key: new Date(Number(bigInt(1340269200000000).divide(1000))),
                 best_ask: 130.2,
                 best_bid: 129.1,
             },
             {
-                key: new Date(Number(bigInt(37800000000000).divide(1000000))),
+                date: bigInt(1340274600000000),
+                key: new Date(Number(bigInt(1340274600000000).divide(1000))),
                 best_ask: 131.5,
                 best_bid: 130.5,
             },
             {
-                key: new Date(Number(bigInt(43200000000000).divide(1000000))),
+                date: bigInt(1340280000000000),
+                key: new Date(Number(bigInt(1340280000000000).divide(1000))),
                 best_ask: 132.5,
                 best_bid: 130.9,
             },
             {
-                key: new Date(Number(bigInt(48600000000000).divide(1000000))),
+                date: bigInt(1340285400000000),
+                key: new Date(Number(bigInt(1340285400000000).divide(1000))),
                 best_ask: 133.2,
                 best_bid: 132.7,
             },
             {
-                key: new Date(Number(bigInt(54000000000000).divide(1000000))),
+                date: bigInt(1340290800000000),
+                key: new Date(Number(bigInt(1340290800000000).divide(1000))),
                 best_ask: 134.0,
                 best_bid: 132.9,
             },
             {
-                key: new Date(Number(bigInt(59400000000000).divide(1000000))),
+                date: bigInt(1340296200000000),
+                key: new Date(Number(bigInt(1340296200000000).divide(1000))),
                 best_ask: 131.3,
                 best_bid: 131.0,
             },
@@ -167,7 +176,7 @@ class TopOfBookGraph extends Component<Props> {
                         origin={[85, -10]}
                     />
                     <ClickCallback
-                        onClick={(moreProps, e) => { console.log(moreProps); }}
+                        onClick={(moreProps, e) => { onTimeSelect(moreProps.currentItem.date); }}
                     />
                 </Chart>
                 <CrossHairCursor />
