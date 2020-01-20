@@ -28,6 +28,8 @@ type Orderbook struct {
 // ApplyMessagesToOrderbook : Applies each individual message to the orderbook
 func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) {
 	for _, message := range messages {
+		orderbook.Timestamp = message.Timestamp
+		orderbook.LastSodOffset = message.SodOffset
 		if message.OrderID == 0 {
 			continue
 		}
@@ -43,8 +45,6 @@ func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) {
 		case Ignore:
 			// Pass
 		}
-		orderbook.Timestamp = message.Timestamp
-		orderbook.LastSodOffset = message.SodOffset
 	}
 }
 
