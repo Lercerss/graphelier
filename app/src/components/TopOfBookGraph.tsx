@@ -67,42 +67,47 @@ class TopOfBookGraph extends Component<Props> {
 
         const initialData = [
             {
-                date: '1340269200000000',
-                key: new Date(Number(bigInt(1340269200000000).divide(1000))),
+                date: '1340285400000000000',
                 best_ask: 130.2,
                 best_bid: 129.1,
             },
             {
-                date: '1340274600000000',
-                key: new Date(Number(bigInt(1340274600000000).divide(1000))),
+                date: '1340289300000000000',
                 best_ask: 131.5,
                 best_bid: 130.5,
             },
             {
-                date: '1340280000000000',
-                key: new Date(Number(bigInt(1340280000000000).divide(1000))),
+                date: '1340293200000000000',
                 best_ask: 132.5,
                 best_bid: 130.9,
             },
             {
-                date: '1340285400000000',
-                key: new Date(Number(bigInt(1340285400000000).divide(1000))),
+                date: '1340297100000000000',
                 best_ask: 133.2,
                 best_bid: 132.7,
             },
             {
-                date: '1340290800000000',
-                key: new Date(Number(bigInt(1340290800000000).divide(1000))),
+                date: '1340301000000000000',
                 best_ask: 134.0,
                 best_bid: 132.9,
             },
             {
-                date: '1340296200000000',
-                key: new Date(Number(bigInt(1340296200000000).divide(1000))),
+                date: '1340304900000000000',
                 best_ask: 131.3,
                 best_bid: 131.0,
             },
+            {
+                date: '1340308800000000000',
+                best_ask: 130.3,
+                best_bid: 130.1,
+            },
         ];
+
+        initialData.forEach(element => {
+            // @ts-ignore
+            // eslint-disable-next-line no-param-reassign
+            element.key = new Date(Number(bigInt(element.date).divide(1000000)));
+        });
 
         const xScaleProvider = discontinuousTimeScaleProvider
             .inputDateAccessor(d => d.key);
