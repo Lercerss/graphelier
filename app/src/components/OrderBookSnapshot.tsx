@@ -7,7 +7,7 @@ import {
     // Slider,
     // Collapse,
     // IconButton,
-    Card, InputLabel, Select, MenuItem,
+    Card, Select, MenuItem,
 } from '@material-ui/core';
 // import classNames from 'classnames';
 import { WithStyles, createStyles } from '@material-ui/core/styles';
@@ -259,37 +259,44 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 component={'div'}
                 className={classes.container}
             >
-                <InputLabel
-                    className={classes.selectInstrumentLabel}
-                    id={'selectInstrumentLabel'}
-                >
-                    Select Instrument
-                </InputLabel>
-                <Select
-                    value={selectedInstrument}
-                    onChange={this.handleInstrumentChange}
-                    className={classes.selectInstrumentInput}
-                >
-                    {
-                        instruments.map(value => {
-                            return (
-                                <MenuItem
-                                    key={`menuitem-${value}`}
-                                    value={value}
-                                >
-                                    {value}
-                                </MenuItem>
+                <FormControl className={classes.formControl}>
 
-                            );
-                        })
-                    }
-                </Select>
-                <div
-                    id={'ButtonHeader'}
-                    className={classes.divTopBook}
-                >
-                    <FormControl className={classes.formControl}>
-                        <div className={classes.inline}>
+                    <div
+                        className={classes.spaceBetween}
+                    >
+                        <div
+                            className={classes.inputSelect}
+                        >
+                            <Typography
+                                variant={'body1'}
+                                className={classes.inputLabel}
+                                color={'textSecondary'}
+                            >
+                                {'Instrument'}
+                            </Typography>
+                            <Select
+                                value={selectedInstrument}
+                                onChange={this.handleInstrumentChange}
+                                className={classes.selectInstrumentInput}
+                            >
+                                {
+                                    instruments.map(value => {
+                                        return (
+                                            <MenuItem
+                                                key={`menuitem-${value}`}
+                                                value={value}
+                                            >
+                                                {value}
+                                            </MenuItem>
+
+                                        );
+                                    })
+                                }
+                            </Select>
+                        </div>
+                        <div
+                            className={classes.inputSelect}
+                        >
                             <Typography
                                 variant={'body1'}
                                 className={classes.inputLabel}
@@ -305,28 +312,30 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 InputProps={{ inputProps: { max: '2100-01-01' } }}
                             />
                         </div>
-                        <div className={classes.inline}>
-                            <Typography
-                                variant={'body1'}
-                                className={classes.inputLabel}
-                                color={'textSecondary'}
-                            >
-                                {'Time'}
-                            </Typography>
-                            <Typography
-                                variant={'body1'}
-                                className={classes.timestampDisplay}
-                            >
-                                {selectedTimeString}
-                            </Typography>
-                        </div>
-                        <TopOfBookGraphWrapper
-                            className={classes.graph}
-                            onTimeSelect={this.handleSelectGraphDateTime}
-                        />
-
-                    </FormControl>
-                </div>
+                    </div>
+                    <div className={classes.inlineFlexEnd}>
+                        <Typography
+                            variant={'body1'}
+                            className={classes.inputLabel}
+                            color={'textSecondary'}
+                        >
+                            {'Time'}
+                        </Typography>
+                        <Typography
+                            variant={'body1'}
+                            className={classes.timestampDisplay}
+                        >
+                            {selectedTimeString}
+                        </Typography>
+                    </div>
+                </FormControl>
+                {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                            && (
+                                <TopOfBookGraphWrapper
+                                    className={classes.graph}
+                                    onTimeSelect={this.handleSelectGraphDateTime}
+                                />
+                            )}
                 <Card>
                     <TimestampOrderBookScroller
                         listItems={listItems}
