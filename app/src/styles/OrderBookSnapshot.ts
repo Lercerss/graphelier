@@ -54,7 +54,7 @@ export const Styles = theme => ({
     timestampDisplay: {
         display: 'inline',
     },
-    inline: {
+    inlineFlexEnd: {
         display: 'flex',
         justifyContent: 'flex-end',
         marginTop: 15,
@@ -95,5 +95,18 @@ export const Styles = theme => ({
     },
     graph: {
         width: '100%',
+    },
+    spaceBetween: {
+        display: 'flex',
+        justifyContent: 'space-between',
+    },
+    inline: {
+        display: 'flex',
+        marginTop: 15,
+        alignItems: 'center',
+    },
+    inputSelect: {
+        display: 'flex',
+        alignItems: 'center',
     },
 });
