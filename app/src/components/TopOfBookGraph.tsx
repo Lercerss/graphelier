@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 
 import { format } from 'd3-format';
-import { timeFormat } from 'd3-time-format';
 import dateFormat from 'dateformat';
 
 import { LineSeries } from 'react-stockcharts/lib/series';
@@ -20,7 +19,7 @@ import {
 } from 'react-stockcharts/lib/coordinates';
 
 import bigInt from 'big-integer';
-import { nanosecondsToString } from '../utils/date-utils';
+import { getLocalTimeString, nanosecondsToString } from '../utils/date-utils';
 import { Styles } from '../styles/TopOfBookGraph';
 import { Colors } from '../styles/App';
 
@@ -68,37 +67,37 @@ class TopOfBookGraph extends Component<Props> {
 
         const initialData = [
             {
-                date: bigInt(1340269200000000),
+                date: '1340269200000000',
                 key: new Date(Number(bigInt(1340269200000000).divide(1000))),
                 best_ask: 130.2,
                 best_bid: 129.1,
             },
             {
-                date: bigInt(1340274600000000),
+                date: '1340274600000000',
                 key: new Date(Number(bigInt(1340274600000000).divide(1000))),
                 best_ask: 131.5,
                 best_bid: 130.5,
             },
             {
-                date: bigInt(1340280000000000),
+                date: '1340280000000000',
                 key: new Date(Number(bigInt(1340280000000000).divide(1000))),
                 best_ask: 132.5,
                 best_bid: 130.9,
             },
             {
-                date: bigInt(1340285400000000),
+                date: '1340285400000000',
                 key: new Date(Number(bigInt(1340285400000000).divide(1000))),
                 best_ask: 133.2,
                 best_bid: 132.7,
             },
             {
-                date: bigInt(1340290800000000),
+                date: '1340290800000000',
                 key: new Date(Number(bigInt(1340290800000000).divide(1000))),
                 best_ask: 134.0,
                 best_bid: 132.9,
             },
             {
-                date: bigInt(1340296200000000),
+                date: '1340296200000000',
                 key: new Date(Number(bigInt(1340296200000000).divide(1000))),
                 best_ask: 131.3,
                 best_bid: 131.0,
@@ -120,7 +119,7 @@ class TopOfBookGraph extends Component<Props> {
                 pointsPerPxThreshold={1}
                 data={data}
                 type={'svg'}
-                displayXAccessor={d => dateFormat(new Date(d.key), 'dddd, mmmm dS, yyyy, h:MM:ss TT')}
+                displayXAccessor={d => d.date}
                 xAccessor={d => d.key}
                 xScale={xScale}
                 panEvent={false}
@@ -154,7 +153,8 @@ class TopOfBookGraph extends Component<Props> {
                     <MouseCoordinateX
                         at={'bottom'}
                         orient={'bottom'}
-                        displayFormat={timeFormat('%Y-%m-%d')}
+                        displayFormat={getLocalTimeString}
+                        rectWidth={130}
                     />
                     <MouseCoordinateY
                         at={'right'}
@@ -162,18 +162,24 @@ class TopOfBookGraph extends Component<Props> {
                         displayFormat={format('.2f')}
                     />
                     <SingleValueTooltip
+                        yLabel={'Time'}
+                        yAccessor={d => d.date}
+                        yDisplayFormat={getLocalTimeString}
+                        origin={[10, -10]}
+                    />
+                    <SingleValueTooltip
                         yLabel={'Ask'}
                         yAccessor={d => d.best_ask}
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.red}
-                        origin={[10, -10]}
+                        origin={[10, 10]}
                     />
                     <SingleValueTooltip
                         yLabel={'Bid'}
                         yAccessor={d => d.best_bid}
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.green}
-                        origin={[85, -10]}
+                        origin={[85, 10]}
                     />
                     <ClickCallback
                         onClick={(moreProps, e) => { onTimeSelect(moreProps.currentItem.date); }}

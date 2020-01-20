@@ -190,7 +190,7 @@ class MessageList extends Component<Props, State> {
                 timestamp, message_type, order_id, share_qty, price, direction, sod_offset,
             } = message;
 
-            const { timeNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
+            const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
             const time = nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf());
 
             return (
