@@ -147,13 +147,15 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @param value {number} The new datetime value that represents the date and time clicked on in the graph,
      * in utc nanoseconds
      */
-    handleSelectGraphDateTime = (value: any) => {
+    handleSelectGraphDateTime = (value: string) => {
         // TODO the graph allows you to select a date AND time, so selectedTimeNano/String are no longer needed.
         //  Also update the selectedDateString when this is selected. SelectedDateNano may also no longer be needed.
-
-        const selectedDateTimeNano = convertNanosecondsToUTC(value);
+        const selectedDateTimeNano = bigInt(value);
         // eslint-disable-next-line no-unused-vars
-        const { dateNanoseconds, timeNanoseconds } = splitNanosecondEpochTimestamp(value);
+        const {
+            dateNanoseconds,
+            timeNanoseconds,
+        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
         console.log('handleSelectGraphDateTime date', dateNanoseconds);
         console.log('handleSelectGraphDateTime time', timeNanoseconds);
 
@@ -189,7 +191,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             // eslint-disable-next-line camelcase
             asks, bids, timestamp, last_sod_offset,
         } = deltas;
-        const { timeNanoseconds, dateNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
+        const { timeNanoseconds, dateNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
         const { newListItems, newMaxQuantity } = processOrderBookWithDeltas(listItems, asks, bids);
 
         this.setState(
