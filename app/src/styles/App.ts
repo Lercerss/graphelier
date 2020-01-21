@@ -8,6 +8,7 @@ export const Colors = {
     darkGrey: '#343434',
     black: '#000000',
     yellow: '#ffff00',
+    paleBlue: '#9be7ff',
 };
 
 export const LightThemeColors = {

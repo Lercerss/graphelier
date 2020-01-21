@@ -1,3 +1,5 @@
+import { Colors } from './App';
+
 export const Styles = theme => ({
     root: {
         backgroundColor: 'transparent',
@@ -41,10 +43,6 @@ export const Styles = theme => ({
         color: '#9F6000',
         backgroundColor: '#FEEFB3',
         borderRadius: '5px',
-        padding: '2px',
-    },
-    selectMessage: {
-        display: 'inline',
         padding: '2px',
     },
     inputLabel: {
@@ -108,5 +106,12 @@ export const Styles = theme => ({
     inputSelect: {
         display: 'flex',
         alignItems: 'center',
+    },
+    selectMessage: {
+        textAlign: 'center',
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(3),
+        borderRadius: '5px',
+        backgroundColor: Colors.paleBlue,
     },
 });

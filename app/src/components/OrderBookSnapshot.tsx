@@ -4,14 +4,9 @@ import {
     Typography,
     FormControl,
     TextField,
-    // Slider,
-    // Collapse,
-    // IconButton,
     Card, Select, MenuItem,
 } from '@material-ui/core';
-// import classNames from 'classnames';
 import { WithStyles, createStyles } from '@material-ui/core/styles';
-// import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import bigInt from 'big-integer';
 
 import { Styles } from '../styles/OrderBookSnapshot';
@@ -28,7 +23,7 @@ import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -42,7 +37,6 @@ interface State {
     selectedDateTimeNano: bigInt.BigInteger,
     selectedTimeString: string,
     selectedDateString: string,
-    expanded: boolean,
     selectedInstrument: string,
     instruments: Array<string>,
     listItems: ListItems,
@@ -59,7 +53,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             selectedDateTimeNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
             selectedDateString: '',
-            expanded: true,
             selectedInstrument: '',
             instruments: [],
             listItems: {},
@@ -93,7 +86,24 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @param child
      */
     handleInstrumentChange = (event: React.ChangeEvent<any>) => {
-        this.setState({ selectedInstrument: event.target.value });
+        this.setState(
+            {
+                selectedInstrument: event.target.value,
+                selectedDateNano: bigInt(0),
+                selectedDateTimeNano: bigInt(0),
+                selectedTimeString: '00:00:00.000000000',
+                selectedDateString: '',
+            },
+        );
+    };
+
+    /**
+     * @desc Get appropriate number of data points to request for the graph
+     * @returns {number}
+     */
+    getNumDataPoints = (): number => {
+        // TODO find out how many points would be acceptable given the screen width
+        return window.screen.width * window.devicePixelRatio;
     };
 
     /**
@@ -112,21 +122,19 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 },
             );
         } else {
-            // TODO request TOB over time, set selectedDateTimeNano to selected day at 9:30 edt (epoch nanoseconds)
-            // (this means 1:30 pm)
-            // eslint-disable-next-line max-len
+            const { selectedInstrument } = this.state;
+
             const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
             const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
             const selectedDateString = event.target.value;
-            const selectedDateNano = dateStringToEpoch(`${selectedDateString} 00:00:00`);
+            const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
             const selectedDateTimeNano = convertNanosecondsToUTC(selectedDateNano.plus(selectedTimeNano));
 
-            console.log('handleChangeDate selectedTimeNano', selectedTimeNano);
-            console.log('handleChangeDate selectedTimeString', selectedTimeString);
-            console.log('handleChangeDate selectedDateNano', selectedDateNano);
-            console.log('handleChangeDate selectedDateString', selectedDateString);
-            console.log('handleChangeDate selectedDateTimeNano', selectedDateTimeNano);
+            const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
 
+            // TODO request TOB over time with the following arguments
+            console.log(selectedInstrument, startTime, endTime, this.getNumDataPoints());
 
             this.setState(
                 {
@@ -151,19 +159,18 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         // TODO the graph allows you to select a date AND time, so selectedTimeNano/String are no longer needed.
         //  Also update the selectedDateString when this is selected. SelectedDateNano may also no longer be needed.
         const selectedDateTimeNano = bigInt(value);
-        // eslint-disable-next-line no-unused-vars
         const {
-            dateNanoseconds,
             timeNanoseconds,
+            dateNanoseconds,
         } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
-        console.log('handleSelectGraphDateTime date', dateNanoseconds);
-        console.log('handleSelectGraphDateTime time', timeNanoseconds);
 
         const selectedTimeString = nanosecondsToString(timeNanoseconds);
+        const selectedDateString = epochToDateString(dateNanoseconds);
 
         this.setState(
             {
                 selectedTimeString,
+                selectedDateString,
                 selectedDateTimeNano,
             },
             () => this.handleChangeDateTime(),
@@ -171,10 +178,11 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     };
 
     /**
-     *  @desc Updates the selectedDateTimeNano state variable when there is a
-     *  change in the date or when the user stops sliding the time Slider
+     *  @desc Updates the selectedDateTimeNano state variable when the user selects a timestamp
+     *  for viewing the orderbook
      */
     handleChangeDateTime = () => {
+        // TODO add line annotation onto graph that shows selected timestamp as a vertical line
         const { selectedDateTimeNano } = this.state;
         if (selectedDateTimeNano.neq(0)) {
             this.updateOrderBook();
@@ -207,14 +215,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 maxQuantity: newMaxQuantity,
             },
         );
-    };
-
-    /**
-     * @desc Handles the expand button for showing or hiding the time settings for the orderbook
-     */
-    handleExpandClick = () => {
-        const { expanded } = this.state;
-        this.setState({ expanded: !expanded });
     };
 
     /**
@@ -259,6 +259,16 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 component={'div'}
                 className={classes.container}
             >
+                {(selectedDateTimeNano.equals(0) || selectedInstrument.length === 0)
+                && (
+                    <Typography
+                        variant={'body1'}
+                        color={'textPrimary'}
+                        className={classes.selectMessage}
+                    >
+                        {'Select an instrument and date:'}
+                    </Typography>
+                )}
                 <FormControl className={classes.formControl}>
 
                     <div
@@ -309,6 +319,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 type={'date'}
                                 value={selectedDateString}
                                 onChange={this.handleChangeDate}
+                                disabled={selectedInstrument.length === 0}
                                 InputProps={{ inputProps: { max: '2100-01-01' } }}
                             />
                         </div>
@@ -324,28 +335,32 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         <Typography
                             variant={'body1'}
                             className={classes.timestampDisplay}
+                            color={selectedInstrument.length !== 0 ? 'textPrimary' : 'textSecondary'}
                         >
                             {selectedTimeString}
                         </Typography>
                     </div>
                 </FormControl>
                 {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
-                            && (
-                                <TopOfBookGraphWrapper
-                                    className={classes.graph}
-                                    onTimeSelect={this.handleSelectGraphDateTime}
-                                />
-                            )}
-                <Card>
-                    <TimestampOrderBookScroller
-                        listItems={listItems}
-                        maxQuantity={maxQuantity}
-                        lastSodOffset={lastSodOffset}
-                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
-                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                        instrument={selectedInstrument}
-                    />
-                </Card>
+                    && (
+                        <TopOfBookGraphWrapper
+                            className={classes.graph}
+                            onTimeSelect={this.handleSelectGraphDateTime}
+                        />
+                    )}
+                {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                && (
+                    <Card>
+                        <TimestampOrderBookScroller
+                            listItems={listItems}
+                            maxQuantity={maxQuantity}
+                            lastSodOffset={lastSodOffset}
+                            timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
+                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                            instrument={selectedInstrument}
+                        />
+                    </Card>
+                )}
                 {(lastSodOffset.neq(0)) && (
                     <Card className={classes.messageListCard}>
                         <MessageList
