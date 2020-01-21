@@ -44,7 +44,7 @@ type CustomHandler struct {
 
 // ServeHTTP : A function that links CustomHandler with http.Handler
 func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer utils.Timer(r.URL)()
+	defer utils.Timer(r.URL.String())()
 
 	err := h.H(h.E, w, r)
 
