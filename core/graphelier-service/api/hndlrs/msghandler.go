@@ -8,6 +8,7 @@ import (
 	"graphelier/core/graphelier-service/models"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 // FetchMessages returns messages given an instrument and sod_offset with support for
@@ -33,6 +34,7 @@ func FetchMessages(env *Env, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return StatusError{500, err}
 	}
+	log.Debugf("Found %d messages\n", len(messages))
 
 	responsePaginator := models.Paginator{NMessages: intNMessages, SodOffset: paginator.SodOffset + intNMessages}
 	messagePage := models.MessagePage{PageInfo: responsePaginator, Messages: messages}
@@ -40,7 +42,6 @@ func FetchMessages(env *Env, w http.ResponseWriter, r *http.Request) error {
 	if intNMessages < 0 {
 		reverseMessageOrdering(&messagePage)
 	}
-	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(messagePage)
 	if err != nil {
 		return StatusError{500, err}
