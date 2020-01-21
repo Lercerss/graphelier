@@ -31,4 +31,4 @@ func TraceTimer(call string) func() {
 }
 
 // Timer : See DebugTimer
-var Timer func(interface{}) func() = DebugTimer
+var Timer func(string) func() = DebugTimer
