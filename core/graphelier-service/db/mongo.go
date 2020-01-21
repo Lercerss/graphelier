@@ -20,6 +20,7 @@ type Datastore interface {
 	GetSingleMessage(instrument string, sodOffset int64) (*models.Message, error)
 	GetInstruments() ([]string, error)
 	RefreshCache() error
+	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
 }
 
 // Connector : A struct that represents the database
@@ -230,4 +231,43 @@ func (c *Connector) RefreshCache() error {
 	}
 	c.cache.meta = result
 	return nil
+}
+
+// GetSingleOrderMessages returns all messages affecting an order for a given day
+func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) (results []*models.Message, err error) {
+	collection := c.Database("graphelier-db").Collection("messages")
+
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "order_id", Value: orderID},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "$gte", Value: SODTimestamp},
+			{Key: "$lte", Value: EODTimestamp},
+		}},
+	}
+
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{Key: "instrument", Value: 1}, {Key: "timestamp", Value: 1}})
+
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var m models.Message
+		err := cursor.Decode(&m)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, &m)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
