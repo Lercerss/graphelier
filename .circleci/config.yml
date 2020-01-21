@@ -35,7 +35,9 @@ jobs:
                   command: npm run build
             - run:
                   name: Test frontend
-                  command: npm test
+                  command: npm test -- --coverage
+            - store_artifacts:
+                  path: coverage
             - run:
                   name: Lint frontend
                   command: npm run lint src/
@@ -63,7 +65,13 @@ jobs:
                       - ~/.cache/go-build
             - run:
                   name: Test service
-                  command: go test -v graphelier/core/graphelier-service/...
+                  command: |
+                    mkdir -p /tmp/artifacts
+                    go test --coverprofile="go-cover.out" -v graphelier/core/graphelier-service/...
+                    go tool cover -html="go-cover.out" -o coverage.html
+                    mv coverage.html /tmp/artifacts
+            - store_artifacts:
+                  path: /tmp/artifacts
 
     build_scripts:
         docker:
@@ -90,8 +98,13 @@ jobs:
                   name: Test scripts
                   command: |
                       source venv/bin/activate
-                      python -m unittest
-                      mamba `find . -name *.spec.py` --format=documentation
+                      python -m unittest -v
+                      mamba `find . -name *.spec.py` --format=documentation --enable-coverage
+                      coverage html --omit="venv/lib/*"
+            - store_artifacts:
+                  path: htmlcov
+            - store_artifacts:
+                  path: .coverage
             - run:
                   name: Lint scripts
                   command: |
