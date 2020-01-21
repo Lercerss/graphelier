@@ -66,7 +66,7 @@ class MultiDirectionalScroll extends Component<Props> {
         } = this.scroller;
         const { onReachTop, onReachBottom, children } = this.props;
 
-        if (children) {
+        if (children && firstChild && lastChild) {
             const topEdge = firstChild.offsetTop;
             const bottomEdge = lastChild.offsetTop + lastChild.offsetHeight;
             const scrolledUp = scrollTop + offsetTop;
