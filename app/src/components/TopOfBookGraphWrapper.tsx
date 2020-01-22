@@ -5,7 +5,9 @@ import TopOfBookGraph from './TopOfBookGraph';
 import { Styles } from '../styles/TopOfBookGraphWrapper';
 
 function TopOfBookGraphWrapper(props) {
-    const { classes, onTimeSelect } = props;
+    const {
+        classes, onTimeSelect, selectedDateTimeNano, topOfBookItems,
+    } = props;
     const [ref, { width, height }] = useDimensions();
     return (
         <div className={classes.graph}>
@@ -18,6 +20,8 @@ function TopOfBookGraphWrapper(props) {
                     height={height}
                     width={width}
                     onTimeSelect={onTimeSelect}
+                    selectedDateTimeNano={selectedDateTimeNano}
+                    topOfBookItems={topOfBookItems}
                 />
             </div>
         </div>

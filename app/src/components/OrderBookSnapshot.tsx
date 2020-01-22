@@ -40,7 +40,8 @@ interface State {
     selectedInstrument: string,
     instruments: Array<string>,
     listItems: ListItems,
-    maxQuantity: number
+    maxQuantity: number,
+    // topOfBookItems: Array<TopOfBookItem>,
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
@@ -57,6 +58,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             instruments: [],
             listItems: {},
             maxQuantity: -1,
+            // topOfBookItems: [],
         };
     }
 
@@ -252,7 +254,46 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             lastSodOffset,
             selectedInstrument,
             instruments,
+            // topOfBookItems,
         } = this.state;
+
+        const topOfBookItems = [
+            {
+                timestamp: '1340285400000000000',
+                best_ask: 130.2,
+                best_bid: 129.1,
+            },
+            {
+                timestamp: '1340289300000000000',
+                best_ask: 131.5,
+                best_bid: 130.5,
+            },
+            {
+                timestamp: '1340293200000000000',
+                best_ask: 132.5,
+                best_bid: 130.9,
+            },
+            {
+                timestamp: '1340297100000000000',
+                best_ask: 133.2,
+                best_bid: 132.7,
+            },
+            {
+                timestamp: '1340301000000000000',
+                best_ask: 134.0,
+                best_bid: 132.9,
+            },
+            {
+                timestamp: '1340304900000000000',
+                best_ask: 131.3,
+                best_bid: 131.0,
+            },
+            {
+                timestamp: '1340308800000000000',
+                best_ask: 130.3,
+                best_bid: 130.1,
+            },
+        ];
 
         return (
             <Typography
@@ -341,13 +382,15 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         </Typography>
                     </div>
                 </FormControl>
-                {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
-                    && (
-                        <TopOfBookGraphWrapper
-                            className={classes.graph}
-                            onTimeSelect={this.handleSelectGraphDateTime}
-                        />
-                    )}
+                {/* {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0) */}
+                {/*    && ( */}
+                <TopOfBookGraphWrapper
+                    className={classes.graph}
+                    onTimeSelect={this.handleSelectGraphDateTime}
+                    selectedDateTimeNano={selectedDateTimeNano}
+                    topOfBookItems={topOfBookItems}
+                />
+                {/* )} */}
                 {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
                 && (
                     <Card>

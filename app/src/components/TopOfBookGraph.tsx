@@ -4,7 +4,7 @@ import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 import { format } from 'd3-format';
 import dateFormat from 'dateformat';
 
-import { LineSeries } from 'react-stockcharts/lib/series';
+import { LineSeries, StraightLine } from 'react-stockcharts/lib/series';
 import { ChartCanvas, Chart } from 'react-stockcharts';
 import { ClickCallback } from 'react-stockcharts/lib/interactive';
 import { XAxis, YAxis } from 'react-stockcharts/lib/axes';
@@ -22,6 +22,7 @@ import bigInt from 'big-integer';
 import { getLocalTimeString, nanosecondsToString } from '../utils/date-utils';
 import { Styles } from '../styles/TopOfBookGraph';
 import { Colors } from '../styles/App';
+import { TopOfBookItem } from '../models/OrderBook';
 
 const numberFormat = format('.2f');
 
@@ -29,10 +30,12 @@ const styles = createStyles(Styles);
 
 
 interface Props extends WithStyles<typeof styles> {
-    className: string
-    height: number
-    width: number
-    onTimeSelect: (any) => void
+    className: string,
+    height: number,
+    width: number,
+    onTimeSelect: (any) => void,
+    selectedDateTimeNano: bigInt.BigInteger,
+    topOfBookItems: Array<TopOfBookItem>,
 }
 
 class TopOfBookGraph extends Component<Props> {
@@ -62,51 +65,13 @@ class TopOfBookGraph extends Component<Props> {
 
     render() {
         const {
-            width, height, classes, onTimeSelect,
+            width, height, classes, onTimeSelect, selectedDateTimeNano, topOfBookItems,
         } = this.props;
 
-        const initialData = [
-            {
-                date: '1340285400000000000',
-                best_ask: 130.2,
-                best_bid: 129.1,
-            },
-            {
-                date: '1340289300000000000',
-                best_ask: 131.5,
-                best_bid: 130.5,
-            },
-            {
-                date: '1340293200000000000',
-                best_ask: 132.5,
-                best_bid: 130.9,
-            },
-            {
-                date: '1340297100000000000',
-                best_ask: 133.2,
-                best_bid: 132.7,
-            },
-            {
-                date: '1340301000000000000',
-                best_ask: 134.0,
-                best_bid: 132.9,
-            },
-            {
-                date: '1340304900000000000',
-                best_ask: 131.3,
-                best_bid: 131.0,
-            },
-            {
-                date: '1340308800000000000',
-                best_ask: 130.3,
-                best_bid: 130.1,
-            },
-        ];
-
-        initialData.forEach(element => {
+        topOfBookItems.forEach(element => {
             // @ts-ignore
             // eslint-disable-next-line no-param-reassign
-            element.key = new Date(Number(bigInt(element.date).divide(1000000)));
+            element.key = new Date(Number(bigInt(element.timestamp).divide(1000000)));
         });
 
         const xScaleProvider = discontinuousTimeScaleProvider
@@ -114,7 +79,7 @@ class TopOfBookGraph extends Component<Props> {
         const {
             data,
             xScale,
-        } = xScaleProvider(initialData);
+        } = xScaleProvider(topOfBookItems);
 
         return (
             <ChartCanvas
@@ -124,7 +89,7 @@ class TopOfBookGraph extends Component<Props> {
                 pointsPerPxThreshold={1}
                 data={data}
                 type={'svg'}
-                displayXAccessor={d => d.date}
+                displayXAccessor={d => d.timestamp}
                 xAccessor={d => d.key}
                 xScale={xScale}
                 panEvent={false}
@@ -167,27 +132,27 @@ class TopOfBookGraph extends Component<Props> {
                         displayFormat={format('.2f')}
                     />
                     <SingleValueTooltip
-                        yLabel={'Time'}
-                        yAccessor={d => d.date}
-                        yDisplayFormat={getLocalTimeString}
-                        origin={[10, -10]}
-                    />
-                    <SingleValueTooltip
                         yLabel={'Ask'}
                         yAccessor={d => d.best_ask}
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.red}
-                        origin={[10, 10]}
+                        origin={[10, -10]}
                     />
                     <SingleValueTooltip
                         yLabel={'Bid'}
                         yAccessor={d => d.best_bid}
                         yDisplayFormat={format('.2f')}
                         labelStroke={Colors.green}
-                        origin={[85, 10]}
+                        origin={[85, -10]}
                     />
                     <ClickCallback
-                        onClick={(moreProps, e) => { onTimeSelect(moreProps.currentItem.date); }}
+                        onClick={(moreProps, e) => { onTimeSelect(moreProps.currentItem.timestamp); }}
+                    />
+                    <StraightLine
+                        type={'vertical'}
+                        stroke={Colors.lightBlue}
+                        strokeWidth={2}
+                        xValue={new Date(Number(selectedDateTimeNano.divide(1000000)))}
                     />
                 </Chart>
                 <CrossHairCursor />
