@@ -64,4 +64,10 @@ var routes = Routes{
 		"/_refresh_cache/",
 		hndlrs.CustomHandler{H: hndlrs.RefreshCache},
 	},
+	Route{
+		"Order",
+		"GET",
+		"/order/{instrument}/{orderID}/{timestamp}",
+		hndlrs.CustomHandler{H: hndlrs.FetchOrderInfo},
+	},
 }

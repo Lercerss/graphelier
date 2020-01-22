@@ -9,3 +9,4 @@ db.orderbooks.createIndex({ instrument: 1, timestamp: 1 });
 db.messages.createIndex({ instrument: 1, timestamp: 1 });
 db.messages.createIndex({ instrument: 1, sod_offset: 1 });
 db.messages.createIndex({ instrument: 1, sod_offset: -1 });
+db.messages.createIndex({ instrument: 1, order_id: 1, timestamp: 1 })
