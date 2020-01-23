@@ -2,7 +2,6 @@ package hndlrs
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -10,6 +9,7 @@ import (
 	"graphelier/core/graphelier-service/utils"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 // FetchOrderbook : Sends an orderbook state based on instrument and timestamp
@@ -33,14 +33,13 @@ func FetchOrderbook(env *Env, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return StatusError{500, err}
 	}
+	log.Debugf("Found snapshot at %d, applying %d messages to build requested state\n", orderbook.Timestamp, len(messages))
 	orderbook.ApplyMessagesToOrderbook(messages)
 
 	err = json.NewEncoder(w).Encode(orderbook)
 	if err != nil {
 		return StatusError{500, err}
 	}
-
-	w.WriteHeader(http.StatusOK)
 
 	return nil
 }
@@ -79,6 +78,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 		if prevSnapTime < 0 {
 			return StatusError{400, err}
 		}
+		log.Debugf("Found snapshot in future (%d), fetching previous snapshot\n", orderbook.Timestamp)
 		orderbook, err = env.Connector.GetOrderbook(instrument, uint64(prevSnapTime))
 		if err != nil {
 			return StatusError{500, err}
@@ -102,11 +102,15 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 	}
 	preMessages := allMessages[:preMessagesSize]
 	postMessages := allMessages[preMessagesSize:]
+	log.Debugf(
+		"Found %d messages, applying %d to the snapshot and using the remaining to build the delta\n",
+		len(allMessages),
+		preMessagesSize,
+	)
 	orderbook.ApplyMessagesToOrderbook(preMessages)
 
 	deltabook := orderbook.ApplyMessagesToDeltabook(postMessages, numMessages)
 
-	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(deltabook)
 	if err != nil {
 		return StatusError{500, err}
@@ -122,7 +126,7 @@ func RefreshCache(env *Env, w http.ResponseWriter, r *http.Request) error {
 		return StatusError{500, err}
 	}
 
-	log.Println("Cache refreshed.")
+	log.Info("Cache refreshed.\n")
 	err = json.NewEncoder(w).Encode(make(map[string]string))
 	if err != nil {
 		return StatusError{500, err}

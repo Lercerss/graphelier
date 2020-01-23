@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 	"graphelier/core/graphelier-service/utils"
-	"log"
 
 	"graphelier/core/graphelier-service/models"
 
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -66,13 +66,15 @@ func NewConnection() (*Connector, error) {
 		return nil, err
 	}
 
-	log.Println("Connected to MongoDB :)")
+	log.Info("Connected to MongoDB :)\n")
 
 	return c, nil
 }
 
 // GetOrderbook : Finds the Orderbook of an instrument based on the timestamp requested in the db
 func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
+	defer utils.TraceTimer("mongo/GetOrderbook")()
+
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
@@ -93,6 +95,8 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 
 // GetMessagesByTimestamp : Finds the Message of an instrument based on the timestamp requested
 func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetMessagesByTimestamp")()
+
 	instrumentMeta, found := c.cache.meta[instrument]
 	if !found {
 		return nil, InstrumentNotFoundError{Instrument: instrument}
@@ -135,6 +139,8 @@ func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) 
 
 // GetMessagesWithPagination returns an messages given an instrument, sod_offset with pagination
 func (c *Connector) GetMessagesWithPagination(instrument string, paginator *models.Paginator) (results []*models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetMessagesWithPagination")()
+
 	collection := c.Database("graphelier-db").Collection("messages")
 	var filterKey string
 	var sortDirection int8
@@ -181,6 +187,8 @@ func (c *Connector) GetMessagesWithPagination(instrument string, paginator *mode
 
 // GetSingleMessage : Returns the message corresponding to the sod_offset (message id)
 func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result *models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetSingleMessage")()
+
 	collection := c.Database("graphelier-db").Collection("messages")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
@@ -199,8 +207,14 @@ func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result
 
 // GetInstruments : Returns available instruments
 func (c *Connector) GetInstruments() (result []string, err error) {
+	defer utils.TraceTimer("mongo/GetInstruments")()
+
 	for r := range c.cache.meta {
 		result = append(result, r)
+	}
+
+	if len(result) == 0 {
+		log.Info("No instruments found in the cache, try refreshing the cache\n")
 	}
 
 	return result, nil
@@ -208,6 +222,8 @@ func (c *Connector) GetInstruments() (result []string, err error) {
 
 // RefreshCache : Updates in-memory cache of meta db values
 func (c *Connector) RefreshCache() error {
+	defer utils.TraceTimer("mongo/RefreshCache")()
+
 	collection := c.Database("graphelier-db").Collection("meta")
 	filter := bson.D{}
 	options := options.Find()

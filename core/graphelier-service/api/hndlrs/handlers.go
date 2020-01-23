@@ -1,10 +1,12 @@
 package hndlrs
 
 import (
-	"log"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
+
 	"graphelier/core/graphelier-service/db"
+	"graphelier/core/graphelier-service/utils"
 )
 
 // Error : An interface that represents a handler error
@@ -42,14 +44,17 @@ type CustomHandler struct {
 
 // ServeHTTP : A function that links CustomHandler with http.Handler
 func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer utils.Timer(r.URL.String())()
+
 	err := h.H(h.E, w, r)
+
 	if err != nil {
 		switch e := err.(type) {
 		case Error:
-			log.Printf("HTTP %d - %s", e.Status(), e)
+			log.Errorf("HTTP %d - %s\n", e.Status(), e)
 			http.Error(w, e.Error(), e.Status())
 		default:
-			log.Printf("Error: %s", err)
+			log.Errorf("Error: %s\n", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 	}
