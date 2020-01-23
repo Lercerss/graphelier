@@ -114,6 +114,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         const { selectedInstrument } = this.state;
         if (prevState.selectedInstrument !== selectedInstrument) {
             this.updateOrderBook();
+            // TODO this.updateGraph();
         }
     }
 
@@ -126,9 +127,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         this.setState(
             {
                 selectedInstrument: event.target.value,
-                selectedDateTimeNano: bigInt(0),
-                selectedTimeString: '00:00:00.000000000',
-                selectedDateString: '',
             },
         );
     };
@@ -275,6 +273,12 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             topOfBookItems,
         } = this.state;
 
+        let messageText;
+        if (selectedDateTimeNano.equals(0)) {
+            if (selectedInstrument.length === 0) messageText = 'Select an instrument';
+            else { messageText = 'Select a date'; }
+        }
+
         return (
             <MuiPickersUtilsProvider utils={MomentUtils}>
                 <Typography
@@ -288,7 +292,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         color={'textPrimary'}
                         className={classes.selectMessage}
                     >
-                        {'Select an instrument and date:'}
+                        {messageText}
                     </Typography>
                 )}
                     <FormControl className={classes.formControl}>
@@ -341,7 +345,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         value={selectedDateString}
                                         onChange={this.handleChangeDate}
                                         format={'DD/MM/YYYY'}
-                                        placeholder={'DD/MM/YYYY'}
+                                        views={['year', 'month', 'date']}
+                                        openTo={'year'}
                                         disabled={selectedInstrument.length === 0}
                                         invalidDateMessage={''}
                                         disableFuture
@@ -369,35 +374,37 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                     </FormControl>
                     {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
                         && (
-                            <TopOfBookGraphWrapper
-                                className={classes.graph}
-                                onTimeSelect={this.handleSelectGraphDateTime}
-                                selectedDateTimeNano={selectedDateTimeNano}
-                                topOfBookItems={topOfBookItems}
-                            />
+                            <div>
+                                <Card className={classes.graphCard}>
+                                    <TopOfBookGraphWrapper
+                                        className={classes.graph}
+                                        onTimeSelect={this.handleSelectGraphDateTime}
+                                        selectedDateTimeNano={selectedDateTimeNano}
+                                        topOfBookItems={topOfBookItems}
+                                    />
+                                </Card>
+                                <Card>
+                                    <TimestampOrderBookScroller
+                                        listItems={listItems}
+                                        maxQuantity={maxQuantity}
+                                        lastSodOffset={lastSodOffset}
+                                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
+                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                        instrument={selectedInstrument}
+                                    />
+                                </Card>
+                                {(lastSodOffset.neq(0)) && (
+                                    <Card className={classes.messageListCard}>
+                                        <MessageList
+                                            lastSodOffset={lastSodOffset}
+                                            instrument={selectedInstrument}
+                                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                        />
+                                    </Card>
+                                )}
+                            </div>
                         )}
-                    {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
-                && (
-                    <Card>
-                        <TimestampOrderBookScroller
-                            listItems={listItems}
-                            maxQuantity={maxQuantity}
-                            lastSodOffset={lastSodOffset}
-                            timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
-                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                            instrument={selectedInstrument}
-                        />
-                    </Card>
-                )}
-                    {(lastSodOffset.neq(0)) && (
-                        <Card className={classes.messageListCard}>
-                            <MessageList
-                                lastSodOffset={lastSodOffset}
-                                instrument={selectedInstrument}
-                                handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                            />
-                        </Card>
-                    )}
+
                 </Typography>
             </MuiPickersUtilsProvider>
         );

@@ -107,4 +107,8 @@ export const Styles = theme => ({
         borderRadius: '5px',
         backgroundColor: Colors.paleBlue,
     },
+    graphCard: {
+        paddingTop: '20px',
+        marginBottom: '15px',
+    },
 });

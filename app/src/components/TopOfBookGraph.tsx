@@ -30,7 +30,6 @@ const styles = createStyles(Styles);
 
 
 interface Props extends WithStyles<typeof styles> {
-    className: string,
     height: number,
     width: number,
     onTimeSelect: (any) => void,
@@ -65,7 +64,7 @@ class TopOfBookGraph extends Component<Props> {
 
     render() {
         const {
-            width, height, classes, onTimeSelect, selectedDateTimeNano, topOfBookItems,
+            width, height, onTimeSelect, selectedDateTimeNano, topOfBookItems,
         } = this.props;
 
         topOfBookItems.forEach(element => {
@@ -95,7 +94,6 @@ class TopOfBookGraph extends Component<Props> {
                 panEvent={false}
                 zoomEvent={false}
                 xExtents={[data[0].key, data[data.length - 1].key]}
-                className={classes.graph}
             >
                 <Chart
                     id={0}
