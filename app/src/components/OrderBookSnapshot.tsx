@@ -3,10 +3,11 @@ import {
     withStyles,
     Typography,
     FormControl,
-    TextField,
     Card, Select, MenuItem,
 } from '@material-ui/core';
 import { WithStyles, createStyles } from '@material-ui/core/styles';
+import MomentUtils from '@date-io/moment';
+import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
 
 import { Styles } from '../styles/OrderBookSnapshot';
@@ -27,13 +28,12 @@ import {
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
-import { ListItems, OrderBook } from '../models/OrderBook';
+import { ListItems, OrderBook, TopOfBookItem } from '../models/OrderBook';
 
 const styles = createStyles(Styles);
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
-    selectedDateNano: bigInt.BigInteger,
     selectedDateTimeNano: bigInt.BigInteger,
     selectedTimeString: string,
     selectedDateString: string,
@@ -41,7 +41,7 @@ interface State {
     instruments: Array<string>,
     listItems: ListItems,
     maxQuantity: number,
-    // topOfBookItems: Array<TopOfBookItem>,
+    topOfBookItems: Array<TopOfBookItem>,
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
@@ -50,7 +50,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
 
         this.state = {
             lastSodOffset: bigInt(0),
-            selectedDateNano: bigInt(0),
             selectedDateTimeNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
             selectedDateString: '',
@@ -58,7 +57,43 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             instruments: [],
             listItems: {},
             maxQuantity: -1,
-            // topOfBookItems: [],
+            topOfBookItems: [
+                {
+                    timestamp: '1340285400000000000',
+                    best_ask: 130.2,
+                    best_bid: 129.1,
+                },
+                {
+                    timestamp: '1340289300000000000',
+                    best_ask: 131.5,
+                    best_bid: 130.5,
+                },
+                {
+                    timestamp: '1340293200000000000',
+                    best_ask: 132.5,
+                    best_bid: 130.9,
+                },
+                {
+                    timestamp: '1340297100000000000',
+                    best_ask: 133.2,
+                    best_bid: 132.7,
+                },
+                {
+                    timestamp: '1340301000000000000',
+                    best_ask: 134.0,
+                    best_bid: 132.9,
+                },
+                {
+                    timestamp: '1340304900000000000',
+                    best_ask: 131.3,
+                    best_bid: 131.0,
+                },
+                {
+                    timestamp: '1340308800000000000',
+                    best_ask: 130.3,
+                    best_bid: 130.1,
+                },
+            ],
         };
     }
 
@@ -91,7 +126,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         this.setState(
             {
                 selectedInstrument: event.target.value,
-                selectedDateNano: bigInt(0),
                 selectedDateTimeNano: bigInt(0),
                 selectedTimeString: '00:00:00.000000000',
                 selectedDateString: '',
@@ -110,46 +144,33 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
 
     /**
      * @desc Handles the date change for the TextField date picker
-     * @param event The event object that caused the call
+     * @param date The selected date
      */
-    handleChangeDate = (event: React.ChangeEvent<any>) => {
-        const { value } = event.target;
-        if (value === '') { // If user clears the date input
-            const { selectedDateNano, selectedDateString } = this.state;
+    handleChangeDate = (date: any) => {
+        const { selectedInstrument } = this.state;
 
-            this.setState(
-                {
-                    selectedDateNano,
-                    selectedDateString,
-                },
-            );
-        } else {
-            const { selectedInstrument } = this.state;
+        const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
+        const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
+        const selectedDateString = date.format('YYYY-MM-DD');
+        const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
+        const selectedDateTimeNano = convertNanosecondsToUTC(selectedDateNano.plus(selectedTimeNano));
 
-            const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
-            const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
-            const selectedDateString = event.target.value;
-            const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
-            const selectedDateTimeNano = convertNanosecondsToUTC(selectedDateNano.plus(selectedTimeNano));
+        const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+        const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
 
-            const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-            const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+        // TODO request TOB over time with the following arguments
+        console.log(selectedInstrument, startTime, endTime, this.getNumDataPoints());
 
-            // TODO request TOB over time with the following arguments
-            console.log(selectedInstrument, startTime, endTime, this.getNumDataPoints());
-
-            this.setState(
-                {
-                    selectedTimeString,
-                    selectedDateNano,
-                    selectedDateString,
-                    selectedDateTimeNano,
-                },
-                () => {
-                    this.handleChangeDateTime();
-                },
-            );
-        }
+        this.setState(
+            {
+                selectedTimeString,
+                selectedDateString,
+                selectedDateTimeNano,
+            },
+            () => {
+                this.handleChangeDateTime();
+            },
+        );
     };
 
     /**
@@ -158,8 +179,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * in utc nanoseconds
      */
     handleSelectGraphDateTime = (value: string) => {
-        // TODO the graph allows you to select a date AND time, so selectedTimeNano/String are no longer needed.
-        //  Also update the selectedDateString when this is selected. SelectedDateNano may also no longer be needed.
         const selectedDateTimeNano = bigInt(value);
         const {
             timeNanoseconds,
@@ -207,7 +226,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         this.setState(
             {
                 lastSodOffset: bigInt(last_sod_offset),
-                selectedDateNano: dateNanoseconds,
                 selectedDateString: epochToDateString(dateNanoseconds),
                 selectedTimeString: nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(
                     bigInt(timeNanoseconds),
@@ -254,53 +272,16 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             lastSodOffset,
             selectedInstrument,
             instruments,
-            // topOfBookItems,
+            topOfBookItems,
         } = this.state;
 
-        const topOfBookItems = [
-            {
-                timestamp: '1340285400000000000',
-                best_ask: 130.2,
-                best_bid: 129.1,
-            },
-            {
-                timestamp: '1340289300000000000',
-                best_ask: 131.5,
-                best_bid: 130.5,
-            },
-            {
-                timestamp: '1340293200000000000',
-                best_ask: 132.5,
-                best_bid: 130.9,
-            },
-            {
-                timestamp: '1340297100000000000',
-                best_ask: 133.2,
-                best_bid: 132.7,
-            },
-            {
-                timestamp: '1340301000000000000',
-                best_ask: 134.0,
-                best_bid: 132.9,
-            },
-            {
-                timestamp: '1340304900000000000',
-                best_ask: 131.3,
-                best_bid: 131.0,
-            },
-            {
-                timestamp: '1340308800000000000',
-                best_ask: 130.3,
-                best_bid: 130.1,
-            },
-        ];
-
         return (
-            <Typography
-                component={'div'}
-                className={classes.container}
-            >
-                {(selectedDateTimeNano.equals(0) || selectedInstrument.length === 0)
+            <MuiPickersUtilsProvider utils={MomentUtils}>
+                <Typography
+                    component={'div'}
+                    className={classes.container}
+                >
+                    {(selectedDateTimeNano.equals(0) || selectedInstrument.length === 0)
                 && (
                     <Typography
                         variant={'body1'}
@@ -310,88 +291,92 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         {'Select an instrument and date:'}
                     </Typography>
                 )}
-                <FormControl className={classes.formControl}>
+                    <FormControl className={classes.formControl}>
 
-                    <div
-                        className={classes.spaceBetween}
-                    >
                         <div
-                            className={classes.inputSelect}
+                            className={classes.spaceBetween}
                         >
-                            <Typography
-                                variant={'body1'}
-                                className={classes.inputLabel}
-                                color={'textSecondary'}
+                            <div>
+                                <Typography
+                                    variant={'body1'}
+                                    className={classes.inputLabel}
+                                    color={'textSecondary'}
+                                >
+                                    {'Instrument'}
+                                </Typography>
+                                <Select
+                                    value={selectedInstrument}
+                                    onChange={this.handleInstrumentChange}
+                                    className={classes.selectInstrumentInput}
+                                >
+                                    {
+                                        instruments.map(value => {
+                                            return (
+                                                <MenuItem
+                                                    key={`menuitem-${value}`}
+                                                    value={value}
+                                                >
+                                                    {value}
+                                                </MenuItem>
+                                            );
+                                        })
+                                    }
+                                </Select>
+                            </div>
+                            <div
+                                className={classes.dateTimeSelect}
                             >
-                                {'Instrument'}
-                            </Typography>
-                            <Select
-                                value={selectedInstrument}
-                                onChange={this.handleInstrumentChange}
-                                className={classes.selectInstrumentInput}
-                            >
-                                {
-                                    instruments.map(value => {
-                                        return (
-                                            <MenuItem
-                                                key={`menuitem-${value}`}
-                                                value={value}
-                                            >
-                                                {value}
-                                            </MenuItem>
-
-                                        );
-                                    })
-                                }
-                            </Select>
+                                <div
+                                    className={classes.inputSelect}
+                                >
+                                    <Typography
+                                        variant={'body1'}
+                                        className={classes.inputLabel}
+                                        color={'textSecondary'}
+                                    >
+                                        {'Date'}
+                                    </Typography>
+                                    <KeyboardDatePicker
+                                        className={classes.datePicker}
+                                        value={selectedDateString}
+                                        onChange={this.handleChangeDate}
+                                        format={'DD/MM/YYYY'}
+                                        placeholder={'DD/MM/YYYY'}
+                                        disabled={selectedInstrument.length === 0}
+                                        invalidDateMessage={''}
+                                        disableFuture
+                                        autoOk
+                                    />
+                                </div>
+                                <div className={classes.inlineFlexEnd}>
+                                    <Typography
+                                        variant={'body1'}
+                                        className={classes.inputLabel}
+                                        color={'textSecondary'}
+                                    >
+                                        {'Time'}
+                                    </Typography>
+                                    <Typography
+                                        variant={'body1'}
+                                        className={classes.timestampDisplay}
+                                        color={selectedInstrument.length !== 0 ? 'textPrimary' : 'textSecondary'}
+                                    >
+                                        {selectedTimeString}
+                                    </Typography>
+                                </div>
+                            </div>
                         </div>
-                        <div
-                            className={classes.inputSelect}
-                        >
-                            <Typography
-                                variant={'body1'}
-                                className={classes.inputLabel}
-                                color={'textSecondary'}
-                            >
-                                {'Date'}
-                            </Typography>
-                            <TextField
-                                className={classes.datePicker}
-                                type={'date'}
-                                value={selectedDateString}
-                                onChange={this.handleChangeDate}
-                                disabled={selectedInstrument.length === 0}
-                                InputProps={{ inputProps: { max: '2100-01-01' } }}
+                    </FormControl>
+                    {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                        && (
+                            <TopOfBookGraphWrapper
+                                className={classes.graph}
+                                onTimeSelect={this.handleSelectGraphDateTime}
+                                selectedDateTimeNano={selectedDateTimeNano}
+                                topOfBookItems={topOfBookItems}
                             />
-                        </div>
-                    </div>
-                    <div className={classes.inlineFlexEnd}>
-                        <Typography
-                            variant={'body1'}
-                            className={classes.inputLabel}
-                            color={'textSecondary'}
-                        >
-                            {'Time'}
-                        </Typography>
-                        <Typography
-                            variant={'body1'}
-                            className={classes.timestampDisplay}
-                            color={selectedInstrument.length !== 0 ? 'textPrimary' : 'textSecondary'}
-                        >
-                            {selectedTimeString}
-                        </Typography>
-                    </div>
-                </FormControl>
-                {/* {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0) */}
-                {/*    && ( */}
-                <TopOfBookGraphWrapper
-                    className={classes.graph}
-                    onTimeSelect={this.handleSelectGraphDateTime}
-                    selectedDateTimeNano={selectedDateTimeNano}
-                    topOfBookItems={topOfBookItems}
-                />
-                {/* )} */}
-                {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                        )}
+                    {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
                 && (
                     <Card>
                         <TimestampOrderBookScroller
@@ -404,16 +389,17 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         />
                     </Card>
                 )}
-                {(lastSodOffset.neq(0)) && (
-                    <Card className={classes.messageListCard}>
-                        <MessageList
-                            lastSodOffset={lastSodOffset}
-                            instrument={selectedInstrument}
-                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                        />
-                    </Card>
-                )}
-            </Typography>
+                    {(lastSodOffset.neq(0)) && (
+                        <Card className={classes.messageListCard}>
+                            <MessageList
+                                lastSodOffset={lastSodOffset}
+                                instrument={selectedInstrument}
+                                handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                            />
+                        </Card>
+                    )}
+                </Typography>
+            </MuiPickersUtilsProvider>
         );
     }
 }
