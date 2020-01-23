@@ -28,16 +28,6 @@ export const Styles = theme => ({
         marginBottom: 20,
         justifyContent: 'flex-end',
     },
-    datePicker: {
-        width: 'min-content',
-        alignSelf: 'flex-end',
-        display: 'inline',
-    },
-    timestampSlider: {
-        width: '100%',
-        marginRight: 20,
-        marginLeft: 20,
-    },
     pleaseSelectMessage: {
         display: 'inline',
         color: '#9F6000',
@@ -54,7 +44,6 @@ export const Styles = theme => ({
     },
     inlineFlexEnd: {
         display: 'flex',
-        justifyContent: 'flex-end',
         marginTop: 15,
         alignItems: 'center',
     },
@@ -106,6 +95,10 @@ export const Styles = theme => ({
     inputSelect: {
         display: 'flex',
         alignItems: 'center',
+    },
+    dateTimeSelect: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
     },
     selectMessage: {
         textAlign: 'center',
