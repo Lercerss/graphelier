@@ -10,11 +10,11 @@ import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
 
+import moment from 'moment';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     dateStringToEpoch,
     nanosecondsToString,
-    epochToDateString,
     splitNanosecondEpochTimestamp,
     convertNanosecondsToUTC,
     convertNanosecondsUTCToCurrentTimezone,
@@ -36,7 +36,7 @@ interface State {
     lastSodOffset: bigInt.BigInteger,
     selectedDateTimeNano: bigInt.BigInteger,
     selectedTimeString: string,
-    selectedDateString: string,
+    datePickerValue: moment.Moment,
     selectedInstrument: string,
     instruments: Array<string>,
     listItems: ListItems,
@@ -52,7 +52,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             lastSodOffset: bigInt(0),
             selectedDateTimeNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
-            selectedDateString: '',
+            datePickerValue: moment(),
             selectedInstrument: '',
             instruments: [],
             listItems: {},
@@ -145,6 +145,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @param date The selected date
      */
     handleChangeDate = (date: any) => {
+        if (!moment(date).isValid()) return;
         const { selectedInstrument } = this.state;
 
         const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
@@ -162,7 +163,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         this.setState(
             {
                 selectedTimeString,
-                selectedDateString,
                 selectedDateTimeNano,
             },
             () => {
@@ -172,7 +172,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     };
 
     /**
-     * @desc Handles the datetime change when the user clicks on a time in the graph
+     * @desc Handles the time change when the user clicks on a time in the graph
      * @param value {number} The new datetime value that represents the date and time clicked on in the graph,
      * in utc nanoseconds
      */
@@ -180,16 +180,13 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         const selectedDateTimeNano = bigInt(value);
         const {
             timeNanoseconds,
-            dateNanoseconds,
         } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
 
         const selectedTimeString = nanosecondsToString(timeNanoseconds);
-        const selectedDateString = epochToDateString(dateNanoseconds);
 
         this.setState(
             {
                 selectedTimeString,
-                selectedDateString,
                 selectedDateTimeNano,
             },
             () => this.handleChangeDateTime(),
@@ -201,7 +198,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      *  for viewing the orderbook
      */
     handleChangeDateTime = () => {
-        // TODO add line annotation onto graph that shows selected timestamp as a vertical line
         const { selectedDateTimeNano } = this.state;
         if (selectedDateTimeNano.neq(0)) {
             this.updateOrderBook();
@@ -218,13 +214,12 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             // eslint-disable-next-line camelcase
             asks, bids, timestamp, last_sod_offset,
         } = deltas;
-        const { timeNanoseconds, dateNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
+        const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
         const { newListItems, newMaxQuantity } = processOrderBookWithDeltas(listItems, asks, bids);
 
         this.setState(
             {
                 lastSodOffset: bigInt(last_sod_offset),
-                selectedDateString: epochToDateString(dateNanoseconds),
                 selectedTimeString: nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(
                     bigInt(timeNanoseconds),
                 ).valueOf()),
@@ -265,7 +260,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             listItems,
             maxQuantity,
             selectedDateTimeNano,
-            selectedDateString,
+            datePickerValue,
             selectedTimeString,
             lastSodOffset,
             selectedInstrument,
@@ -342,8 +337,9 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                     </Typography>
                                     <KeyboardDatePicker
                                         className={classes.datePicker}
-                                        value={selectedDateString}
-                                        onChange={this.handleChangeDate}
+                                        value={datePickerValue}
+                                        onChange={date => this.handleChangeDate(date)}
+                                        placeholder={'DD/MM/YYYY'}
                                         format={'DD/MM/YYYY'}
                                         views={['year', 'month', 'date']}
                                         openTo={'year'}
@@ -404,7 +400,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 )}
                             </div>
                         )}
-
                 </Typography>
             </MuiPickersUtilsProvider>
         );
