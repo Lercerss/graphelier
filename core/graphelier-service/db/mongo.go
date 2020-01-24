@@ -26,14 +26,16 @@ type Datastore interface {
 // Connector : A struct that represents the database
 type Connector struct {
 	*mongo.Client
-	cache cache
+	Cache Cache
 }
 
-type cache struct {
-	meta map[string]meta
+// Cache : A struct that represents a collection of db data
+type Cache struct {
+	Meta map[string]Meta
 }
 
-type meta struct {
+// Meta : A struct that represents dynamic data for an instrument
+type Meta struct {
 	Instrument string
 	Interval   uint64
 }
@@ -61,7 +63,7 @@ func NewConnection() (*Connector, error) {
 		return nil, err
 	}
 
-	c := &Connector{client, cache{}}
+	c := &Connector{client, Cache{}}
 	if err = c.RefreshCache(); err != nil {
 		return nil, err
 	}
@@ -97,7 +99,7 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
 	defer utils.TraceTimer("mongo/GetMessagesByTimestamp")()
 
-	instrumentMeta, found := c.cache.meta[instrument]
+	instrumentMeta, found := c.Cache.Meta[instrument]
 	if !found {
 		return nil, InstrumentNotFoundError{Instrument: instrument}
 	}
@@ -209,7 +211,7 @@ func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result
 func (c *Connector) GetInstruments() (result []string, err error) {
 	defer utils.TraceTimer("mongo/GetInstruments")()
 
-	for r := range c.cache.meta {
+	for r := range c.Cache.Meta {
 		result = append(result, r)
 	}
 
@@ -233,11 +235,11 @@ func (c *Connector) RefreshCache() error {
 		return err
 	}
 
-	result := make(map[string]meta)
+	result := make(map[string]Meta)
 	defer cursor.Close(context.TODO())
 
 	for cursor.Next(context.TODO()) {
-		var m meta
+		var m Meta
 		err := cursor.Decode(&m)
 		if err != nil {
 			return err
@@ -245,7 +247,7 @@ func (c *Connector) RefreshCache() error {
 
 		result[m.Instrument] = m
 	}
-	c.cache.meta = result
+	c.Cache.Meta = result
 	return nil
 }
 
@@ -286,4 +288,20 @@ func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64
 	}
 
 	return results, nil
+}
+
+// GetSnapshotIntervalTimestamps : Returns an array of timetamps between the interval of snapshots
+func (c *Connector) GetSnapshotIntervalTimestamps(instrument string, lowBound uint64, highBound uint64) (results []*uint64, err error) {
+	defer utils.TraceTimer("mongo/GetSnapshotIntervalTimestamps")()
+
+	collection := c.Database("graphelier-db").Collection("orderbooks")
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "$gte", Value: lowBound},
+			{Key: "$lte", Value: highBound},
+		}},
+	}
+
+	//return
 }

@@ -23,7 +23,7 @@ func MakeRequest(
 	if params != nil {
 		req = mux.SetURLVars(req, params)
 	}
-	err := method(&handlers.Env{Connector: connector}, writer, req)
+	err := method(&handlers.Env{Datastore: connector}, writer, req)
 	if err != nil {
 		return err
 	}

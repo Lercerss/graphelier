@@ -9,7 +9,7 @@ import (
 
 // FetchInstruments : Retrieve available instruments
 func FetchInstruments(env *Env, w http.ResponseWriter, r *http.Request) error {
-	instruments, err := env.Connector.GetInstruments()
+	instruments, err := env.Datastore.GetInstruments()
 	if err != nil {
 		return StatusError{500, err}
 	}

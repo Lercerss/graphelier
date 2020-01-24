@@ -28,7 +28,7 @@ func FetchOrderInfo(env *Env, w http.ResponseWriter, r *http.Request) error {
 	}
 	SODTimestamp := getClosestSODTimestamp(intTimestamp)
 	EODTimestamp := getClosestEODTimestamp(intTimestamp)
-	messages, err := env.Connector.GetSingleOrderMessages(instrument, SODTimestamp, EODTimestamp, intOrderID)
+	messages, err := env.Datastore.GetSingleOrderMessages(instrument, SODTimestamp, EODTimestamp, intOrderID)
 	if err != nil {
 		return StatusError{500, err}
 	}
