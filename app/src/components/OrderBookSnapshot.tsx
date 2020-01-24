@@ -36,7 +36,7 @@ interface State {
     lastSodOffset: bigInt.BigInteger,
     selectedDateTimeNano: bigInt.BigInteger,
     selectedTimeString: string,
-    datePickerValue: moment.Moment,
+    datePickerValue: moment.Moment | null,
     selectedInstrument: string,
     instruments: Array<string>,
     listItems: ListItems,
@@ -52,12 +52,12 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             lastSodOffset: bigInt(0),
             selectedDateTimeNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
-            datePickerValue: moment(),
+            datePickerValue: null,
             selectedInstrument: '',
             instruments: [],
             listItems: {},
             maxQuantity: -1,
-            topOfBookItems: [
+            topOfBookItems: [ // TODO replace with empty array eventually
                 {
                     timestamp: '1340285400000000000',
                     best_ask: 130.2,
@@ -114,7 +114,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         const { selectedInstrument } = this.state;
         if (prevState.selectedInstrument !== selectedInstrument) {
             this.updateOrderBook();
-            // TODO this.updateGraph();
         }
     }
 
@@ -136,8 +135,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @returns {number}
      */
     getNumDataPoints = (): number => {
-        // TODO find out how many points would be acceptable given the screen width
-        return window.screen.width * window.devicePixelRatio;
+        return Math.trunc(window.screen.width * window.devicePixelRatio * 0.76);
     };
 
     /**
@@ -146,7 +144,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      */
     handleChangeDate = (date: any) => {
         if (!moment(date).isValid()) return;
-        const { selectedInstrument } = this.state;
 
         const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
         const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
@@ -157,16 +154,15 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
         const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
 
-        // TODO request TOB over time with the following arguments
-        console.log(selectedInstrument, startTime, endTime, this.getNumDataPoints());
-
         this.setState(
             {
+                datePickerValue: date,
                 selectedTimeString,
                 selectedDateTimeNano,
             },
             () => {
                 this.handleChangeDateTime();
+                this.updateGraphData(startTime, endTime);
             },
         );
     };
@@ -251,6 +247,36 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             })
             .catch(err => {
                 console.log(err);
+            });
+    };
+
+    /**
+     * @desc Updates the graph with tob values for new start time and end time bounds
+     */
+    updateGraphData = (startTime: bigInt.BigInteger, endTime: bigInt.BigInteger) => {
+        const { selectedInstrument } = this.state;
+
+        OrderBookService.getTopOfBookOverTime(selectedInstrument, startTime.toString(), endTime.toString(),
+            this.getNumDataPoints())
+            .then(response => {
+                // eslint-disable-next-line camelcase
+                const { result } = response.data;
+
+                this.setState(
+                    {
+                        topOfBookItems: result,
+                    },
+                );
+            })
+            .catch(err => {
+                console.log(err);
+
+                // TODO uncomment this eventually
+                // this.setState(
+                //     {
+                //         topOfBookItems: [],
+                //     },
+                // );
             });
     };
 
@@ -372,12 +398,24 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         && (
                             <div>
                                 <Card className={classes.graphCard}>
-                                    <TopOfBookGraphWrapper
-                                        className={classes.graph}
-                                        onTimeSelect={this.handleSelectGraphDateTime}
-                                        selectedDateTimeNano={selectedDateTimeNano}
-                                        topOfBookItems={topOfBookItems}
-                                    />
+                                    {topOfBookItems.length === 0
+                                        ? (
+                                            <Typography
+                                                className={classes.noDataMessage}
+                                                variant={'body1'}
+                                                color={'textPrimary'}
+                                            >
+                                                {'Could not retrieve graph for this day.'}
+                                            </Typography>
+                                        )
+                                        : (
+                                            <TopOfBookGraphWrapper
+                                                className={classes.graph}
+                                                onTimeSelect={this.handleSelectGraphDateTime}
+                                                selectedDateTimeNano={selectedDateTimeNano}
+                                                topOfBookItems={topOfBookItems}
+                                            />
+                                        )}
                                 </Card>
                                 <Card>
                                     <TimestampOrderBookScroller
