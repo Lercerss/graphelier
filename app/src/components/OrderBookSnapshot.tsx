@@ -35,6 +35,7 @@ const styles = createStyles(Styles);
 interface State {
     lastSodOffset: bigInt.BigInteger,
     selectedDateTimeNano: bigInt.BigInteger,
+    selectedDateNano: bigInt.BigInteger,
     selectedTimeString: string,
     datePickerValue: moment.Moment | null,
     selectedInstrument: string,
@@ -51,49 +52,14 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         this.state = {
             lastSodOffset: bigInt(0),
             selectedDateTimeNano: bigInt(0),
+            selectedDateNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
             datePickerValue: null,
             selectedInstrument: '',
             instruments: [],
             listItems: {},
             maxQuantity: -1,
-            topOfBookItems: [ // TODO replace with empty array eventually
-                {
-                    timestamp: '1340285400000000000',
-                    best_ask: 130.2,
-                    best_bid: 129.1,
-                },
-                {
-                    timestamp: '1340289300000000000',
-                    best_ask: 131.5,
-                    best_bid: 130.5,
-                },
-                {
-                    timestamp: '1340293200000000000',
-                    best_ask: 132.5,
-                    best_bid: 130.9,
-                },
-                {
-                    timestamp: '1340297100000000000',
-                    best_ask: 133.2,
-                    best_bid: 132.7,
-                },
-                {
-                    timestamp: '1340301000000000000',
-                    best_ask: 134.0,
-                    best_bid: 132.9,
-                },
-                {
-                    timestamp: '1340304900000000000',
-                    best_ask: 131.3,
-                    best_bid: 131.0,
-                },
-                {
-                    timestamp: '1340308800000000000',
-                    best_ask: 130.3,
-                    best_bid: 130.1,
-                },
-            ],
+            topOfBookItems: [],
         };
     }
 
@@ -127,6 +93,14 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             {
                 selectedInstrument: event.target.value,
             },
+            () => {
+                const { selectedDateNano } = this.state;
+                if (selectedDateNano.neq(0)) {
+                    const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+                    const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+                    this.updateGraphData(startTime, endTime);
+                }
+            },
         );
     };
 
@@ -149,7 +123,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
         const selectedDateString = date.format('YYYY-MM-DD');
         const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
-        const selectedDateTimeNano = convertNanosecondsToUTC(selectedDateNano.plus(selectedTimeNano));
+        const selectedDateTimeNano = selectedDateNano.plus(selectedTimeNano);
 
         const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
         const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
@@ -158,6 +132,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             {
                 datePickerValue: date,
                 selectedTimeString,
+                selectedDateNano,
                 selectedDateTimeNano,
             },
             () => {
@@ -271,12 +246,11 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             .catch(err => {
                 console.log(err);
 
-                // TODO uncomment this eventually
-                // this.setState(
-                //     {
-                //         topOfBookItems: [],
-                //     },
-                // );
+                this.setState(
+                    {
+                        topOfBookItems: [],
+                    },
+                );
             });
     };
 
