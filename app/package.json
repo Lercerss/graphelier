@@ -35,7 +35,7 @@
         "react-redux": "^7.1.1",
         "react-router-dom": "^5.1.2",
         "react-scripts": "^3.1.2",
-        "react-stockcharts": "^0.7.8",
+        "react-stockcharts": "https://github.com/alvyn279/react-stockcharts.git",
         "react-use-dimensions": "^1.2.1",
         "redux": "^4.0.4",
         "redux-thunk": "^2.3.0",
@@ -46,7 +46,8 @@
         "build": "NODE_ENV=production react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
+        "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+        "postinstall": "cd ./node_modules/react-stockcharts && npm run localPublish "
     },
     "devDependencies": {
         "eslint": "^6.1.0",

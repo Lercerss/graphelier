@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json /app/
 
 FROM base AS builder
-RUN npm install
+RUN npm install --unsafe-perm
 COPY . .
 RUN npm run build
 
