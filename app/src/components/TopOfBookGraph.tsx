@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 
 import { format } from 'd3-format';
+import { scaleTime } from 'd3-scale';
 import dateFormat from 'dateformat';
 
 import { LineSeries, StraightLine } from 'react-stockcharts/lib/series';
@@ -70,14 +71,14 @@ class TopOfBookGraph extends Component<Props> {
         topOfBookItems.forEach(element => {
             // @ts-ignore
             // eslint-disable-next-line no-param-reassign
-            element.key = new Date(Number(bigInt(element.timestamp).divide(1000000)));
+            element.date = new Date(Number(bigInt(element.timestamp).divide(1000000)));
         });
 
         const xScaleProvider = discontinuousTimeScaleProvider
-            .inputDateAccessor(d => d.key);
+            .inputDateAccessor(d => d.date);
         const {
             data,
-            xScale,
+            // xScale,
         } = xScaleProvider(topOfBookItems);
 
         return (
@@ -89,11 +90,11 @@ class TopOfBookGraph extends Component<Props> {
                 data={data}
                 type={'svg'}
                 displayXAccessor={d => d.timestamp}
-                xAccessor={d => d.key}
-                xScale={xScale}
+                xAccessor={d => d.date}
+                xScale={scaleTime()}
                 panEvent={false}
                 zoomEvent={false}
-                xExtents={[data[0].key, data[data.length - 1].key]}
+                xExtents={[data[0].date, data[data.length - 1].date]}
             >
                 <Chart
                     id={0}
