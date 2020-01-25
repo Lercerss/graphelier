@@ -3,7 +3,6 @@ import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 
 import { format } from 'd3-format';
 import { scaleTime } from 'd3-scale';
-import dateFormat from 'dateformat';
 
 import { LineSeries, StraightLine } from 'react-stockcharts/lib/series';
 import { ChartCanvas, Chart } from 'react-stockcharts';
@@ -20,15 +19,12 @@ import {
 } from 'react-stockcharts/lib/coordinates';
 
 import bigInt from 'big-integer';
-import { getLocalTimeString, nanosecondsToString } from '../utils/date-utils';
+import { getLocalTimeString } from '../utils/date-utils';
 import { Styles } from '../styles/TopOfBookGraph';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
 
-const numberFormat = format('.2f');
-
 const styles = createStyles(Styles);
-
 
 interface Props extends WithStyles<typeof styles> {
     height: number,
@@ -39,30 +35,6 @@ interface Props extends WithStyles<typeof styles> {
 }
 
 class TopOfBookGraph extends Component<Props> {
-    formatTime = value => {
-        const label = nanosecondsToString(parseInt(value));
-        const arr = label.split(':');
-        return `${arr[0]}:${arr[1]}`;
-    };
-
-    tooltipContent = () => {
-        return ({ currentItem, xAccessor }) => {
-            return {
-                x: dateFormat(xAccessor(currentItem)),
-                y: [
-                    {
-                        label: 'best bid',
-                        value: currentItem.best_bid && numberFormat(currentItem.best_bid),
-                    },
-                    {
-                        label: 'best ask',
-                        value: currentItem.best_ask && numberFormat(currentItem.best_ask),
-                    },
-                ],
-            };
-        };
-    };
-
     render() {
         const {
             width, height, onTimeSelect, selectedDateTimeNano, topOfBookItems,
@@ -70,7 +42,7 @@ class TopOfBookGraph extends Component<Props> {
 
         topOfBookItems.forEach(element => {
             // @ts-ignore
-            // eslint-disable-next-line no-param-reassign
+            // eslint-disable-next-line no-param-reassign,max-len
             element.date = new Date(Number(bigInt(element.timestamp).divide(1000000)));
         });
 
