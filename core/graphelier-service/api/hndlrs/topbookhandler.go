@@ -1,6 +1,7 @@
 package hndlrs
 
 import (
+	"graphelier/core/graphelier-service/models"
 	"net/http"
 	"strconv"
 
@@ -30,8 +31,18 @@ func FetchTopBook(env *Env, w http.ResponseWriter, r *http.Request) (err error) 
 	}
 
 	instrumentInterval := env.Connector.Cache.Meta[instrument]
+	intervalTimestamps, err := env.Datastore.GetSnapshotIntervalTimestamps(instrument, startTime, endTime)
+	if err != nil {
+		return StatusError{500, err}
+	}
 
-	// find best ask/bid
+	numSnapshots := models.CountItemsInRange(intervalTimestamps, uint64(len(intervalTimestamps)), startTime, endTime)
+
+	if numPoints <= numSnapshots {
+
+	} else {
+		// small interval
+	}
 
 	return nil
 }

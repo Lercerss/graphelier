@@ -21,6 +21,7 @@ type Datastore interface {
 	GetInstruments() ([]string, error)
 	RefreshCache() error
 	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
+	GetSnapshotIntervalTimestamps(instrument string, lowBound uint64, highBound uint64) (results []*uint64, err error)
 }
 
 // Connector : A struct that represents the database
@@ -301,7 +302,30 @@ func (c *Connector) GetSnapshotIntervalTimestamps(instrument string, lowBound ui
 			{Key: "$gte", Value: lowBound},
 			{Key: "$lte", Value: highBound},
 		}},
+		{Key: "timestamp", Value: 1},
 	}
 
-	//return
+	options := options.Find()
+
+	cursor, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var s models.Snapstamp
+		err := cursor.Decode(&s)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, &s.Timestamp)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
