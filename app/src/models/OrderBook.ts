@@ -45,6 +45,7 @@ export interface Message {
 }
 
 export interface TopOfBookItem {
+    date?: Date,
     best_ask: number,
     best_bid: number,
     timestamp: string,

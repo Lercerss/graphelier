@@ -21,6 +21,7 @@
         "big-integer": "^1.6.48",
         "classnames": "^2.2.6",
         "d3-format": "^1.4.2",
+        "d3-scale": "^3.2.1",
         "d3-time-format": "^2.2.2",
         "dateformat": "^3.0.3",
         "enzyme": "^3.10.0",
