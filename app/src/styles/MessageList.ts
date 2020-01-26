@@ -49,4 +49,7 @@ export const Styles = {
     messageListContainer: {
         height: '30.5vh',
     },
+    marginRight: {
+        marginRight: '0.25rem',
+    },
 };

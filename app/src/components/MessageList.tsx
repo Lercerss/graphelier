@@ -159,6 +159,10 @@ class MessageList extends Component<Props, State> {
         }
     };
 
+    /**
+     * Handles keypress up in the browser window. Checks for ` in order to center to selected message
+     * @param e
+     */
     private onKeyUp = e => {
         if (e.keyCode === TILDE_KEY_CODE) this.handleScrollBackToSelectedMessage();
     }
@@ -265,7 +269,10 @@ class MessageList extends Component<Props, State> {
             <div className={classNames(loading ? classes.hide : null, classes.scrollContainer)}>
                 <Box className={classes.tableHeaderRow}>
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
-                        <CustomTooltip title={'Click the Tilde ` to manually center to selected message'}>
+                        <CustomTooltip
+                            title={'Click tilde ` to center to selected message'}
+                            className={classes.marginRight}
+                        >
                             <InfoIcon />
                         </CustomTooltip>
                         <div>{'Timestamp'}</div>
