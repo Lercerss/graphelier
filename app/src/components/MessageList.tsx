@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
 import classNames from 'classnames';
@@ -8,7 +8,7 @@ import bigInt from 'big-integer';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    MESSAGE_LIST_DEFAULT_PAGE_SIZE,
+    MESSAGE_LIST_DEFAULT_PAGE_SIZE, TILDE_KEY_CODE,
 } from '../constants/Constants';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import { Styles } from '../styles/MessageList';
@@ -38,6 +38,8 @@ interface State {
 }
 
 class MessageList extends Component<Props, State> {
+    selectedMessageItem;
+
     constructor(props) {
         super(props);
 
@@ -50,6 +52,7 @@ class MessageList extends Component<Props, State> {
 
     componentDidMount() {
         this.fetchInitialMessages();
+        window.addEventListener('keyup', this.onKeyUp);
     }
 
     shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
@@ -79,7 +82,18 @@ class MessageList extends Component<Props, State> {
             } else {
                 this.fetchInitialMessages();
             }
+            this.handleScrollBackToSelectedMessage();
+        } else if ((messages[0] && !prevState.messages[0])
+            || (messages[0] && prevState.messages[0]
+                && (messages[0].timestamp !== prevState.messages[0].timestamp
+                    && messages[messages.length - 1].timestamp
+                    !== prevState.messages[prevState.messages.length - 1].timestamp))) {
+            this.handleScrollBackToSelectedMessage();
         }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keyup', this.onKeyUp);
     }
 
     /**
@@ -96,6 +110,18 @@ class MessageList extends Component<Props, State> {
         return messages
             .map(message => message.sod_offset)
             .findIndex(sodOffset => sodOffset === lastSodOffset.toString());
+    };
+
+    /**
+     * @desc handles event for scrolling back to the selected message that is being used to determine the orderbook
+     * @returns {void}
+     */
+    private handleScrollBackToSelectedMessage = () => {
+        this.selectedMessageItem && this.selectedMessageItem.current
+        && this.selectedMessageItem.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+        });
     };
 
     /**
@@ -125,6 +151,10 @@ class MessageList extends Component<Props, State> {
             console.log(e);
         }
     };
+
+    private onKeyUp = e => {
+        if (e.keyCode === TILDE_KEY_CODE) this.handleScrollBackToSelectedMessage();
+    }
 
     /**
      * @desc Paging handler for upwards and downwards hitting of the multidirectional scroll
@@ -195,9 +225,14 @@ class MessageList extends Component<Props, State> {
             const { timeNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
             const time = nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf());
 
+            if (lastSodOffset.toString() === sod_offset) {
+                // TODO look into reference callbacks for Typescript
+                this.selectedMessageItem = createRef();
+            }
             return (
                 <Button
                     key={`${sod_offset} ${timestamp}`}
+                    ref={lastSodOffset.toString() === sod_offset ? this.selectedMessageItem : null}
                     className={lastSodOffset.toString() === sod_offset
                         ? classes.currentMessageRow
                         : classes.tableDataRow}
@@ -231,13 +266,15 @@ class MessageList extends Component<Props, State> {
                     <Box className={classes.tableColumn}><div>{'Price'}</div></Box>
                     <Box className={classes.tableColumn}><div>{'Direction'}</div></Box>
                 </Box>
-                <MultiDirectionalScroll
-                    onReachBottom={() => this.handleHitEdge('bottom')}
-                    onReachTop={() => this.handleHitEdge('top')}
-                    position={50}
-                >
-                    {this.renderTableData()}
-                </MultiDirectionalScroll>
+                <div className={classes.messageListContainer}>
+                    <MultiDirectionalScroll
+                        onReachBottom={() => this.handleHitEdge('bottom')}
+                        onReachTop={() => this.handleHitEdge('top')}
+                        position={50}
+                    >
+                        {this.renderTableData()}
+                    </MultiDirectionalScroll>
+                </div>
             </div>
         );
     }

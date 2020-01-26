@@ -9,6 +9,7 @@ export const BACKEND_URL = `http://${host}:${BACKEND_PORT}`;
 
 export const LEFT_ARROW_KEY_CODE = 37;
 export const RIGHT_ARROW_KEY_CODE = 39;
+export const TILDE_KEY_CODE = 192;
 
 export const MESSAGE_LIST_DEFAULT_PAGE_SIZE = 20;
 

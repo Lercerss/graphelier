@@ -72,9 +72,9 @@ class MultiDirectionalScroll extends Component<Props> {
             const scrolledUp = scrollTop + offsetTop;
             const scrolledDown = scrolledUp + offsetHeight;
 
-            if (scrolledDown >= bottomEdge) {
+            if (scrolledDown >= (bottomEdge - 5)) {
                 onReachBottom();
-            } else if (scrolledUp <= topEdge) {
+            } else if (scrolledUp <= topEdge + 5) {
                 onReachTop();
             }
         }
