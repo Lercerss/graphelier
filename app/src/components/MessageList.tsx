@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import React, { Component, createRef } from 'react';
 import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
-import { Box } from '@material-ui/core';
+import { Box, Tooltip } from '@material-ui/core';
+import InfoIcon from '@material-ui/icons/Info';
 import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
 import bigInt from 'big-integer';
@@ -36,6 +37,12 @@ interface State {
     lastSodOffsetTop: bigInt.BigInteger,
     lastSodOffsetBottom: bigInt.BigInteger,
 }
+
+const CustomTooltip = withStyles({
+    tooltip: {
+        fontSize: '0.75rem',
+    },
+})(Tooltip);
 
 class MessageList extends Component<Props, State> {
     selectedMessageItem;
@@ -258,6 +265,9 @@ class MessageList extends Component<Props, State> {
             <div className={classNames(loading ? classes.hide : null, classes.scrollContainer)}>
                 <Box className={classes.tableHeaderRow}>
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
+                        <CustomTooltip title={'Click the Tilde ` to manually center to selected message'}>
+                            <InfoIcon />
+                        </CustomTooltip>
                         <div>{'Timestamp'}</div>
                     </Box>
                     <Box className={classes.tableColumn}><div>{'Type'}</div></Box>
