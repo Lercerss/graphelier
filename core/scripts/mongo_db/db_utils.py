@@ -12,7 +12,7 @@ def order_book_to_dict(order_book, interval):
             "price": price / 10000,
             "orders": [order_to_dict(order) for order in orders]
         } for price, orders in sorted(order_book.ask_book.items())],
-        "timestamp": _round_up(order_book.last_time, interval),
+        "interval_multiple": _round_up(order_book.last_time, interval),
         "last_sod_offset": order_book.last_sod_offset
     }
 

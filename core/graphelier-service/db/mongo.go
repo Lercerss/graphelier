@@ -27,12 +27,12 @@ type Datastore interface {
 // Connector : A struct that represents the database
 type Connector struct {
 	*mongo.Client
-	Cache Cache
+	cache Cache
 }
 
 // Cache : A struct that represents a collection of db data
 type Cache struct {
-	Meta map[string]Meta
+	meta map[string]Meta
 }
 
 // Meta : A struct that represents dynamic data for an instrument
@@ -49,6 +49,10 @@ type InstrumentNotFoundError struct {
 
 func (err InstrumentNotFoundError) Error() string {
 	return "Instrument not found: " + err.Instrument
+}
+
+func timestampToIntervalMultiple(timestamp uint64, interval uint64) uint64 {
+	return (timestamp - (timestamp % interval)) / interval
 }
 
 // NewConnection : The database connection
@@ -78,18 +82,18 @@ func NewConnection() (*Connector, error) {
 func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
 	defer utils.TraceTimer("mongo/GetOrderbook")()
 
-	meta, ok := c.Cache.Meta[instrument]
+	meta, ok := c.cache.meta[instrument]
 	if !ok {
 		return nil, InstrumentNotFoundError{Instrument: instrument}
 	}
 	interval := meta.Interval
 
-	exactTimestamp := (timestamp - (timestamp % interval)) / interval
+	exactTimestamp := timestampToIntervalMultiple(timestamp, interval)
 
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
-		{Key: "timestamp", Value: bson.D{
+		{Key: "interval_multiple", Value: bson.D{
 			{Key: "$lte", Value: exactTimestamp},
 		}},
 	}
@@ -110,7 +114,7 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
 	defer utils.TraceTimer("mongo/GetMessagesByTimestamp")()
 
-	instrumentMeta, found := c.Cache.Meta[instrument]
+	instrumentMeta, found := c.cache.meta[instrument]
 	if !found {
 		return nil, InstrumentNotFoundError{Instrument: instrument}
 	}
@@ -222,7 +226,7 @@ func (c *Connector) GetSingleMessage(instrument string, sodOffset int64) (result
 func (c *Connector) GetInstruments() (result []string, err error) {
 	defer utils.TraceTimer("mongo/GetInstruments")()
 
-	for r := range c.Cache.Meta {
+	for r := range c.cache.meta {
 		result = append(result, r)
 	}
 
@@ -258,7 +262,7 @@ func (c *Connector) RefreshCache() error {
 
 		result[m.Instrument] = m
 	}
-	c.Cache.Meta = result
+	c.cache.meta = result
 	return nil
 }
 
@@ -307,19 +311,19 @@ func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64
 func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error) {
 	defer utils.TraceTimer("mongo/GetTopOfBookByInterval")()
 
-	meta, ok := c.Cache.Meta[instrument]
+	meta, ok := c.cache.meta[instrument]
 	if !ok {
 		return nil, InstrumentNotFoundError{Instrument: instrument}
 	}
 	interval := meta.Interval
 
-	exactStart := (startTimestamp - (startTimestamp % interval)) / interval
-	exactEnd := (endTimestamp - (endTimestamp % interval)) / interval
+	exactStart := timestampToIntervalMultiple(startTimestamp, interval)
+	exactEnd := timestampToIntervalMultiple(endTimestamp, interval)
 
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
-		{Key: "timestamp", Value: bson.D{
+		{Key: "interval_multiple", Value: bson.D{
 			{Key: "$gte", Value: exactStart},
 			{Key: "$lte", Value: exactEnd},
 		}},
@@ -332,13 +336,13 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	}
 	log.Tracef("Documents in interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
 
-	// Add $mod comparator to timestamp filter
+	// Add $mod comparator to interval_multiple filter
 	filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
 
 	// Project snapshots to keep only the best bid and ask
 	findOptions := options.Find()
 	findOptions.Projection = bson.D{
-		{Key: "timestamp", Value: 1},
+		{Key: "interval_multiple", Value: 1},
 		{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
 		{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
 		{Key: "bids.price", Value: 1},
@@ -354,7 +358,7 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	for cursor.Next(context.TODO()) {
 		var m models.Point
 		var raw bson.RawValue
-		if raw, err = cursor.Current.LookupErr("timestamp"); err != nil {
+		if raw, err = cursor.Current.LookupErr("interval_multiple"); err != nil {
 			return nil, err
 		}
 		m.Timestamp = uint64(raw.Int64()) * interval
