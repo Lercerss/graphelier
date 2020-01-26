@@ -51,13 +51,10 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { listItems, loading } = this.props;
+        const { listItems } = this.props;
 
         if (!listItemsEquals(prevProps.listItems || {}, listItems || {})) {
             this.handleScrollToTopOfTheBook();
-        }
-        if (loading !== prevProps.loading) {
-            this.forceUpdate();
         }
     }
 
