@@ -1,6 +1,6 @@
 import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
-import { Box, Button } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import bigInt from 'big-integer';
 import TimestampOrderBookScroller from '../../components/TimestampOrderBookScroller';
 import {
