@@ -1,7 +1,7 @@
 import math
 
 
-def order_book_to_dict(order_book):
+def order_book_to_dict(order_book, interval):
     return {
         "instrument": order_book.instrument,
         "bids": [{
@@ -12,7 +12,7 @@ def order_book_to_dict(order_book):
             "price": price / 10000,
             "orders": [order_to_dict(order) for order in orders]
         } for price, orders in sorted(order_book.ask_book.items())],
-        "timestamp": _round_up(order_book.last_time, 9),
+        "timestamp": _round_up(order_book.last_time, interval),
         "last_sod_offset": order_book.last_sod_offset
     }
 
@@ -37,5 +37,5 @@ def message_to_dict(message, instrument):
     }
 
 
-def _round_up(timestamp, digits):
-    return math.ceil(timestamp / 10**digits) * 10**digits
+def _round_up(timestamp, precision):
+    return math.ceil(timestamp / precision) * precision

@@ -10,15 +10,15 @@ _DB = {
 }
 
 
-def save_order_book(order_book):
+def save_order_book(order_book, interval):
     """Save an order book snapshot"""
-    order_book_dict = order_book_to_dict(order_book)
+    order_book_dict = order_book_to_dict(order_book, interval)
     _DB['orderbooks'].insert_one(order_book_dict)
 
 
-def upsert_order_book(order_book):
+def upsert_order_book(order_book, interval):
     """Upsert an order book snapshot"""
-    ob_dict = order_book_to_dict(order_book)
+    ob_dict = order_book_to_dict(order_book, interval)
     _DB['orderbooks'].replace_one(
         {k: v for k, v in ob_dict.items() if k in ('instrument', 'timestamp')},
         ob_dict, upsert=True

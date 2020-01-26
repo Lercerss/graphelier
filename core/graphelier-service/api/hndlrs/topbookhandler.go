@@ -2,7 +2,6 @@ package hndlrs
 
 import (
 	"encoding/json"
-	"graphelier/core/graphelier-service/models"
 	"net/http"
 	"strconv"
 
@@ -26,30 +25,18 @@ func FetchTopBook(env *Env, w http.ResponseWriter, r *http.Request) (err error) 
 	if err != nil {
 		return StatusError{400, err}
 	}
-	numPoints, err := strconv.ParseUint(nPoints, 10, 64)
+	numPoints, err := strconv.ParseInt(nPoints, 10, 64)
 	if err != nil {
 		return StatusError{400, err}
 	}
 
-	instrumentInterval := env.Connector.Cache.Meta[instrument].Interval
-	intervalTimestamps, err := env.Datastore.GetSnapshotIntervalTimestamps(instrument, startTime, endTime)
+	// TODO: Handle small interval case
+	points, err := env.Datastore.GetTopOfBookByInterval(instrument, startTime, endTime, numPoints)
 	if err != nil {
-		return StatusError{500, err}
+		return StatusError{400, err}
 	}
 
-	numSnapshots := models.CountItemsInRange(intervalTimestamps, uint64(len(intervalTimestamps)), startTime, endTime)
-
-	var results []*models.TopBook
-	if numPoints <= numSnapshots {
-		results, err = env.Datastore.GetTopBook(instrumentInterval)
-		if err != nil {
-			return StatusError{500, err}
-		}
-	} else {
-		// small interval
-	}
-
-	err = json.NewEncoder(w).Encode(results)
+	err = json.NewEncoder(w).Encode(points)
 	if err != nil {
 		return StatusError{500, err}
 	}

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"strconv"
 
 	"graphelier/core/graphelier-service/models"
 	"graphelier/core/graphelier-service/utils"
@@ -22,8 +21,7 @@ type Datastore interface {
 	GetInstruments() ([]string, error)
 	RefreshCache() error
 	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
-	GetSnapshotIntervalTimestamps(instrument string, lowBound uint64, highBound uint64) (results []*uint64, err error)
-	GetTopBook(snapshotInterval uint64) (results []*models.TopBook, err error)
+	GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error)
 }
 
 // Connector : A struct that represents the database
@@ -80,11 +78,19 @@ func NewConnection() (*Connector, error) {
 func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
 	defer utils.TraceTimer("mongo/GetOrderbook")()
 
+	meta, ok := c.Cache.Meta[instrument]
+	if !ok {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	interval := meta.Interval
+
+	exactTimestamp := (timestamp - (timestamp % interval)) / interval
+
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
 		{Key: "timestamp", Value: bson.D{
-			{Key: "$lte", Value: timestamp},
+			{Key: "$lte", Value: exactTimestamp},
 		}},
 	}
 	options := options.FindOne()
@@ -94,6 +100,8 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 	if err != nil {
 		return nil, err
 	}
+
+	result.Timestamp = result.Timestamp * interval
 
 	return result, nil
 }
@@ -256,6 +264,8 @@ func (c *Connector) RefreshCache() error {
 
 // GetSingleOrderMessages returns all messages affecting an order for a given day
 func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) (results []*models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetSingleOrderMessages")
+
 	collection := c.Database("graphelier-db").Collection("messages")
 
 	filter := bson.D{
@@ -293,76 +303,69 @@ func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64
 	return results, nil
 }
 
-// GetSnapshotIntervalTimestamps : Returns an array of timetamps between the interval of snapshots
-func (c *Connector) GetSnapshotIntervalTimestamps(instrument string, lowBound uint64, highBound uint64) (results []*uint64, err error) {
-	defer utils.TraceTimer("mongo/GetSnapshotIntervalTimestamps")()
+// GetTopOfBookByInterval : Reads the best bid and best ask from order book snapshots in the given interval
+func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error) {
+	defer utils.TraceTimer("mongo/GetTopOfBookByInterval")()
+
+	meta, ok := c.Cache.Meta[instrument]
+	if !ok {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	interval := meta.Interval
 
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
 		{Key: "timestamp", Value: bson.D{
-			{Key: "$gte", Value: lowBound},
-			{Key: "$lte", Value: highBound},
+			{Key: "$gte", Value: startTimestamp / interval},
+			{Key: "$lte", Value: endTimestamp / interval},
 		}},
+	}
+
+	// Count matching documents to select $mod filter
+	count, err := collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add $mod comparator to timestamp filter
+	filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
+
+	// Project snapshots to keep only the best bid and ask
+	findOptions := options.Find()
+	findOptions.Projection = bson.D{
 		{Key: "timestamp", Value: 1},
+		{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
+		{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
+		{Key: "bids.price", Value: 1},
+		{Key: "asks.price", Value: 1},
 	}
 
-	options := options.Find()
-
-	cursor, err := collection.Find(context.TODO(), filter, options)
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(context.TODO())
 
 	for cursor.Next(context.TODO()) {
-		var s models.Snapstamp
-		err := cursor.Decode(&s)
-		if err != nil {
+		var m models.Point
+		var raw bson.RawValue
+		if raw, err = cursor.Current.LookupErr("timestamp"); err != nil {
 			return nil, err
 		}
+		m.Timestamp = uint64(raw.Int64()) * interval
 
-		results = append(results, &s.Timestamp)
-	}
-
-	if err := cursor.Err(); err != nil {
-		return nil, err
-	}
-
-	return results, nil
-}
-
-// GetTopBook : Returns the top of book for some time interval
-func (c *Connector) GetTopBook(snapshotInterval uint64) (results []*models.TopBook, err error) {
-	defer utils.TraceTimer("mongo/GetTopBook")()
-
-	mapString := " function() {if (this.timestamp % " + strconv.FormatUint(snapshotInterval, 10) + " !== 0.0) return; emit(this.timestamp, {best_bid:(this.bids.length) ? this.bids[0].price : 0.0, best_ask: (this.asks.length) ? this.asks[0].price : 0.0});}"
-	collection := c.Database("graphelier-db").Collection("orderbooks")
-	filter := bson.D{
-		{Key: "mapreduce", Value: "audit"},
-		{Key: "map", Value: mapString},
-		{Key: "out", Value: "items"},
-		{Key: "query", Value: bson.D{
-			{Key: "timestamp", Value: 1},
-		}},
-	}
-
-	options := options.Find()
-	cursor, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(context.TODO())
-
-	for cursor.Next(context.TODO()) {
-		var t models.TopBook
-		err := cursor.Decode(&t)
-		if err != nil {
+		if raw, err = cursor.Current.LookupErr("bids"); err != nil {
 			return nil, err
 		}
+		m.BestBid = raw.Array().Index(0).Value().Document().Lookup("price").Double()
 
-		results = append(results, &t)
+		if raw, err = cursor.Current.LookupErr("asks"); err != nil {
+			return nil, err
+		}
+		m.BestAsk = raw.Array().Index(0).Value().Document().Lookup("price").Double()
+
+		results = append(results, &m)
 	}
-
 	return results, nil
 }
