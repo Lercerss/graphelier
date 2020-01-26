@@ -38,4 +38,4 @@ def message_to_dict(message, instrument):
 
 
 def _round_up(timestamp, precision):
-    return math.ceil(timestamp / precision) * precision
+    return math.ceil(timestamp / precision)
