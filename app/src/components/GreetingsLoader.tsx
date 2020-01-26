@@ -15,11 +15,16 @@ class GreetingsLoader extends Component<GreetingsLoaderProps> {
     render() {
         const { classes, showTransition } = this.props;
         return (
-            <div className={showTransition
-                ? classNames(classes.centerLoading) : classNames(classes.centerLoading, classes.transition)}
-            >
-                <h2 className={classNames(classes.squarePointColor)}>{APP_NAME}</h2>
-                <CustomLoader type={'circular'} />
+            <div className={classes.centerLoading}>
+                <h2 className={showTransition
+                    ? classNames(classes.squarePointColor)
+                    : classNames(classes.transition, classes.squarePointColor)}
+                >
+                    {APP_NAME}
+                </h2>
+                <div className={classes.transitionVertialSpace}>
+                    <CustomLoader type={'circular'} />
+                </div>
             </div>
         );
     }

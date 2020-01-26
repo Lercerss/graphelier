@@ -10,15 +10,14 @@ export const Styles = {
         height: '100%',
     },
     transition: {
-        transition: '1.5s',
-        fontSize: 'xx-large',
-        '& div': {
-            width: '5rem !important',
-            height: '5rem !important',
-            transition: '1.5s',
-        },
+        transition: 'all 1.5s ease',
+        fontSize: '5rem',
     },
     maxWidth: {
         width: '100%',
+    },
+    transitionVertialSpace: {
+        position: 'absolute' as 'absolute',
+        marginTop: '25vh',
     },
 };
