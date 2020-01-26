@@ -90,7 +90,8 @@ class MessageList extends Component<Props, State> {
                 this.fetchInitialMessages();
             }
             this.handleScrollBackToSelectedMessage();
-        } else if ((messages[0] && !prevState.messages[0])
+        } else if ((messages[0] && !prevState.messages[0]) // need to check for first time messages loaded
+            // need to check for new messages from new date and time, not from continuous scrolling
             || (messages[0] && prevState.messages[0]
                 && (messages[0].timestamp !== prevState.messages[0].timestamp
                     && messages[messages.length - 1].timestamp
