@@ -52,7 +52,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         expect(wrapper.props().maxQuantity).toBeDefined();
         expect(wrapper.props().maxQuantity).toEqual(20000);
         expect(wrapper.props().loading).toBeDefined();
-        expect(wrapper.props().handleUpdateWithDeltas).toEqual(false);
     });
 
     it('renders a TimestampOrderbookScroller component with correct amount of material ui boxes', () => {
@@ -162,7 +161,7 @@ describe('TimestampOrderbookScroller functionality', () => {
 
     it('calls the function for changing the loading props to false', () => {
         const newLoadingOrderbook: boolean = true;
-        const wrapper = shallow(<TimestampOrderBookScroller
+        const wrapper = mount(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
             handleLoadingOrderbook={handleLoadingOrderbook}
@@ -173,9 +172,10 @@ describe('TimestampOrderbookScroller functionality', () => {
             loading={newLoadingOrderbook}
         />);
 
-        expect(wrapper.find('#orderbookListItems').classList.contains('hide')).toBe(true);
+        const div = () => wrapper.find({ id: 'orderbookListItems' });
+        expect(div().hasClass('TimestampOrderBookScroller-hide-163')).toBe(true);
         wrapper.setProps({ loading: false });
-        expect(wrapper.find('#orderbookListItems').classList.contains('hide')).toBe(false);
+        expect(div().hasClass('TimestampOrderBookScroller-hide-163')).toBe(false);
     });
 });
 
