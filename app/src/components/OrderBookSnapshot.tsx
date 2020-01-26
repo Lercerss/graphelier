@@ -235,7 +235,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             this.getNumDataPoints())
             .then(response => {
                 // eslint-disable-next-line camelcase
-                const { result } = response.data;
+                const result = response.data;
 
                 this.setState(
                     {
