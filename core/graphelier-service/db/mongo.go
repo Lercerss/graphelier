@@ -2,9 +2,10 @@ package db
 
 import (
 	"context"
-	"graphelier/core/graphelier-service/utils"
+	"strconv"
 
 	"graphelier/core/graphelier-service/models"
+	"graphelier/core/graphelier-service/utils"
 
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,6 +23,7 @@ type Datastore interface {
 	RefreshCache() error
 	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
 	GetSnapshotIntervalTimestamps(instrument string, lowBound uint64, highBound uint64) (results []*uint64, err error)
+	GetTopBook(snapshotInterval uint64) (results []*models.TopBook, err error)
 }
 
 // Connector : A struct that represents the database
@@ -325,6 +327,41 @@ func (c *Connector) GetSnapshotIntervalTimestamps(instrument string, lowBound ui
 
 	if err := cursor.Err(); err != nil {
 		return nil, err
+	}
+
+	return results, nil
+}
+
+// GetTopBook : Returns the top of book for some time interval
+func (c *Connector) GetTopBook(snapshotInterval uint64) (results []*models.TopBook, err error) {
+	defer utils.TraceTimer("mongo/GetTopBook")()
+
+	mapString := " function() {if (this.timestamp % " + strconv.FormatUint(snapshotInterval, 10) + " !== 0.0) return; emit(this.timestamp, {best_bid:(this.bids.length) ? this.bids[0].price : 0.0, best_ask: (this.asks.length) ? this.asks[0].price : 0.0});}"
+	collection := c.Database("graphelier-db").Collection("orderbooks")
+	filter := bson.D{
+		{Key: "mapreduce", Value: "audit"},
+		{Key: "map", Value: mapString},
+		{Key: "out", Value: "items"},
+		{Key: "query", Value: bson.D{
+			{Key: "timestamp", Value: 1},
+		}},
+	}
+
+	options := options.Find()
+	cursor, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var t models.TopBook
+		err := cursor.Decode(&t)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, &t)
 	}
 
 	return results, nil

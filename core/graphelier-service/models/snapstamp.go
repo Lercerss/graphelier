@@ -2,8 +2,8 @@ package models
 
 // Snapstamp : A struct that represents the id and timestamp of a snapshot
 type Snapstamp struct {
-	ID        uint64 `json:"id" bson:"id"`
-	Timestamp uint64 `json:"timestamp,string"`
+	ID        uint64 `bson:"id"`
+	Timestamp uint64
 }
 
 func lowerIndex(arr []*uint64, n uint64, x uint64) uint64 {
