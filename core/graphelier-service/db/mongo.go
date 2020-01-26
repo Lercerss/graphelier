@@ -313,12 +313,15 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	}
 	interval := meta.Interval
 
+	exactStart := (startTimestamp - (startTimestamp % interval)) / interval
+	exactEnd := (endTimestamp - (endTimestamp % interval)) / interval
+
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
 		{Key: "timestamp", Value: bson.D{
-			{Key: "$gte", Value: startTimestamp / interval},
-			{Key: "$lte", Value: endTimestamp / interval},
+			{Key: "$gte", Value: exactStart},
+			{Key: "$lte", Value: exactEnd},
 		}},
 	}
 
@@ -327,6 +330,7 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	if err != nil {
 		return nil, err
 	}
+	log.Tracef("Documents in interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
 
 	// Add $mod comparator to timestamp filter
 	filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
@@ -358,12 +362,20 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		if raw, err = cursor.Current.LookupErr("bids"); err != nil {
 			return nil, err
 		}
-		m.BestBid = raw.Array().Index(0).Value().Document().Lookup("price").Double()
+		rawE, err := raw.Array().IndexErr(0)
+		if err != nil {
+			continue
+		}
+		m.BestBid = rawE.Value().Document().Lookup("price").Double()
 
 		if raw, err = cursor.Current.LookupErr("asks"); err != nil {
 			return nil, err
 		}
-		m.BestAsk = raw.Array().Index(0).Value().Document().Lookup("price").Double()
+		rawE, err = raw.Array().IndexErr(0)
+		if err != nil {
+			continue
+		}
+		m.BestAsk = rawE.Value().Document().Lookup("price").Double()
 
 		results = append(results, &m)
 	}
