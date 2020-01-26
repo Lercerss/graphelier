@@ -1,5 +1,5 @@
 export const ENVIRONMENT = 'DEV';
-
+export const APP_NAME = 'Graphelier';
 export const BACKEND_PORT = 5050;
 let host = 'localhost';
 if (process.env.NODE_ENV === 'production') {

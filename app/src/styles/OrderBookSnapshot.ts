@@ -93,4 +93,7 @@ export const Styles = theme => ({
     selectInstrumentInput: {
         width: '10vh',
     },
+    inlineFlex: {
+        display: 'inline-flex',
+    },
 });

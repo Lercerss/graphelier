@@ -8,6 +8,7 @@ import {
 
 describe('MessageList', () => {
     let mount, shallow, messageList;
+    const loadingInstruments: boolean = false;
     const getMessageListSpy = jest.spyOn(OrderBookService, 'getMessageList')
         .mockImplementation((instrument, sodOffset, nMessages = 20): Promise<any> => Promise.resolve(
             {
@@ -34,6 +35,7 @@ describe('MessageList', () => {
             lastSodOffset={LAST_SOD_OFFSET_CLIENT}
             instrument={INSTRUMENT}
             handleUpdateWithDeltas={jest.fn()}
+            loading={loadingInstruments}
         />);
     });
 
@@ -46,6 +48,7 @@ describe('MessageList', () => {
             lastSodOffset={LAST_SOD_OFFSET_CLIENT}
             instrument={INSTRUMENT}
             handleUpdateWithDeltas={jest.fn()}
+            loading={loadingInstruments}
         />);
         wrapper.instance().setState(
             {
