@@ -37,8 +37,10 @@ describe('getting and selecting an instrument functionality', () => {
 
     it('renders a OrderBookSnapshot component and simulate selecting instruments', () => {
         const wrapper = shallow(<OrderBookSnapshot />);
-
-        wrapper.find(Select).first().simulate('click');
+        wrapper.instance().setState({
+            loadingInstruments: false,
+        });
+        wrapper.find('#instrumentSelector').simulate('click');
         expect(getInstrumentsListSpy).toHaveBeenCalledTimes(1);
         expect(wrapper.state().selectedInstrument).toBe('');
         wrapper.find(Select).simulate('change', { target: { value: 'SPY' } });

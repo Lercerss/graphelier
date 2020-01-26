@@ -28,6 +28,7 @@ interface Props extends WithStyles<typeof styles>{
     lastSodOffset: bigInt.BigInteger,
     instrument: string,
     handleUpdateWithDeltas: Function,
+    loading: boolean,
 }
 
 interface State {
@@ -52,10 +53,11 @@ class MessageList extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-        const { lastSodOffset } = this.props;
+        const { lastSodOffset, loading } = this.props;
         const { messages } = this.state;
 
-        return (lastSodOffset.neq(nextProps.lastSodOffset) || messages !== nextState.messages);
+        return (lastSodOffset.neq(nextProps.lastSodOffset) || messages !== nextState.messages
+            || loading !== nextProps.loading);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -215,10 +217,10 @@ class MessageList extends Component<Props, State> {
     }
 
     render() {
-        const { classes } = this.props;
+        const { classes, loading } = this.props;
 
         return (
-            <div className={classes.scrollContainer}>
+            <div className={classNames(loading ? classes.hide : null, classes.scrollContainer)}>
                 <Box className={classes.tableHeaderRow}>
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
                         <div>{'Timestamp'}</div>

@@ -25,8 +25,10 @@ interface Props extends WithStyles<typeof styles> {
     maxQuantity: number
     timeOrDateIsNotSet: boolean,
     lastSodOffset: bigInt.BigInteger,
+    handleLoadingOrderbook: Function,
     handleUpdateWithDeltas: Function,
-    instrument: string
+    instrument: string,
+    loading: boolean,
 }
 
 
@@ -38,7 +40,10 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { lastSodOffset } = this.props;
+        const { lastSodOffset, loading } = this.props;
+        if (loading !== nextProps.loading) {
+            return true;
+        }
         if (lastSodOffset && nextProps.lastSodOffset) {
             return (lastSodOffset.neq(nextProps.lastSodOffset));
         }
@@ -46,10 +51,13 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { listItems } = this.props;
+        const { listItems, loading } = this.props;
 
         if (!listItemsEquals(prevProps.listItems || {}, listItems || {})) {
             this.handleScrollToTopOfTheBook();
+        }
+        if (loading !== prevProps.loading) {
+            this.forceUpdate();
         }
     }
 
@@ -99,7 +107,10 @@ class TimestampOrderBookScroller extends Component<Props> {
      * @param offset The number of messages to skip forward or backward to
      */
     handleGoToMessageByOffset = (offset: number) => {
-        const { lastSodOffset, handleUpdateWithDeltas, instrument } = this.props;
+        const {
+            lastSodOffset, handleUpdateWithDeltas, instrument, handleLoadingOrderbook,
+        } = this.props;
+        handleLoadingOrderbook(true);
         OrderBookService.getPriceLevelsByMessageOffset(
             instrument,
             lastSodOffset.toString(),
@@ -110,12 +121,15 @@ class TimestampOrderBookScroller extends Component<Props> {
             })
             .catch(err => {
                 console.log(err);
+            })
+            .finally(() => {
+                handleLoadingOrderbook(false);
             });
     };
 
     render() {
         const {
-            listItems, maxQuantity, classes, timeOrDateIsNotSet,
+            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading,
         } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
 
@@ -161,15 +175,19 @@ class TimestampOrderBookScroller extends Component<Props> {
                         </ButtonGroup>
                     </div>
                 </Box>
-
                 <Box className={classes.scrollContainer}>
-                    {listItems
-                        && (
-                            <MultiDirectionalScroll position={50}>
+                    {
+                        listItems
+                    && (
+                        <MultiDirectionalScroll position={50}>
+                            <div
+                                id={'orderbookListItems'}
+                                className={loading ? classes.hide : classes.show}
+                            >
                                 {getOrderBookListItemsAsArray(listItems).map(listItem => {
                                     if (listItem.isMiddle) {
-                                        // TODO: Investigate callback refs in TS
-                                        // @ts-ignore
+                                    // TODO: Investigate callback refs in TS
+                                    // @ts-ignore
                                         this.middleReferenceItem = createRef();
                                     }
                                     return (
@@ -189,8 +207,10 @@ class TimestampOrderBookScroller extends Component<Props> {
                                         </Box>
                                     );
                                 })}
-                            </MultiDirectionalScroll>
-                        )}
+                            </div>
+                        </MultiDirectionalScroll>
+                    )
+                    }
                 </Box>
             </Box>
         );

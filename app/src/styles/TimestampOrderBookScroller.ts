@@ -42,4 +42,16 @@ export const Styles = {
         flexDirection: 'column' as const,
         alignItems: 'center',
     },
+    maxWidth: {
+        width: '100%',
+    },
+    marginAuto: {
+        margin: 'auto',
+    },
+    hide: {
+        background: 'rgba(0,0,0,0.08)',
+    },
+    show: {
+        display: 'inherit',
+    },
 };

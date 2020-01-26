@@ -42,4 +42,7 @@ export const Styles = {
         maxWidth: '30%',
         width: '30%',
     },
+    hide: {
+        background: 'rgba(0,0,0,0.08)',
+    },
 };
