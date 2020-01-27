@@ -17,7 +17,6 @@ describe('TimestampOrderbookScroller functionality', () => {
     let mount, shallow;
     const timeOrDateIsNotSet = false;
     const handleUpdateWithDeltas = jest.fn();
-    const handleLoadingOrderbook = jest.fn();
     const loadingOrderbook: boolean = false;
 
     beforeEach(() => {
@@ -33,7 +32,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = mount(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={ORDER_BOOK_LIST_ITEMS}
@@ -43,7 +41,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         expect(wrapper.props().timeOrDateIsNotSet).toBeDefined();
         expect(wrapper.props().timeOrDateIsNotSet).toEqual(false);
         expect(wrapper.props().handleUpdateWithDeltas).toBeDefined();
-        expect(wrapper.props().handleLoadingOrderbook).toBeDefined();
         expect(wrapper.props().lastSodOffset).toBeDefined();
         expect(wrapper.props().instrument).toBeDefined();
         expect(wrapper.props().instrument).toEqual('SPY');
@@ -58,7 +55,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = shallow(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={ORDER_BOOK_LIST_ITEMS}
@@ -74,7 +70,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = mount(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             maxQuantity={MAX_QUANTITY}
@@ -87,7 +82,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = mount(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={ORDER_BOOK_LIST_ITEMS}
@@ -102,7 +96,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = shallow(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={{}}
@@ -127,7 +120,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = shallow(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={ORDER_BOOK_LIST_ITEMS}
@@ -164,7 +156,6 @@ describe('TimestampOrderbookScroller functionality', () => {
         const wrapper = mount(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={ORDER_BOOK_LIST_ITEMS}
@@ -183,7 +174,6 @@ describe('navigating by message functionality', () => {
     let mount, shallow;
     const timeOrDateIsNotSet = false;
     const handleUpdateWithDeltas = jest.fn();
-    const handleLoadingOrderbook = jest.fn();
     const loadingOrderbook: boolean = false;
     const getOrderBookPricesByMessageOffsetSpy = jest.spyOn(OrderBookService, 'getPriceLevelsByMessageOffset')
         .mockImplementation((instrument, timestamp, offset): Promise<any> => Promise.resolve(
@@ -206,7 +196,6 @@ describe('navigating by message functionality', () => {
         const wrapper = shallow(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
-            handleLoadingOrderbook={handleLoadingOrderbook}
             lastSodOffset={bigInt(0)}
             instrument={INSTRUMENT}
             listItems={ORDER_BOOK_LIST_ITEMS}

@@ -191,14 +191,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     };
 
     /**
-     * @desc Updates the  loadingOrderbook state variable indicating that there is a network call which will change
-     * the contents of the Orderbook.
-     */
-    handleLoadingOrderbook = (loading: boolean) => {
-        this.setState({ loadingOrderbook: loading });
-    }
-
-    /**
      * @desc handles the updates with deltas once a message is moved by a certain amount
      * @param deltas
      */
@@ -418,7 +410,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                             lastSodOffset={lastSodOffset}
                             timeOrDateIsNotSet={selectedTimeNano.equals(0) || selectedDateNano.equals(0)}
                             handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                            handleLoadingOrderbook={this.handleLoadingOrderbook}
                             instrument={selectedInstrument}
                             loading={loadingOrderbook}
                         />

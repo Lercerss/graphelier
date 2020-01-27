@@ -25,7 +25,6 @@ interface Props extends WithStyles<typeof styles> {
     maxQuantity: number
     timeOrDateIsNotSet: boolean,
     lastSodOffset: bigInt.BigInteger,
-    handleLoadingOrderbook: Function,
     handleUpdateWithDeltas: Function,
     instrument: string,
     loading: boolean,
@@ -105,9 +104,8 @@ class TimestampOrderBookScroller extends Component<Props> {
      */
     handleGoToMessageByOffset = (offset: number) => {
         const {
-            lastSodOffset, handleUpdateWithDeltas, instrument, handleLoadingOrderbook,
+            lastSodOffset, handleUpdateWithDeltas, instrument,
         } = this.props;
-        handleLoadingOrderbook(true);
         OrderBookService.getPriceLevelsByMessageOffset(
             instrument,
             lastSodOffset.toString(),
@@ -118,9 +116,6 @@ class TimestampOrderBookScroller extends Component<Props> {
             })
             .catch(err => {
                 console.log(err);
-            })
-            .finally(() => {
-                handleLoadingOrderbook(false);
             });
     };
 
