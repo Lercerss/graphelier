@@ -30,7 +30,15 @@ export const nanosecondsToString = (nanosecondTimestamp: number) => {
     const nanoseconds = Math.floor(nanosecondTimestamp % NANOSECONDS_IN_ONE_SECOND);
     const seconds = Math.floor((nanosecondTimestamp / NANOSECONDS_IN_ONE_SECOND) % 60);
     const minutes = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60)) % 60);
-    const hours = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60 * 60)) % 24);
+    let hours = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60 * 60)) % 24);
+
+    let period = 'AM';
+    if (hours >= 12) {
+        period = 'PM';
+        if (hours > 12) {
+            hours %= 12;
+        }
+    }
 
     return (
         `${hours.toString().padStart(2, '0')
@@ -39,7 +47,7 @@ export const nanosecondsToString = (nanosecondTimestamp: number) => {
         }:${
             seconds.toString().padStart(2, '0')
         }.${
-            nanoseconds.toString().padStart(9, '0')}`
+            nanoseconds.toString().padStart(9, '0')} ${period}`
     );
 };
 

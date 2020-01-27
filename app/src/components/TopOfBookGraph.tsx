@@ -95,7 +95,7 @@ class TopOfBookGraph extends Component<Props> {
                         at={'bottom'}
                         orient={'bottom'}
                         displayFormat={getLocalTimeString}
-                        rectWidth={130}
+                        rectWidth={150}
                     />
                     <MouseCoordinateY
                         at={'right'}

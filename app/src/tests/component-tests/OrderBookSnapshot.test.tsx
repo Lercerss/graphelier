@@ -1,19 +1,22 @@
 import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
-import { TextField, Slider, Select } from '@material-ui/core';
+import { Select } from '@material-ui/core';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 import OrderBookSnapshot from '../../components/OrderBookSnapshot';
 import {
-    DATE_STRING,
-    TIME_VALUE,
     TIME_STRING,
     DATE_VALUE_BIG_INT,
     ORDER_BOOK_LIST_ITEMS,
     MESSAGE_DELTAS_FROM_BACKEND_MODIFY,
     MESSAGE_DELTAS_FROM_BACKEND_ADD,
-    MESSAGE_DELTAS_FROM_BACKEND_REMOVE, ORDER_BOOK_FROM_BACKEND, TIME_VALUE_BIG_INT,
+    MESSAGE_DELTAS_FROM_BACKEND_REMOVE,
+    ORDER_BOOK_FROM_BACKEND,
+    TIME_VALUE_BIG_INT,
+    DATE_MOMENT,
+    TIMESTAMP,
+    TIMESTAMP_PM,
 } from '../utils/mock-data';
 import OrderBookService from '../../services/OrderBookService';
-import { convertNanosecondsToUTC } from '../../utils/date-utils';
 import { TransactionType } from '../../models/OrderBook';
 
 describe('getting and selecting an instrument functionality', () => {
@@ -55,6 +58,13 @@ describe('date and time picker functionality', () => {
             },
         ));
 
+    const getTopOfBookOverTimeSpy = jest.spyOn(OrderBookService, 'getTopOfBookOverTime')
+        .mockImplementation((instrument, startTime, endTime, nDataPoints): Promise<any> => Promise.resolve(
+            {
+                data: [],
+            },
+        ));
+
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
@@ -62,6 +72,7 @@ describe('date and time picker functionality', () => {
 
     afterEach(() => {
         getOrderBookPricesSpy.mockClear();
+        getTopOfBookOverTimeSpy.mockClear();
         mount.cleanUp();
     });
 
@@ -69,36 +80,30 @@ describe('date and time picker functionality', () => {
         mount(<OrderBookSnapshot />);
     });
 
-    it('makes database call once a date and time are selected, in order', () => {
+    it('makes database call once a date is selected', () => {
         const wrapper = shallow(<OrderBookSnapshot />);
 
-        wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
-        expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(0);
-
-        wrapper.find(Slider).simulate('change', TIME_VALUE);
-        expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(0);
-
-        wrapper.instance().handleCommitTime('change', TIME_VALUE);
+        wrapper.find(KeyboardDatePicker).simulate('change', DATE_MOMENT);
         expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(1);
+        expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('makes database call once a time and date are selected, in order', () => {
+    it('makes database call when a time is selected from the graph', () => {
         const wrapper = shallow(<OrderBookSnapshot />);
 
-        wrapper.find(Slider).simulate('change', TIME_VALUE);
-        expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(0);
-
-        wrapper.instance().handleCommitTime('change', TIME_VALUE);
-        expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(0);
-
-        wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
+        wrapper.find(KeyboardDatePicker).simulate('change', DATE_MOMENT);
         expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(1);
+        expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(1);
+
+        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP.toString());
+        expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(2);
+        expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should store the proper time string when the time is selected', () => {
         const wrapper = shallow(<OrderBookSnapshot />);
 
-        wrapper.instance().handleCommitTime('change', TIME_VALUE);
+        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP_PM.toString());
 
         const { selectedTimeString } = wrapper.state();
         expect(selectedTimeString).toEqual(TIME_STRING);
@@ -107,22 +112,19 @@ describe('date and time picker functionality', () => {
     it('should store the proper date value in nanoseconds when the date is selected', () => {
         const wrapper = shallow(<OrderBookSnapshot />);
 
-        wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
+        wrapper.find(KeyboardDatePicker).simulate('change', DATE_MOMENT);
 
         const { selectedDateNano } = wrapper.state();
         expect(selectedDateNano).toEqual(DATE_VALUE_BIG_INT);
     });
 
-    it('should store the proper epoch timestamp in nanoseconds when the date and time are selected', () => {
+    it('should store the proper epoch timestamp in nanoseconds when a timestamp is selected from the graph', () => {
         const wrapper = shallow(<OrderBookSnapshot />);
 
-        wrapper.find(TextField).simulate('change', { target: { value: DATE_STRING } });
-        wrapper.instance().handleCommitTime('change', TIME_VALUE);
+        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP_PM.toString());
 
-        const selectedDateNano = wrapper.state().selectedDateTimeNano;
-        expect(selectedDateNano).toEqual(convertNanosecondsToUTC(
-            DATE_VALUE_BIG_INT.plus(TIME_VALUE_BIG_INT),
-        ));
+        const { selectedDateTimeNano } = wrapper.state();
+        expect(selectedDateTimeNano).toEqual(DATE_VALUE_BIG_INT.plus(TIME_VALUE_BIG_INT));
     });
 });
 
