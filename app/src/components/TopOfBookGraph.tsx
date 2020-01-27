@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 
 import { format } from 'd3-format';
 import { scaleTime } from 'd3-scale';
@@ -20,13 +19,11 @@ import {
 
 import bigInt from 'big-integer';
 import { getLocalTimeString } from '../utils/date-utils';
-import { Styles } from '../styles/TopOfBookGraph';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
 
-const styles = createStyles(Styles);
 
-interface Props extends WithStyles<typeof styles> {
+interface Props {
     height: number,
     width: number,
     onTimeSelect: (any) => void,
@@ -132,4 +129,4 @@ class TopOfBookGraph extends Component<Props> {
     }
 }
 
-export default withStyles(Styles)(TopOfBookGraph);
+export default TopOfBookGraph;

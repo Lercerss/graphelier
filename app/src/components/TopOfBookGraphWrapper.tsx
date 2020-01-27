@@ -1,8 +1,6 @@
 import React from 'react';
 import useDimensions from 'react-use-dimensions';
-import { withStyles } from '@material-ui/core';
 import TopOfBookGraph from './TopOfBookGraph';
-import { Styles } from '../styles/TopOfBookGraphWrapper';
 
 function TopOfBookGraphWrapper(props) {
     const {
@@ -27,4 +25,4 @@ function TopOfBookGraphWrapper(props) {
     );
 }
 
-export default withStyles(Styles)(TopOfBookGraphWrapper);
+export default TopOfBookGraphWrapper;
