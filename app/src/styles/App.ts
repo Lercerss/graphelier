@@ -28,6 +28,7 @@ export const Styles = {
         flexDirection: 'column' as const,
         flex: 1,
         width: '100%',
+        height: '100%',
         justifyContent: 'center',
     },
 };

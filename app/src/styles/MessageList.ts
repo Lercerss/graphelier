@@ -24,6 +24,7 @@ export const Styles = {
         paddingTop: 10,
         paddingBottom: 10,
         backgroundColor: LightThemeColors.palette.primary.main,
+        height: '4.5vh',
     },
     tableColumn: {
         maxWidth: '16.66%',
@@ -41,5 +42,14 @@ export const Styles = {
     overrideTimestampColumn: {
         maxWidth: '30%',
         width: '30%',
+    },
+    hide: {
+        background: 'rgba(0,0,0,0.08)',
+    },
+    messageListContainer: {
+        height: '30.5vh',
+    },
+    marginRight: {
+        marginRight: '0.25rem',
     },
 };

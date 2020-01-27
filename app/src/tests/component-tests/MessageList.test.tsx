@@ -8,6 +8,7 @@ import {
 
 describe('MessageList', () => {
     let mount, shallow, messageList;
+    const loadingInstruments: boolean = false;
     const getMessageListSpy = jest.spyOn(OrderBookService, 'getMessageList')
         .mockImplementation((instrument, sodOffset, nMessages = 20): Promise<any> => Promise.resolve(
             {
@@ -34,6 +35,7 @@ describe('MessageList', () => {
             lastSodOffset={LAST_SOD_OFFSET_CLIENT}
             instrument={INSTRUMENT}
             handleUpdateWithDeltas={jest.fn()}
+            loading={loadingInstruments}
         />);
     });
 
@@ -46,6 +48,7 @@ describe('MessageList', () => {
             lastSodOffset={LAST_SOD_OFFSET_CLIENT}
             instrument={INSTRUMENT}
             handleUpdateWithDeltas={jest.fn()}
+            loading={loadingInstruments}
         />);
         wrapper.instance().setState(
             {
@@ -65,5 +68,25 @@ describe('MessageList', () => {
                 direction: -1,
                 sod_offset: '3',
             });
+    });
+
+    it('should detect a scroll to return to selected message', () => {
+        const wrapper = shallow(<MessageList
+            lastSodOffset={LAST_SOD_OFFSET_CLIENT}
+            instrument={INSTRUMENT}
+            handleUpdateWithDeltas={jest.fn()}
+        />);
+
+        wrapper.instance().selectedMessageItem = {
+            current: {
+                scrollIntoView: jest.fn(),
+            },
+        };
+        const scrollSpy = jest.spyOn(wrapper.instance(), 'handleScrollBackToSelectedMessage');
+        expect(scrollSpy).toHaveBeenCalledTimes(0);
+        wrapper.instance().setState({
+            messages: MESSAGE_LIST.messages,
+        });
+        expect(scrollSpy).toHaveBeenCalledTimes(1);
     });
 });

@@ -117,4 +117,7 @@ export const Styles = theme => ({
         height: '100%',
         marginBottom: '20px',
     },
+    inlineFlex: {
+        display: 'inline-flex',
+    },
 });

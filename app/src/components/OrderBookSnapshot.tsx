@@ -29,6 +29,7 @@ import {
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
 import { ListItems, OrderBook, TopOfBookItem } from '../models/OrderBook';
+import CustomLoader from './CustomLoader';
 
 const styles = createStyles(Styles);
 
@@ -43,6 +44,8 @@ interface State {
     listItems: ListItems,
     maxQuantity: number,
     topOfBookItems: Array<TopOfBookItem>,
+    loadingInstruments: boolean,
+    loadingOrderbook: boolean,
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
@@ -60,6 +63,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             listItems: {},
             maxQuantity: -1,
             topOfBookItems: [],
+            loadingInstruments: true,
+            loadingOrderbook: false,
         };
     }
 
@@ -73,13 +78,15 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             this.setState({ instruments: newInstruments });
         }).catch(err => {
             console.log(err);
+        }).finally(() => {
+            this.setState({ loadingInstruments: false });
         });
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { selectedInstrument } = this.state;
         if (prevState.selectedInstrument !== selectedInstrument) {
-            this.updateOrderBook();
+            this.handleChangeDateTime();
         }
     }
 
@@ -206,6 +213,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      */
     updateOrderBook = () => {
         const { selectedDateTimeNano, selectedInstrument } = this.state;
+        this.setState({ loadingOrderbook: true });
         OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
             .then(response => {
                 // eslint-disable-next-line camelcase
@@ -222,6 +230,9 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             })
             .catch(err => {
                 console.log(err);
+            })
+            .finally(() => {
+                this.setState({ loadingOrderbook: false });
             });
     };
 
@@ -266,6 +277,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             selectedInstrument,
             instruments,
             topOfBookItems,
+            loadingInstruments,
+            loadingOrderbook,
         } = this.state;
 
         let messageText;
@@ -303,24 +316,35 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 >
                                     {'Instrument'}
                                 </Typography>
-                                <Select
-                                    value={selectedInstrument}
-                                    onChange={this.handleInstrumentChange}
-                                    className={classes.selectInstrumentInput}
-                                >
-                                    {
-                                        instruments.map(value => {
-                                            return (
-                                                <MenuItem
-                                                    key={`menuitem-${value}`}
-                                                    value={value}
-                                                >
-                                                    {value}
-                                                </MenuItem>
-                                            );
-                                        })
-                                    }
-                                </Select>
+                                { loadingInstruments ? (
+                                    <div className={classes.inlineFlex}>
+                                        <CustomLoader
+                                            size={'1rem'}
+                                            type={'circular'}
+                                        />
+                                    </div>
+                                ) : (
+                                    <Select
+                                        id={'instrumentSelector'}
+                                        value={selectedInstrument}
+                                        onChange={this.handleInstrumentChange}
+                                        className={classes.selectInstrumentInput}
+                                    >
+                                        {
+                                            instruments.map(value => {
+                                                return (
+                                                    <MenuItem
+                                                        key={`menuitem-${value}`}
+                                                        value={value}
+                                                    >
+                                                        {value}
+                                                    </MenuItem>
+
+                                                );
+                                            })
+                                        }
+                                    </Select>
+                                )}
                             </div>
                             <div
                                 className={classes.dateTimeSelect}
@@ -399,6 +423,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
                                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                         instrument={selectedInstrument}
+                                        loading={loadingOrderbook}
                                     />
                                 </Card>
                                 {(lastSodOffset.neq(0)) && (
@@ -407,6 +432,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                             lastSodOffset={lastSodOffset}
                                             instrument={selectedInstrument}
                                             handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                            loading={loadingOrderbook}
                                         />
                                     </Card>
                                 )}

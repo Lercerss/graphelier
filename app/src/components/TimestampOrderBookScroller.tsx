@@ -26,7 +26,8 @@ interface Props extends WithStyles<typeof styles> {
     timeOrDateIsNotSet: boolean,
     lastSodOffset: bigInt.BigInteger,
     handleUpdateWithDeltas: Function,
-    instrument: string
+    instrument: string,
+    loading: boolean,
 }
 
 
@@ -38,7 +39,10 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { lastSodOffset } = this.props;
+        const { lastSodOffset, loading } = this.props;
+        if (loading !== nextProps.loading) {
+            return true;
+        }
         if (lastSodOffset && nextProps.lastSodOffset) {
             return (lastSodOffset.neq(nextProps.lastSodOffset));
         }
@@ -99,7 +103,9 @@ class TimestampOrderBookScroller extends Component<Props> {
      * @param offset The number of messages to skip forward or backward to
      */
     handleGoToMessageByOffset = (offset: number) => {
-        const { lastSodOffset, handleUpdateWithDeltas, instrument } = this.props;
+        const {
+            lastSodOffset, handleUpdateWithDeltas, instrument,
+        } = this.props;
         OrderBookService.getPriceLevelsByMessageOffset(
             instrument,
             lastSodOffset.toString(),
@@ -115,7 +121,7 @@ class TimestampOrderBookScroller extends Component<Props> {
 
     render() {
         const {
-            listItems, maxQuantity, classes, timeOrDateIsNotSet,
+            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading,
         } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
 
@@ -161,15 +167,19 @@ class TimestampOrderBookScroller extends Component<Props> {
                         </ButtonGroup>
                     </div>
                 </Box>
-
                 <Box className={classes.scrollContainer}>
-                    {listItems
-                        && (
-                            <MultiDirectionalScroll position={50}>
+                    {
+                        listItems
+                    && (
+                        <MultiDirectionalScroll position={50}>
+                            <div
+                                id={'orderbookListItems'}
+                                className={loading ? classes.hide : classes.show}
+                            >
                                 {getOrderBookListItemsAsArray(listItems).map(listItem => {
                                     if (listItem.isMiddle) {
-                                        // TODO: Investigate callback refs in TS
-                                        // @ts-ignore
+                                    // TODO: Investigate callback refs in TS
+                                    // @ts-ignore
                                         this.middleReferenceItem = createRef();
                                     }
                                     return (
@@ -189,8 +199,10 @@ class TimestampOrderBookScroller extends Component<Props> {
                                         </Box>
                                     );
                                 })}
-                            </MultiDirectionalScroll>
-                        )}
+                            </div>
+                        </MultiDirectionalScroll>
+                    )
+                    }
                 </Box>
             </Box>
         );

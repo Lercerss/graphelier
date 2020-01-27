@@ -1,7 +1,7 @@
 import bigInt from 'big-integer';
 
 export const ENVIRONMENT = 'DEV';
-
+export const APP_NAME = 'Graphelier';
 export const BACKEND_PORT = 5050;
 let host = 'localhost';
 if (process.env.NODE_ENV === 'production') {
@@ -11,6 +11,7 @@ export const BACKEND_URL = `http://${host}:${BACKEND_PORT}`;
 
 export const LEFT_ARROW_KEY_CODE = 37;
 export const RIGHT_ARROW_KEY_CODE = 39;
+export const TILDE_KEY_CODE = 192;
 
 export const MESSAGE_LIST_DEFAULT_PAGE_SIZE = 20;
 
