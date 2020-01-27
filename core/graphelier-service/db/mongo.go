@@ -98,7 +98,7 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 		}},
 	}
 	options := options.FindOne()
-	options.SetSort(bson.D{{Key: "timestamp", Value: -1}})
+	options.SetSort(bson.D{{Key: "interval_multiple", Value: -1}})
 
 	err = collection.FindOne(context.TODO(), filter, options).Decode(&result)
 	if err != nil {
