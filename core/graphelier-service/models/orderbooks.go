@@ -21,7 +21,7 @@ type Orderbook struct {
 	Instrument    string   `json:"instrument"`
 	Bids          []*Level `json:"bids"`
 	Asks          []*Level `json:"asks"`
-	Timestamp     uint64   `json:"timestamp,string"`
+	Timestamp     uint64   `json:"timestamp,string" bson:"interval_multiple"`
 	LastSodOffset uint64   `json:"last_sod_offset,string" bson:"last_sod_offset"`
 }
 

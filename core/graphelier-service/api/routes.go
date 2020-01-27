@@ -70,4 +70,10 @@ var routes = Routes{
 		"/order/{instrument}/{orderID}/{timestamp}",
 		hndlrs.CustomHandler{H: hndlrs.FetchOrderInfo},
 	},
+	Route{
+		"TopBook",
+		"GET",
+		"/topbook/{instrument}/{start_timestamp}/{end_timestamp}/{num_points}",
+		hndlrs.CustomHandler{H: hndlrs.FetchTopBook},
+	},
 }

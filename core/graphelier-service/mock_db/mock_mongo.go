@@ -136,3 +136,18 @@ func (mr *MockDatastoreMockRecorder) GetSingleOrderMessages(instrument, SODTimes
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSingleOrderMessages", reflect.TypeOf((*MockDatastore)(nil).GetSingleOrderMessages), instrument, SODTimestamp, EODTimestamp, orderID)
 }
+
+// GetTopOfBookByInterval mocks base method
+func (m *MockDatastore) GetTopOfBookByInterval(instrument string, startTimestamp, endTimestamp uint64, maxCount int64) ([]*models.Point, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTopOfBookByInterval", instrument, startTimestamp, endTimestamp, maxCount)
+	ret0, _ := ret[0].([]*models.Point)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTopOfBookByInterval indicates an expected call of GetTopOfBookByInterval
+func (mr *MockDatastoreMockRecorder) GetTopOfBookByInterval(instrument, startTimestamp, endTimestamp, maxCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTopOfBookByInterval", reflect.TypeOf((*MockDatastore)(nil).GetTopOfBookByInterval), instrument, startTimestamp, endTimestamp, maxCount)
+}

@@ -1,12 +1,14 @@
 import bigInt from 'big-integer';
+import moment from 'moment';
 import { TransactionType } from '../../models/OrderBook';
 
-export const DATE_STRING = '2012-06-21';
+export const DATE_STRING = '21/06/2012';
+export const DATE_MOMENT = moment('2012-06-21');
 export const INSTRUMENT = 'SPY';
-export const DATE_VALUE_BIG_INT = bigInt(1340236800000000000); // 2012-06-21 UTC in epoch nanoseconds (bigInt)
-export const TIME_STRING = '12:00:00.000000000';
-export const TIME_VALUE_BIG_INT = bigInt(43200000000000); // number of nanoseconds in 12 hours (bigInt)
-export const TIME_VALUE = 43200000000000; // number of nanoseconds in 12 hours
+export const DATE_VALUE_BIG_INT = bigInt(1340251200000000000); // 2012-06-21 (local 12 AM) nanoseconds (bigInt)
+export const TIME_STRING = '03:00:00.000000000 PM';
+export const TIME_VALUE_BIG_INT = bigInt(54000000000000); // number of nanoseconds in 15 hours (bigInt)
+export const TIMESTAMP_PM = bigInt(1340305200000000000); // 2012-06-21 at 3:00 pm (local) nanoseconds (bigInt)
 export const TIMESTAMP = 1340280000000000000; // 2012-06-21 at 12 pm
 export const LAST_SOD_OFFSET = '3';
 export const LAST_SOD_OFFSET_CLIENT = bigInt(3);

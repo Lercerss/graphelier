@@ -60,7 +60,7 @@ class _Loader:
         if current_multiple > self.last_multiple:
             logger.debug(str(self.order_book))
             self.last_multiple = current_multiple
-            save_order_book(self.order_book)
+            save_order_book(self.order_book, self.interval)
         self.message_buffer.append(message)
 
         if len(self.message_buffer) > MESSAGE_BATCH_SIZE:
@@ -90,7 +90,7 @@ class _Loader:
         eod_clear.last_time = max_time
         eod_clear.last_sod_offset = self.sod_offset_counter
         # save an empty order_book at the end of the day
-        save_order_book(eod_clear)
+        save_order_book(eod_clear, self.interval)
 
         logger.info('best bid volume=%d\tbest ask volume=%d',
             sum(o.qty for o in self.order_book.bid_book[self.order_book.bid]),
@@ -117,7 +117,7 @@ def load(**kwargs):
 
     instrument = kwargs['instrument']
     interval = check_interval(kwargs['interval'], instrument)
-    upsert_order_book(OrderBook(instrument))
+    upsert_order_book(OrderBook(instrument), interval)
 
     initial_top_of_book = parse_top_of_book(
         kwargs['ob_file_path'], kwargs['top_of_book'])

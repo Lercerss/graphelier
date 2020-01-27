@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Could not establish connection to MongoDB: %v\n", err)
 	}
 
-	env := &hndlrs.Env{Connector: db}
+	env := &hndlrs.Env{Datastore: db}
 	router := api.NewRouter(env)
 
 	log.Fatalln(http.ListenAndServe(":5050", handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router)))

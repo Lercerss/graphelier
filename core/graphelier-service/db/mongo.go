@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"graphelier/core/graphelier-service/utils"
 
 	"graphelier/core/graphelier-service/models"
+	"graphelier/core/graphelier-service/utils"
 
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,19 +21,22 @@ type Datastore interface {
 	GetInstruments() ([]string, error)
 	RefreshCache() error
 	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
+	GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error)
 }
 
 // Connector : A struct that represents the database
 type Connector struct {
 	*mongo.Client
-	cache cache
+	cache Cache
 }
 
-type cache struct {
-	meta map[string]meta
+// Cache : A struct that represents a collection of db data
+type Cache struct {
+	meta map[string]Meta
 }
 
-type meta struct {
+// Meta : A struct that represents dynamic data for an instrument
+type Meta struct {
 	Instrument string
 	Interval   uint64
 }
@@ -46,6 +49,10 @@ type InstrumentNotFoundError struct {
 
 func (err InstrumentNotFoundError) Error() string {
 	return "Instrument not found: " + err.Instrument
+}
+
+func timestampToIntervalMultiple(timestamp uint64, interval uint64) uint64 {
+	return (timestamp - (timestamp % interval)) / interval
 }
 
 // NewConnection : The database connection
@@ -61,7 +68,7 @@ func NewConnection() (*Connector, error) {
 		return nil, err
 	}
 
-	c := &Connector{client, cache{}}
+	c := &Connector{client, Cache{}}
 	if err = c.RefreshCache(); err != nil {
 		return nil, err
 	}
@@ -75,20 +82,30 @@ func NewConnection() (*Connector, error) {
 func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *models.Orderbook, err error) {
 	defer utils.TraceTimer("mongo/GetOrderbook")()
 
+	meta, ok := c.cache.meta[instrument]
+	if !ok {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	interval := meta.Interval
+
+	exactTimestamp := timestampToIntervalMultiple(timestamp, interval)
+
 	collection := c.Database("graphelier-db").Collection("orderbooks")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
-		{Key: "timestamp", Value: bson.D{
-			{Key: "$lte", Value: timestamp},
+		{Key: "interval_multiple", Value: bson.D{
+			{Key: "$lte", Value: exactTimestamp},
 		}},
 	}
 	options := options.FindOne()
-	options.SetSort(bson.D{{Key: "timestamp", Value: -1}})
+	options.SetSort(bson.D{{Key: "interval_multiple", Value: -1}})
 
 	err = collection.FindOne(context.TODO(), filter, options).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
+
+	result.Timestamp = result.Timestamp * interval
 
 	return result, nil
 }
@@ -233,11 +250,11 @@ func (c *Connector) RefreshCache() error {
 		return err
 	}
 
-	result := make(map[string]meta)
+	result := make(map[string]Meta)
 	defer cursor.Close(context.TODO())
 
 	for cursor.Next(context.TODO()) {
-		var m meta
+		var m Meta
 		err := cursor.Decode(&m)
 		if err != nil {
 			return err
@@ -251,6 +268,8 @@ func (c *Connector) RefreshCache() error {
 
 // GetSingleOrderMessages returns all messages affecting an order for a given day
 func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) (results []*models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetSingleOrderMessages")
+
 	collection := c.Database("graphelier-db").Collection("messages")
 
 	filter := bson.D{
@@ -285,5 +304,84 @@ func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64
 		return nil, err
 	}
 
+	return results, nil
+}
+
+// GetTopOfBookByInterval : Reads the best bid and best ask from order book snapshots in the given interval
+func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error) {
+	defer utils.TraceTimer("mongo/GetTopOfBookByInterval")()
+
+	meta, ok := c.cache.meta[instrument]
+	if !ok {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	interval := meta.Interval
+
+	exactStart := timestampToIntervalMultiple(startTimestamp, interval)
+	exactEnd := timestampToIntervalMultiple(endTimestamp, interval)
+
+	collection := c.Database("graphelier-db").Collection("orderbooks")
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "interval_multiple", Value: bson.D{
+			{Key: "$gte", Value: exactStart},
+			{Key: "$lte", Value: exactEnd},
+		}},
+	}
+
+	// Count matching documents to select $mod filter
+	count, err := collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	log.Tracef("Documents in interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
+
+	// Add $mod comparator to interval_multiple filter
+	filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
+
+	// Project snapshots to keep only the best bid and ask
+	findOptions := options.Find()
+	findOptions.Projection = bson.D{
+		{Key: "interval_multiple", Value: 1},
+		{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
+		{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
+		{Key: "bids.price", Value: 1},
+		{Key: "asks.price", Value: 1},
+	}
+
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var m models.Point
+		var raw bson.RawValue
+		if raw, err = cursor.Current.LookupErr("interval_multiple"); err != nil {
+			return nil, err
+		}
+		m.Timestamp = uint64(raw.Int64()) * interval
+
+		if raw, err = cursor.Current.LookupErr("bids"); err != nil {
+			return nil, err
+		}
+		rawE, err := raw.Array().IndexErr(0)
+		if err != nil {
+			continue
+		}
+		m.BestBid = rawE.Value().Document().Lookup("price").Double()
+
+		if raw, err = cursor.Current.LookupErr("asks"); err != nil {
+			return nil, err
+		}
+		rawE, err = raw.Array().IndexErr(0)
+		if err != nil {
+			continue
+		}
+		m.BestAsk = rawE.Value().Document().Lookup("price").Double()
+
+		results = append(results, &m)
+	}
 	return results, nil
 }

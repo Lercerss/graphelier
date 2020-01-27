@@ -30,7 +30,7 @@ func FetchMessages(env *Env, w http.ResponseWriter, r *http.Request) error {
 		return StatusError{400, err}
 	}
 	paginator := models.Paginator{NMessages: intNMessages, SodOffset: intSodOffset}
-	messages, err := env.Connector.GetMessagesWithPagination(instrument, &paginator)
+	messages, err := env.Datastore.GetMessagesWithPagination(instrument, &paginator)
 	if err != nil {
 		return StatusError{500, err}
 	}

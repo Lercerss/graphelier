@@ -1,3 +1,5 @@
+import { Colors } from './App';
+
 export const Styles = theme => ({
     root: {
         backgroundColor: 'transparent',
@@ -26,25 +28,11 @@ export const Styles = theme => ({
         marginBottom: 20,
         justifyContent: 'flex-end',
     },
-    datePicker: {
-        width: 'min-content',
-        alignSelf: 'flex-end',
-        display: 'inline',
-    },
-    timestampSlider: {
-        width: '100%',
-        marginRight: 20,
-        marginLeft: 20,
-    },
     pleaseSelectMessage: {
         display: 'inline',
         color: '#9F6000',
         backgroundColor: '#FEEFB3',
         borderRadius: '5px',
-        padding: '2px',
-    },
-    selectMessage: {
-        display: 'inline',
         padding: '2px',
     },
     inputLabel: {
@@ -54,9 +42,8 @@ export const Styles = theme => ({
     timestampDisplay: {
         display: 'inline',
     },
-    inline: {
+    inlineFlexEnd: {
         display: 'flex',
-        justifyContent: 'flex-end',
         marginTop: 15,
         alignItems: 'center',
     },
@@ -92,6 +79,43 @@ export const Styles = theme => ({
     },
     selectInstrumentInput: {
         width: '10vh',
+    },
+    graph: {
+        width: '100%',
+    },
+    spaceBetween: {
+        display: 'flex',
+        justifyContent: 'space-between',
+    },
+    inline: {
+        display: 'flex',
+        marginTop: 15,
+        alignItems: 'center',
+    },
+    inputSelect: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    dateTimeSelect: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+    },
+    selectMessage: {
+        textAlign: 'center',
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(3),
+        borderRadius: '5px',
+        backgroundColor: Colors.paleBlue,
+    },
+    graphCard: {
+        paddingTop: '20px',
+        marginBottom: '15px',
+    },
+    noDataMessage: {
+        textAlign: 'center',
+        width: '100%',
+        height: '100%',
+        marginBottom: '20px',
     },
     inlineFlex: {
         display: 'inline-flex',

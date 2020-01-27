@@ -3,52 +3,47 @@ import {
     withStyles,
     Typography,
     FormControl,
-    TextField,
-    Slider,
-    Collapse,
-    IconButton,
-    Card, InputLabel, Select, MenuItem,
+    Card, Select, MenuItem,
 } from '@material-ui/core';
-import classNames from 'classnames';
 import { WithStyles, createStyles } from '@material-ui/core/styles';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import MomentUtils from '@date-io/moment';
+import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
 
+import moment from 'moment';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     dateStringToEpoch,
     nanosecondsToString,
-    epochToDateString,
     splitNanosecondEpochTimestamp,
     convertNanosecondsToUTC,
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
+import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
-    NANOSECONDS_IN_SIXTEEN_HOURS,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
-import { ListItems, OrderBook } from '../models/OrderBook';
+import { ListItems, OrderBook, TopOfBookItem } from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
 
 const styles = createStyles(Styles);
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
-    selectedDateNano: bigInt.BigInteger,
-    selectedTimeNano: bigInt.BigInteger,
     selectedDateTimeNano: bigInt.BigInteger,
+    selectedDateNano: bigInt.BigInteger,
     selectedTimeString: string,
-    selectedDateString: string,
-    expanded: boolean,
+    datePickerValue: moment.Moment | null,
     selectedInstrument: string,
     instruments: Array<string>,
     listItems: ListItems,
     maxQuantity: number,
+    topOfBookItems: Array<TopOfBookItem>,
     loadingInstruments: boolean,
     loadingOrderbook: boolean,
 }
@@ -59,16 +54,15 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
 
         this.state = {
             lastSodOffset: bigInt(0),
-            selectedDateNano: bigInt(0),
-            selectedTimeNano: bigInt(0),
             selectedDateTimeNano: bigInt(0),
-            selectedTimeString: 'Select from slider',
-            selectedDateString: '',
-            expanded: true,
+            selectedDateNano: bigInt(0),
+            selectedTimeString: '00:00:00.000000000',
+            datePickerValue: null,
             selectedInstrument: '',
             instruments: [],
             listItems: {},
             maxQuantity: -1,
+            topOfBookItems: [],
             loadingInstruments: true,
             loadingOrderbook: false,
         };
@@ -102,76 +96,74 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @param child
      */
     handleInstrumentChange = (event: React.ChangeEvent<any>) => {
-        this.setState({ selectedInstrument: event.target.value });
+        this.setState(
+            {
+                selectedInstrument: event.target.value,
+            },
+            () => {
+                const { selectedDateNano } = this.state;
+                if (selectedDateNano.neq(0)) {
+                    const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+                    const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+                    this.updateGraphData(startTime, endTime);
+                }
+            },
+        );
+    };
+
+    /**
+     * @desc Get appropriate number of data points to request for the graph
+     * @returns {number}
+     */
+    getNumDataPoints = (): number => {
+        return Math.trunc(window.screen.width * window.devicePixelRatio * 0.76);
     };
 
     /**
      * @desc Handles the date change for the TextField date picker
-     * @param event The event object that caused the call
+     * @param date The selected date
      */
-    handleChangeDate = (event: React.ChangeEvent<any>) => {
-        const { value } = event.target;
-        if (value === '') { // If user clears the date input
-            const { selectedDateNano, selectedDateString } = this.state;
+    handleChangeDate = (date: any) => {
+        if (!moment(date).isValid()) return;
 
-            this.setState(
-                {
-                    selectedDateNano,
-                    selectedDateString,
-                },
-            );
-        } else {
-            const { selectedTimeNano } = this.state;
-            const selectedDateString = event.target.value;
-            const selectedDateNano = dateStringToEpoch(`${selectedDateString} 00:00:00`);
-            const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano.plus(selectedDateNano));
+        const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
+        const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
+        const selectedDateString = date.format('YYYY-MM-DD');
+        const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
+        const selectedDateTimeNano = selectedDateNano.plus(selectedTimeNano);
 
-            this.setState(
-                {
-                    selectedDateNano,
-                    selectedDateString,
-                    selectedDateTimeNano,
-                },
-                () => {
-                    this.handleChangeDateTime();
-                },
-            );
-        }
-    };
-
-    /**
-     * @desc Handles the time change when sliding the time Slider
-     * @param event The event object that caused the call
-     * @param value {number} The new time value that represents the nanoseconds between 12 am and the chosen time of
-     * day.
-     */
-    handleChangeTime = (event: React.ChangeEvent<any>, value: any) => {
-        if (value) {
-            const selectedTimeNano = bigInt(value);
-            const selectedTimeString = nanosecondsToString(value);
-
-            this.setState({
-                selectedTimeNano,
-                selectedTimeString,
-            });
-        }
-    };
-
-    /**
-     * @desc Handles the time change when the user stops sliding the time Slider
-     * @param event The event object that caused the call
-     * @param value {number} The new time value that represents the nanoseconds between 12 am and the chosen time of day
-     */
-    handleCommitTime = (event: React.ChangeEvent<any>, value: any) => {
-        const { selectedDateNano } = this.state;
-
-        const selectedTimeNano = bigInt(value);
-        const selectedTimeString = nanosecondsToString(value);
-        const selectedDateTimeNano = convertNanosecondsToUTC(selectedTimeNano.plus(selectedDateNano));
+        const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+        const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
 
         this.setState(
             {
-                selectedTimeNano,
+                datePickerValue: date,
+                selectedTimeString,
+                selectedDateNano,
+                selectedDateTimeNano,
+            },
+            () => {
+                this.handleChangeDateTime();
+                this.updateGraphData(startTime, endTime);
+            },
+        );
+    };
+
+    /**
+     * @desc Handles the time change when the user clicks on a time in the graph
+     * @param value {number} The new datetime value that represents the date and time clicked on in the graph,
+     * in utc nanoseconds
+     */
+    handleSelectGraphDateTime = (value: string) => {
+        const selectedDateTimeNano = bigInt(value);
+        const {
+            timeNanoseconds,
+        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+
+        const selectedTimeString = nanosecondsToString(timeNanoseconds);
+
+        this.setState(
+            {
                 selectedTimeString,
                 selectedDateTimeNano,
             },
@@ -180,12 +172,12 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     };
 
     /**
-     *  @desc Updates the selectedDateTimeNano state variable when there is a
-     *  change in the date or when the user stops sliding the time Slider
+     *  @desc Updates the selectedDateTimeNano state variable when the user selects a timestamp
+     *  for viewing the orderbook
      */
     handleChangeDateTime = () => {
-        const { selectedDateNano, selectedTimeNano } = this.state;
-        if (selectedTimeNano.neq(0) && selectedDateNano.neq(0)) {
+        const { selectedDateTimeNano } = this.state;
+        if (selectedDateTimeNano.neq(0)) {
             this.updateOrderBook();
         }
     };
@@ -200,15 +192,12 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             // eslint-disable-next-line camelcase
             asks, bids, timestamp, last_sod_offset,
         } = deltas;
-        const { timeNanoseconds, dateNanoseconds } = splitNanosecondEpochTimestamp(timestamp);
+        const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
         const { newListItems, newMaxQuantity } = processOrderBookWithDeltas(listItems, asks, bids);
 
         this.setState(
             {
                 lastSodOffset: bigInt(last_sod_offset),
-                selectedDateNano: dateNanoseconds,
-                selectedDateString: epochToDateString(dateNanoseconds),
-                selectedTimeNano: convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)),
                 selectedTimeString: nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(
                     bigInt(timeNanoseconds),
                 ).valueOf()),
@@ -217,14 +206,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 maxQuantity: newMaxQuantity,
             },
         );
-    };
-
-    /**
-     * @desc Handles the expand button for showing or hiding the time settings for the orderbook
-     */
-    handleExpandClick = () => {
-        const { expanded } = this.state;
-        this.setState({ expanded: !expanded });
     };
 
     /**
@@ -255,177 +236,210 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             });
     };
 
+    /**
+     * @desc Updates the graph with tob values for new start time and end time bounds
+     */
+    updateGraphData = (startTime: bigInt.BigInteger, endTime: bigInt.BigInteger) => {
+        const { selectedInstrument } = this.state;
+
+        OrderBookService.getTopOfBookOverTime(selectedInstrument, startTime.toString(), endTime.toString(),
+            this.getNumDataPoints())
+            .then(response => {
+                // eslint-disable-next-line camelcase
+                const result = response.data;
+
+                this.setState(
+                    {
+                        topOfBookItems: result,
+                    },
+                );
+            })
+            .catch(err => {
+                console.log(err);
+
+                this.setState(
+                    {
+                        topOfBookItems: [],
+                    },
+                );
+            });
+    };
+
     render() {
         const { classes } = this.props;
         const {
-            expanded,
             listItems,
             maxQuantity,
-            selectedTimeNano,
-            selectedDateNano,
-            selectedDateString,
+            selectedDateTimeNano,
+            datePickerValue,
             selectedTimeString,
             lastSodOffset,
             selectedInstrument,
             instruments,
+            topOfBookItems,
             loadingInstruments,
             loadingOrderbook,
         } = this.state;
 
-        return (
-            <Typography
-                component={'div'}
-                className={classes.container}
-            >
-                <InputLabel
-                    className={classes.selectInstrumentLabel}
-                    id={'selectInstrumentLabel'}
-                >
-                    Select Instrument
-                </InputLabel>
-                { loadingInstruments ? (
-                    <div className={classes.inlineFlex}>
-                        <CustomLoader
-                            size={'1rem'}
-                            type={'circular'}
-                        />
-                    </div>
-                )
-                    : (
-                        <Select
-                            id={'instrumentSelector'}
-                            value={selectedInstrument}
-                            onChange={this.handleInstrumentChange}
-                            className={classes.selectInstrumentInput}
-                        >
-                            {
-                                instruments.map(value => {
-                                    return (
-                                        <MenuItem
-                                            key={`menuitem-${value}`}
-                                            value={value}
-                                        >
-                                            {value}
-                                        </MenuItem>
+        let messageText;
+        if (selectedDateTimeNano.equals(0)) {
+            if (selectedInstrument.length === 0) messageText = 'Select an instrument';
+            else { messageText = 'Select a date'; }
+        }
 
-                                    );
-                                })
-                            }
-                        </Select>
-                    )}
-                <div className={classNames(classes.expandRow, classes.flex)}>
-                    {(selectedTimeNano.equals(0) || selectedDateNano.equals(0)) ? (
-                        <Typography
-                            variant={'body1'}
-                            className={classNames(classes.pleaseSelectMessage, classes.flex)}
-                        >
-                            Please select Date and Time
-                        </Typography>
-                    ) : (
-                        <Typography
-                            variant={'body1'}
-                            color={'textPrimary'}
-                            className={classNames(classes.selectMessage, classes.flex)}
-                        >
-                            Select Date and Time
-                        </Typography>
-                    )}
-                    <IconButton
-                        className={classNames(classes.expand, expanded && classes.expandOpen)}
-                        onClick={this.handleExpandClick}
-                        aria-expanded={expanded}
-                        aria-label={'show more'}
+        return (
+            <MuiPickersUtilsProvider utils={MomentUtils}>
+                <Typography
+                    component={'div'}
+                    className={classes.container}
+                >
+                    {(selectedDateTimeNano.equals(0) || selectedInstrument.length === 0)
+                && (
+                    <Typography
+                        variant={'body1'}
+                        color={'textPrimary'}
+                        className={classes.selectMessage}
                     >
-                        <ExpandMoreIcon />
-                    </IconButton>
-                </div>
-                <Collapse in={expanded}>
-                    <div
-                        id={'ButtonHeader'}
-                        className={classes.divTopBook}
-                    >
-                        <FormControl className={classes.formControl}>
-                            <div className={classes.inline}>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.inputLabel}
-                                    color={'textSecondary'}
-                                >
-                                    {'Date'}
-                                </Typography>
-                                <TextField
-                                    className={classes.datePicker}
-                                    type={'date'}
-                                    value={selectedDateString}
-                                    onChange={this.handleChangeDate}
-                                    InputProps={{ inputProps: { max: '2100-01-01' } }}
-                                />
-                            </div>
-                            <div className={classes.inline}>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.inputLabel}
-                                    color={'textSecondary'}
-                                >
-                                    {'Time'}
-                                </Typography>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.timestampDisplay}
-                                >
-                                    {selectedTimeString}
-                                </Typography>
-                            </div>
-                            <div className={classes.inline}>
-                                <Typography
-                                    variant={'body1'}
-                                    color={'textSecondary'}
-                                >
-                                    9:30
-                                </Typography>
-                                <Slider
-                                    className={classes.timestampSlider}
-                                    min={NANOSECONDS_IN_NINE_AND_A_HALF_HOURS} // nanoseconds between 12am and 9:30am
-                                    max={NANOSECONDS_IN_SIXTEEN_HOURS} // nanoseconds between 12am and 4pm
-                                    step={1}
-                                    value={selectedTimeNano.valueOf()}
-                                    onChange={this.handleChangeTime}
-                                    onChangeCommitted={this.handleCommitTime}
-                                />
-                                <Typography
-                                    variant={'body1'}
-                                    color={'textSecondary'}
-                                >
-                                    16:00
-                                </Typography>
-                            </div>
-                        </FormControl>
-                    </div>
-                </Collapse>
-                <Card>
-                    <div>
-                        <TimestampOrderBookScroller
-                            listItems={listItems}
-                            maxQuantity={maxQuantity}
-                            lastSodOffset={lastSodOffset}
-                            timeOrDateIsNotSet={selectedTimeNano.equals(0) || selectedDateNano.equals(0)}
-                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                            instrument={selectedInstrument}
-                            loading={loadingOrderbook}
-                        />
-                    </div>
-                </Card>
-                {(lastSodOffset.neq(0)) && (
-                    <Card className={classes.messageListCard}>
-                        <MessageList
-                            lastSodOffset={lastSodOffset}
-                            instrument={selectedInstrument}
-                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                            loading={loadingOrderbook}
-                        />
-                    </Card>
+                        {messageText}
+                    </Typography>
                 )}
-            </Typography>
+                    <FormControl className={classes.formControl}>
+
+                        <div
+                            className={classes.spaceBetween}
+                        >
+                            <div>
+                                <Typography
+                                    variant={'body1'}
+                                    className={classes.inputLabel}
+                                    color={'textSecondary'}
+                                >
+                                    {'Instrument'}
+                                </Typography>
+                                { loadingInstruments ? (
+                                    <div className={classes.inlineFlex}>
+                                        <CustomLoader
+                                            size={'1rem'}
+                                            type={'circular'}
+                                        />
+                                    </div>
+                                ) : (
+                                    <Select
+                                        id={'instrumentSelector'}
+                                        value={selectedInstrument}
+                                        onChange={this.handleInstrumentChange}
+                                        className={classes.selectInstrumentInput}
+                                    >
+                                        {
+                                            instruments.map(value => {
+                                                return (
+                                                    <MenuItem
+                                                        key={`menuitem-${value}`}
+                                                        value={value}
+                                                    >
+                                                        {value}
+                                                    </MenuItem>
+
+                                                );
+                                            })
+                                        }
+                                    </Select>
+                                )}
+                            </div>
+                            <div
+                                className={classes.dateTimeSelect}
+                            >
+                                <div
+                                    className={classes.inputSelect}
+                                >
+                                    <Typography
+                                        variant={'body1'}
+                                        className={classes.inputLabel}
+                                        color={'textSecondary'}
+                                    >
+                                        {'Date'}
+                                    </Typography>
+                                    <KeyboardDatePicker
+                                        className={classes.datePicker}
+                                        value={datePickerValue}
+                                        onChange={date => this.handleChangeDate(date)}
+                                        placeholder={'DD/MM/YYYY'}
+                                        format={'DD/MM/YYYY'}
+                                        views={['year', 'month', 'date']}
+                                        openTo={'year'}
+                                        disabled={selectedInstrument.length === 0}
+                                        invalidDateMessage={''}
+                                        disableFuture
+                                        autoOk
+                                    />
+                                </div>
+                                <div className={classes.inlineFlexEnd}>
+                                    <Typography
+                                        variant={'body1'}
+                                        className={classes.inputLabel}
+                                        color={'textSecondary'}
+                                    >
+                                        {'Time'}
+                                    </Typography>
+                                    <Typography
+                                        variant={'body1'}
+                                        className={classes.timestampDisplay}
+                                        color={selectedInstrument.length !== 0 ? 'textPrimary' : 'textSecondary'}
+                                    >
+                                        {selectedTimeString}
+                                    </Typography>
+                                </div>
+                            </div>
+                        </div>
+                    </FormControl>
+                    {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                        && (
+                            <div>
+                                <Card className={classes.graphCard}>
+                                    {topOfBookItems.length === 0
+                                        ? (
+                                            <Typography
+                                                className={classes.noDataMessage}
+                                                variant={'body1'}
+                                                color={'textPrimary'}
+                                            >
+                                                {'Could not retrieve graph for this day.'}
+                                            </Typography>
+                                        )
+                                        : (
+                                            <TopOfBookGraphWrapper
+                                                className={classes.graph}
+                                                onTimeSelect={this.handleSelectGraphDateTime}
+                                                selectedDateTimeNano={selectedDateTimeNano}
+                                                topOfBookItems={topOfBookItems}
+                                            />
+                                        )}
+                                </Card>
+                                <Card>
+                                    <TimestampOrderBookScroller
+                                        listItems={listItems}
+                                        maxQuantity={maxQuantity}
+                                        lastSodOffset={lastSodOffset}
+                                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
+                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                        instrument={selectedInstrument}
+                                        loading={loadingOrderbook}
+                                    />
+                                </Card>
+                                {(lastSodOffset.neq(0)) && (
+                                    <Card className={classes.messageListCard}>
+                                        <MessageList
+                                            lastSodOffset={lastSodOffset}
+                                            instrument={selectedInstrument}
+                                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                            loading={loadingOrderbook}
+                                        />
+                                    </Card>
+                                )}
+                            </div>
+                        )}
+                </Typography>
+            </MuiPickersUtilsProvider>
         );
     }
 }

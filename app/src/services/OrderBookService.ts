@@ -16,4 +16,8 @@ export default class OrderBookService {
     static getInstrumentsList = () => {
         return httpClient.get(`/instruments/`);
     };
+
+    static getTopOfBookOverTime = (instrument: string, startTime: string, endTime: string, nDataPoints: number) => {
+        return httpClient.get(`/topbook/${instrument}/${startTime}/${endTime}/${nDataPoints}`);
+    };
 }

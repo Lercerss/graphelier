@@ -43,3 +43,10 @@ export interface Message {
     direction: number,
     sod_offset: string
 }
+
+export interface TopOfBookItem {
+    date?: Date,
+    best_ask: number,
+    best_bid: number,
+    timestamp: string,
+}

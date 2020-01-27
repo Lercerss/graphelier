@@ -25,11 +25,11 @@ func FetchOrderbook(env *Env, w http.ResponseWriter, r *http.Request) error {
 		return StatusError{400, err}
 	}
 
-	orderbook, err := env.Connector.GetOrderbook(instrument, timestamp)
+	orderbook, err := env.Datastore.GetOrderbook(instrument, timestamp)
 	if err != nil {
 		return StatusError{500, err}
 	}
-	messages, err := env.Connector.GetMessagesByTimestamp(instrument, timestamp)
+	messages, err := env.Datastore.GetMessagesByTimestamp(instrument, timestamp)
 	if err != nil {
 		return StatusError{500, err}
 	}
@@ -62,11 +62,11 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 		return StatusError{400, err}
 	}
 
-	sodMessage, err := env.Connector.GetSingleMessage(instrument, sodOffset)
+	sodMessage, err := env.Datastore.GetSingleMessage(instrument, sodOffset)
 	if err != nil {
 		return StatusError{500, err}
 	}
-	orderbook, err := env.Connector.GetOrderbook(instrument, sodMessage.Timestamp)
+	orderbook, err := env.Datastore.GetOrderbook(instrument, sodMessage.Timestamp)
 	if err != nil {
 		return StatusError{500, err}
 	}
@@ -79,7 +79,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 			return StatusError{400, err}
 		}
 		log.Debugf("Found snapshot in future (%d), fetching previous snapshot\n", orderbook.Timestamp)
-		orderbook, err = env.Connector.GetOrderbook(instrument, uint64(prevSnapTime))
+		orderbook, err = env.Datastore.GetOrderbook(instrument, uint64(prevSnapTime))
 		if err != nil {
 			return StatusError{500, err}
 		}
@@ -87,7 +87,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 	}
 	nMessages := int64(int64(sodMessage.SodOffset-orderbook.LastSodOffset) + utils.Abs(numMessages))
 	paginator := &models.Paginator{NMessages: nMessages, SodOffset: int64(orderbook.LastSodOffset)}
-	allMessages, err := env.Connector.GetMessagesWithPagination(instrument, paginator)
+	allMessages, err := env.Datastore.GetMessagesWithPagination(instrument, paginator)
 	if err != nil {
 		return StatusError{500, err}
 	}
@@ -121,7 +121,7 @@ func FetchOrderbookDelta(env *Env, w http.ResponseWriter, r *http.Request) (err 
 
 // RefreshCache : Updates the db connector's cache to reflect database state changes
 func RefreshCache(env *Env, w http.ResponseWriter, r *http.Request) error {
-	err := env.Connector.RefreshCache()
+	err := env.Datastore.RefreshCache()
 	if err != nil {
 		return StatusError{500, err}
 	}

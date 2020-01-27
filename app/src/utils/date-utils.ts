@@ -30,7 +30,15 @@ export const nanosecondsToString = (nanosecondTimestamp: number) => {
     const nanoseconds = Math.floor(nanosecondTimestamp % NANOSECONDS_IN_ONE_SECOND);
     const seconds = Math.floor((nanosecondTimestamp / NANOSECONDS_IN_ONE_SECOND) % 60);
     const minutes = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60)) % 60);
-    const hours = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60 * 60)) % 24);
+    let hours = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60 * 60)) % 24);
+
+    let period = 'AM';
+    if (hours >= 12) {
+        period = 'PM';
+        if (hours > 12) {
+            hours %= 12;
+        }
+    }
 
     return (
         `${hours.toString().padStart(2, '0')
@@ -39,7 +47,7 @@ export const nanosecondsToString = (nanosecondTimestamp: number) => {
         }:${
             seconds.toString().padStart(2, '0')
         }.${
-            nanoseconds.toString().padStart(9, '0')}`
+            nanoseconds.toString().padStart(9, '0')} ${period}`
     );
 };
 
@@ -76,16 +84,26 @@ export const epochToDateString = (nanosecondDate: bigInt.BigInteger): string => 
 
 /**
  * @desc Given a nanosecond epoch timestamp, returns an object with date nanoseconds and time nanoseconds
- * @param nanosecondTimestamp string
+ * @param nanosecondTimestamp {bigInt}
  * @returns {{timeNanoseconds: Number, dateNanoseconds: bigInt}} The timestamp split into its date
  * nanoseconds and its time in nanoseconds
  */
-export const splitNanosecondEpochTimestamp = (nanosecondTimestamp: string) => {
-    const timestamp = bigInt(nanosecondTimestamp);
-    const timeNanoseconds = timestamp.mod(bigInt(NANOSECONDS_IN_ONE_DAY));
-    const dateNanoseconds = timestamp.minus(timeNanoseconds);
+export const splitNanosecondEpochTimestamp = (nanosecondTimestamp: bigInt.BigInteger) => {
+    const timeNanoseconds = nanosecondTimestamp.mod(bigInt(NANOSECONDS_IN_ONE_DAY));
+    const dateNanoseconds = nanosecondTimestamp.minus(timeNanoseconds);
     return {
         timeNanoseconds: timeNanoseconds.valueOf(),
         dateNanoseconds,
     };
+};
+
+/**
+ * @desc Given a nanosecond epoch date (utc), returns the local time string in the format HH:mm:ssZ
+ * @param nanosecondTimestamp {string}
+ * @returns {string}
+ */
+export const getLocalTimeString = (nanosecondTimestamp: string) : string => {
+    const timestamp = convertNanosecondsUTCToCurrentTimezone(bigInt(nanosecondTimestamp));
+    const timeNanoseconds = timestamp.mod(bigInt(NANOSECONDS_IN_ONE_DAY)).valueOf();
+    return nanosecondsToString(timeNanoseconds);
 };
