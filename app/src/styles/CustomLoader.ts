@@ -10,7 +10,7 @@ export const Styles = {
         height: '100%',
     },
     transition: {
-        transition: 'all 1.5s ease',
+        transition: 'all 1.3s ease',
         fontSize: '5rem',
     },
     maxWidth: {

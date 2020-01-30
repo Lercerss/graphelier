@@ -22,16 +22,14 @@ interface Props extends WithStyles<typeof styles>{
 }
 
 interface State {
-    futureTime: Date;
+    showGreeting: boolean,
 }
 
 class App extends React.Component<Props, State> {
-    intervalCall = window.setInterval(() => this.changeTime(), 100);
-
     constructor(props) {
         super(props);
         this.state = {
-            futureTime: new Date(Date.now() + 2000),
+            showGreeting: true,
         };
     }
 
@@ -41,22 +39,16 @@ class App extends React.Component<Props, State> {
     }
 
     /**
-     * @desc changes the time in order to determine when to hide the
+     * @desc Changes state in order to no longer show the greeting message
+     * @returns {void}
      */
-    private changeTime = (): void => {
-        const { futureTime } = this.state;
-        if (futureTime.getTime() > Date.now()) {
-            this.setState({ futureTime: new Date(futureTime.getTime() - 100) });
-        } else {
-            clearInterval(this.intervalCall);
-        }
+    private hideGreeting = () => {
+        this.setState({ showGreeting: false });
     }
 
     render() {
         const { appName } = this.props;
-        const { futureTime } = this.state;
-        const showGreeting: boolean = futureTime.getTime() > Date.now();
-        const showTransition: boolean = futureTime.getTime() - 1600 > Date.now();
+        const { showGreeting } = this.state;
 
         return (
             <MuiThemeProvider theme={lightTheme}>
@@ -67,7 +59,7 @@ class App extends React.Component<Props, State> {
                     showGreeting
                         ? (
                             <GreetingsLoader
-                                showTransition={showTransition}
+                                hideGreeting={this.hideGreeting}
                             />
                         ) : <Dashboard />
                 }
