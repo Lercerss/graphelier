@@ -11,7 +11,7 @@ from models.order_book import OrderBook
 
 Placement = namedtuple('Placement', ['index', 'message'])
 
-TZ = timezone(timedelta(hours=-4))  # EST
+TZ = timezone(timedelta(hours=-4))  # EDT
 
 
 class _TopOfBook:
