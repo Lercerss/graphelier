@@ -9,14 +9,42 @@ import { APP_NAME } from '../constants/Constants';
 const styles = createStyles(Styles);
 
 interface GreetingsLoaderProps extends WithStyles<typeof styles> {
-    showTransition: boolean
+    hideGreeting: Function
 }
-class GreetingsLoader extends Component<GreetingsLoaderProps> {
+
+interface GreetingsLoaderState {
+    showTransition: boolean;
+}
+class GreetingsLoader extends Component<GreetingsLoaderProps, GreetingsLoaderState> {
+    timeoutCall;
+
+    timeoutTransition;
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            showTransition: false,
+        };
+    }
+
+    componentDidMount(): void {
+        const { hideGreeting } = this.props;
+        this.timeoutCall = window.setTimeout(() => hideGreeting(), 1100);
+        this.timeoutTransition = window.setTimeout(() => { this.setState({ showTransition: true }); }, 50);
+    }
+
+    componentWillUnmount(): void {
+        clearTimeout(this.timeoutCall);
+        clearTimeout(this.timeoutTransition);
+    }
+
     render() {
-        const { classes, showTransition } = this.props;
+        const { classes } = this.props;
+        const { showTransition } = this.state;
         return (
             <div className={classes.centerLoading}>
-                <h2 className={showTransition
+                <h2 className={!showTransition
                     ? classNames(classes.squarePointColor)
                     : classNames(classes.transition, classes.squarePointColor)}
                 >
