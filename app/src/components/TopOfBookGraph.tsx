@@ -18,7 +18,7 @@ import {
 } from 'react-stockcharts/lib/coordinates';
 
 import bigInt from 'big-integer';
-import { getLocalTimeString } from '../utils/date-utils';
+import { getDateObjectForGraphScale, getLocalTimeString } from '../utils/date-utils';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
 
@@ -39,15 +39,14 @@ class TopOfBookGraph extends Component<Props> {
 
         topOfBookItems.forEach(element => {
             // @ts-ignore
-            // eslint-disable-next-line no-param-reassign,max-len
-            element.date = new Date(Number(bigInt(element.timestamp).divide(1000000)));
+            // eslint-disable-next-line no-param-reassign
+            element.date = getDateObjectForGraphScale(bigInt(element.timestamp));
         });
 
         const xScaleProvider = discontinuousTimeScaleProvider
             .inputDateAccessor(d => d.date);
         const {
             data,
-            // xScale,
         } = xScaleProvider(topOfBookItems);
 
         return (
@@ -120,7 +119,7 @@ class TopOfBookGraph extends Component<Props> {
                         type={'vertical'}
                         stroke={Colors.lightBlue}
                         strokeWidth={2}
-                        xValue={new Date(Number(selectedDateTimeNano.divide(1000000)))}
+                        xValue={getDateObjectForGraphScale(selectedDateTimeNano)}
                     />
                 </Chart>
                 <CrossHairCursor />
