@@ -107,3 +107,17 @@ export const getLocalTimeString = (nanosecondTimestamp: string) : string => {
     const timeNanoseconds = timestamp.mod(bigInt(NANOSECONDS_IN_ONE_DAY)).valueOf();
     return nanosecondsToString(timeNanoseconds);
 };
+
+
+/**
+ * @desc Given a nanosecond timestamp from the back-end, returns a Date object with correct timezone
+ * @param nanosecondTimestamp {bigInt}
+ * @return Date
+ */
+export const getDateObjectForGraphScale = (nanosecondTimestamp: bigInt.BigInteger) => {
+    const localTimezoneDate = new Date();
+    const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
+    return new Date(Number(nanosecondTimestamp
+        .plus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * 60 * 10 ** 9)
+        .divide(1000000)));
+};
