@@ -62,7 +62,6 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
             classes, onTimeSelect, selectedDateTimeNano, topOfBookItems,
         } = this.props;
         const { graphWidth, graphHeight } = this.state;
-        console.log('dimensions', graphWidth, graphHeight);
         return (
             <div
                 className={classes.graphWrapper}

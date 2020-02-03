@@ -24,7 +24,7 @@ import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -120,7 +120,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @returns {number}
      */
     getNumDataPoints = (): number => {
-        return Math.trunc(window.screen.width * 0.5);
+        return Math.trunc(window.screen.width * NUM_DATA_POINTS_RATIO);
     };
 
     /**
