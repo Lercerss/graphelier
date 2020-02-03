@@ -53,6 +53,7 @@ class TopOfBookGraph extends Component<Props> {
             <ChartCanvas
                 width={width}
                 height={height}
+                ratio={width / height}
                 seriesName={'topOfBook'}
                 pointsPerPxThreshold={1}
                 data={data}
