@@ -120,7 +120,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @returns {number}
      */
     getNumDataPoints = (): number => {
-        return Math.trunc(window.screen.width * window.devicePixelRatio * 0.5);
+        return Math.trunc(window.screen.width * 0.5);
     };
 
     /**
