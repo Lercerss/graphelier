@@ -21,7 +21,7 @@ interface State {
 
 
 class TopOfBookGraphWrapper extends Component<Props, State> {
-    private readonly divRef: React.RefObject<HTMLDivElement>;
+    private readonly graphContainerRef: React.RefObject<HTMLDivElement>;
 
     constructor(props) {
         super(props);
@@ -31,14 +31,14 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
             graphWidth: 0,
         };
 
-        this.divRef = React.createRef<HTMLDivElement>();
+        this.graphContainerRef = React.createRef<HTMLDivElement>();
     }
 
     componentDidMount() {
-        if (this.divRef.current) {
+        if (this.graphContainerRef.current) {
             this.setState({
-                graphHeight: this.divRef.current.offsetHeight,
-                graphWidth: this.divRef.current.offsetWidth,
+                graphHeight: this.graphContainerRef.current.offsetHeight,
+                graphWidth: this.graphContainerRef.current.offsetWidth,
             });
         }
         window.addEventListener('resize', this.updateDimensions);
@@ -49,10 +49,10 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
     }
 
     updateDimensions = () => {
-        if (this.divRef.current) {
+        if (this.graphContainerRef.current) {
             this.setState({
-                graphHeight: this.divRef.current.offsetHeight,
-                graphWidth: this.divRef.current.offsetWidth,
+                graphHeight: this.graphContainerRef.current.offsetHeight,
+                graphWidth: this.graphContainerRef.current.offsetWidth,
             }, () => this.render());
         }
     };
@@ -65,7 +65,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
         return (
             <div
                 className={classes.graphWrapper}
-                ref={this.divRef}
+                ref={this.graphContainerRef}
             >
                 {graphWidth !== 0
                  && (
