@@ -115,9 +115,8 @@ export const getLocalTimeString = (nanosecondTimestamp: string) : string => {
  * @return Date
  */
 export const getDateObjectForGraphScale = (nanosecondTimestamp: bigInt.BigInteger) => {
-    const localTimezoneDate = new Date();
+    const localTimezoneDate = new NanoDate();
     const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
-    return new Date(Number(nanosecondTimestamp
-        .plus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * 60 * 10 ** 9)
-        .divide(1000000)));
+    return new NanoDate((nanosecondTimestamp
+        .plus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * 60 * 10 ** 9)).toString());
 };
