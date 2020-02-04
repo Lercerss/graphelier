@@ -24,7 +24,7 @@ import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -46,6 +46,8 @@ interface State {
     topOfBookItems: Array<TopOfBookItem>,
     loadingInstruments: boolean,
     loadingOrderbook: boolean,
+    loadingGraph: boolean,
+    graphUnavailable: boolean,
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
@@ -65,6 +67,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             topOfBookItems: [],
             loadingInstruments: true,
             loadingOrderbook: false,
+            loadingGraph: false,
+            graphUnavailable: false,
         };
     }
 
@@ -116,7 +120,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @returns {number}
      */
     getNumDataPoints = (): number => {
-        return Math.trunc(window.screen.width * window.devicePixelRatio * 0.76);
+        return Math.trunc(window.screen.width * NUM_DATA_POINTS_RATIO);
     };
 
     /**
@@ -125,6 +129,13 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      */
     handleChangeDate = (date: any) => {
         if (!moment(date).isValid()) return;
+
+        this.setState(
+            {
+                loadingGraph: true,
+                graphUnavailable: false,
+            },
+        );
 
         const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
         const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
@@ -251,6 +262,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 this.setState(
                     {
                         topOfBookItems: result,
+                        loadingGraph: false,
                     },
                 );
             })
@@ -260,6 +272,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 this.setState(
                     {
                         topOfBookItems: [],
+                        loadingGraph: false,
+                        graphUnavailable: true,
                     },
                 );
             });
@@ -279,6 +293,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             topOfBookItems,
             loadingInstruments,
             loadingOrderbook,
+            loadingGraph,
+            graphUnavailable,
         } = this.state;
 
         let messageText;
@@ -396,24 +412,31 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                         && (
                             <div>
                                 <Card className={classes.graphCard}>
-                                    {topOfBookItems.length === 0
-                                        ? (
-                                            <Typography
-                                                className={classes.noDataMessage}
-                                                variant={'body1'}
-                                                color={'textPrimary'}
-                                            >
-                                                {'Could not retrieve graph for this day.'}
-                                            </Typography>
-                                        )
-                                        : (
-                                            <TopOfBookGraphWrapper
-                                                className={classes.graph}
-                                                onTimeSelect={this.handleSelectGraphDateTime}
-                                                selectedDateTimeNano={selectedDateTimeNano}
-                                                topOfBookItems={topOfBookItems}
+                                    {graphUnavailable && (
+                                        <Typography
+                                            className={classes.noDataMessage}
+                                            variant={'body1'}
+                                            color={'textPrimary'}
+                                        >
+                                            {'Could not retrieve graph for this day.'}
+                                        </Typography>
+                                    )}
+                                    {loadingGraph && (
+                                        <div className={classes.graphLoader}>
+                                            <CustomLoader
+                                                size={'5rem'}
+                                                type={'circular'}
                                             />
-                                        )}
+                                        </div>
+                                    )}
+                                    { !loadingGraph && !graphUnavailable && topOfBookItems.length !== 0 && (
+                                        <TopOfBookGraphWrapper
+                                            className={classes.graph}
+                                            onTimeSelect={this.handleSelectGraphDateTime}
+                                            selectedDateTimeNano={selectedDateTimeNano}
+                                            topOfBookItems={topOfBookItems}
+                                        />
+                                    )}
                                 </Card>
                                 <Card>
                                     <TimestampOrderBookScroller

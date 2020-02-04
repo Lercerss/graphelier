@@ -111,6 +111,12 @@ export const Styles = theme => ({
         paddingTop: '20px',
         marginBottom: '15px',
     },
+    graphLoader: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingBottom: '20px',
+    },
     noDataMessage: {
         textAlign: 'center',
         width: '100%',

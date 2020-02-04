@@ -271,7 +271,7 @@ class MessageList extends Component<Props, State> {
                 <Box className={classes.tableHeaderRow}>
                     <Box className={classNames(classes.tableColumn, classes.overrideTimestampColumn)}>
                         <CustomTooltip
-                            title={'Click tilde ` to center to selected message'}
+                            title={'Press the tilde key to center the selected message'}
                             className={classes.marginRight}
                         >
                             <InfoIcon />
