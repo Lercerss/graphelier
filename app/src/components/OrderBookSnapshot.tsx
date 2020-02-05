@@ -9,6 +9,7 @@ import { WithStyles, createStyles } from '@material-ui/core/styles';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
+import { debounce } from 'lodash';
 
 import moment from 'moment';
 import { Styles } from '../styles/OrderBookSnapshot';
@@ -51,6 +52,18 @@ interface State {
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
+    /**
+     * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
+     */
+    handleResize = debounce(() => {
+        const { selectedDateNano } = this.state;
+        if (selectedDateNano.neq(0)) {
+            const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+            this.updateGraphData(startTime, endTime);
+        }
+    }, 100);
+
     constructor(props) {
         super(props);
 
@@ -85,6 +98,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         }).finally(() => {
             this.setState({ loadingInstruments: false });
         });
+
+        window.addEventListener('resize', this.handleResize);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -94,10 +109,13 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         }
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
     /**
      * @desc Handles the change in instrument
      * @param event menu item that triggered change
-     * @param child
      */
     handleInstrumentChange = (event: React.ChangeEvent<any>) => {
         this.setState(
@@ -120,7 +138,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @returns {number}
      */
     getNumDataPoints = (): number => {
-        return Math.trunc(window.screen.width * NUM_DATA_POINTS_RATIO);
+        return Math.trunc(window.innerWidth * NUM_DATA_POINTS_RATIO);
     };
 
     /**
