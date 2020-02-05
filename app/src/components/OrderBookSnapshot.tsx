@@ -52,6 +52,18 @@ interface State {
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
+    /**
+     * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
+     */
+    handleResize = debounce(() => {
+        const { selectedDateNano } = this.state;
+        if (selectedDateNano.neq(0)) {
+            const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+            this.updateGraphData(startTime, endTime);
+        }
+    }, 100);
+
     constructor(props) {
         super(props);
 
@@ -87,7 +99,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             this.setState({ loadingInstruments: false });
         });
 
-        window.addEventListener('resize', debounce(this.handleResize, 100));
+        window.addEventListener('resize', this.handleResize);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -98,21 +110,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     }
 
     componentWillUnmount() {
-        window.removeEventListener('resize', debounce(this.handleResize, 100));
+        window.removeEventListener('resize', this.handleResize);
     }
-
-
-    /**
-     * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
-     */
-    handleResize = () => {
-        const { selectedDateNano } = this.state;
-        if (selectedDateNano.neq(0)) {
-            const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-            const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
-            this.updateGraphData(startTime, endTime);
-        }
-    };
 
     /**
      * @desc Handles the change in instrument
