@@ -120,3 +120,15 @@ export const getDateObjectForGraphScale = (nanosecondTimestamp: bigInt.BigIntege
     return new NanoDate((nanosecondTimestamp
         .plus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * 60 * 10 ** 9)).toString());
 };
+
+/**
+ * @desc Given a Date object from the graph's x-axis, returns a nanosecond timestamp with correct back-end timezone
+ * @param graphDate {bigInt}
+ * @return bigInt
+ */
+export const getTimestampForBackend = (graphDate: Date) => {
+    const localTimezoneDate = new NanoDate();
+    const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
+    return bigInt((graphDate.getTime() * NANOSECONDS_IN_ONE_MILLISECOND))
+        .minus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * 60 * 10 ** 9);
+};

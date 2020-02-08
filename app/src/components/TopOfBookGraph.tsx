@@ -19,12 +19,9 @@ import {
 
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
-import { getDateObjectForGraphScale, getLocalTimeString } from '../utils/date-utils';
+import { getDateObjectForGraphScale, getLocalTimeString, getTimestampForBackend } from '../utils/date-utils';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
-import {
-    NANOSECONDS_IN_ONE_MILLISECOND,
-} from '../constants/Constants';
 
 interface State {
     graphStartTime: bigInt.BigInteger,
@@ -50,8 +47,8 @@ class TopOfBookGraph extends Component<Props, State> {
             const { handlePanAndZoom, startOfDay, endOfDay } = this.props;
 
             const graphDomain = moreProps.xScale.domain();
-            let graphStartTime = bigInt(graphDomain[0].getTime() * NANOSECONDS_IN_ONE_MILLISECOND);
-            let graphEndTime = bigInt(graphDomain[1].getTime() * NANOSECONDS_IN_ONE_MILLISECOND);
+            let graphStartTime = getTimestampForBackend(graphDomain[0]);
+            let graphEndTime = getTimestampForBackend(graphDomain[1]);
 
             graphStartTime = graphStartTime.lesser(startOfDay) ? startOfDay : graphStartTime;
             graphEndTime = graphEndTime.greater(endOfDay) ? endOfDay : graphEndTime;
