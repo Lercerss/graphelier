@@ -23,11 +23,6 @@ import { getDateObjectForGraphScale, getLocalTimeString, getTimestampForBackend 
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
 
-interface State {
-    graphStartTime: bigInt.BigInteger,
-    graphEndTime: bigInt.BigInteger,
-}
-
 interface Props {
     height: number,
     width: number,
@@ -39,7 +34,7 @@ interface Props {
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
 }
 
-class TopOfBookGraph extends Component<Props, State> {
+class TopOfBookGraph extends Component<Props> {
     private chartCanvasRef: any;
 
     handleEvents = debounce((type, moreProps) => {
@@ -53,28 +48,9 @@ class TopOfBookGraph extends Component<Props, State> {
             graphStartTime = graphStartTime.lesser(startOfDay) ? startOfDay : graphStartTime;
             graphEndTime = graphEndTime.greater(endOfDay) ? endOfDay : graphEndTime;
 
-            this.setState(
-                {
-                    graphStartTime,
-                    graphEndTime,
-                }, () => {
-                    handlePanAndZoom(graphStartTime, graphEndTime);
-                },
-            );
+            handlePanAndZoom(graphStartTime, graphEndTime);
         }
     }, 200);
-
-    constructor(props) {
-        super(props);
-
-        const { startOfDay, endOfDay } = props;
-
-        this.state = {
-            graphStartTime: startOfDay,
-            graphEndTime: endOfDay,
-
-        };
-    }
 
     componentDidMount() {
         this.chartCanvasRef.subscribe('chartCanvasEvents', { listener: this.handleEvents });
@@ -85,22 +61,9 @@ class TopOfBookGraph extends Component<Props, State> {
     }
 
     render() {
-        const { graphStartTime, graphEndTime } = this.state;
-        console.log(graphEndTime, graphStartTime);
         const {
-            width, height, onTimeSelect, selectedDateTimeNano, topOfBookItems, startOfDay, endOfDay,
+            width, height, onTimeSelect, selectedDateTimeNano, topOfBookItems,
         } = this.props;
-
-        let clampValue = '';
-        if (startOfDay.equals(graphStartTime)) {
-            clampValue = 'left';
-            if (endOfDay.equals(graphEndTime)) {
-                clampValue = 'both';
-            }
-        } else if (endOfDay.equals(graphEndTime)) {
-            clampValue = 'right';
-        }
-
         topOfBookItems.forEach(element => {
             // @ts-ignore
             // eslint-disable-next-line no-param-reassign
@@ -126,7 +89,6 @@ class TopOfBookGraph extends Component<Props, State> {
                 displayXAccessor={d => d.timestamp}
                 xAccessor={d => d.date}
                 xScale={scaleTime()}
-                clamp={clampValue === '' ? false : clampValue}
                 xExtents={[data[0].date, data[data.length - 1].date]}
             >
                 <Chart

@@ -279,11 +279,10 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     /**
      * @desc Updates the graph with tob values for new start time and end time bounds
      */
-    updateGraphData = (startTime: bigInt.BigInteger, endTime: bigInt.BigInteger) => {
+    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
         const { selectedInstrument } = this.state;
-        console.debug(startTime, endTime);
 
-        OrderBookService.getTopOfBookOverTime(selectedInstrument, startTime.toString(), endTime.toString(),
+        OrderBookService.getTopOfBookOverTime(selectedInstrument, graphStartTime.toString(), graphEndTime.toString(),
             this.getNumDataPoints())
             .then(response => {
                 // eslint-disable-next-line camelcase
@@ -291,6 +290,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
 
                 this.setState(
                     {
+                        graphStartTime,
+                        graphEndTime,
                         topOfBookItems: result,
                         loadingGraph: false,
                     },
@@ -315,14 +316,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @param graphEndTime the new end time on the graph
      */
     handlePanAndZoom = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
-        this.setState(
-            {
-                graphStartTime,
-                graphEndTime,
-            }, () => {
-                this.updateGraphData(graphStartTime, graphEndTime);
-            },
-        );
+        this.updateGraphData(graphStartTime, graphEndTime);
     };
 
     render() {
