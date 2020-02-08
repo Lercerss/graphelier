@@ -50,7 +50,7 @@ class TopOfBookGraph extends Component<Props> {
 
             handlePanAndZoom(graphStartTime, graphEndTime);
         }
-    }, 200);
+    }, 100);
 
     componentDidMount() {
         this.chartCanvasRef.subscribe('chartCanvasEvents', { listener: this.handleEvents });
