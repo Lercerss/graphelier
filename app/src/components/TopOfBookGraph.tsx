@@ -18,24 +18,91 @@ import {
 } from 'react-stockcharts/lib/coordinates';
 
 import bigInt from 'big-integer';
+import { debounce } from 'lodash';
 import { getDateObjectForGraphScale, getLocalTimeString } from '../utils/date-utils';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
+import {
+    NANOSECONDS_IN_ONE_MILLISECOND,
+} from '../constants/Constants';
 
+interface State {
+    graphStartTime: bigInt.BigInteger,
+    graphEndTime: bigInt.BigInteger,
+}
 
 interface Props {
     height: number,
     width: number,
     onTimeSelect: (any) => void,
     selectedDateTimeNano: bigInt.BigInteger,
+    startOfDay: bigInt.BigInteger,
+    endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
+    handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
 }
 
-class TopOfBookGraph extends Component<Props> {
+class TopOfBookGraph extends Component<Props, State> {
+    private chartCanvasRef: any;
+
+    handleEvents = debounce((type, moreProps) => {
+        if (type === 'panend' || type === 'zoom') {
+            const { handlePanAndZoom, startOfDay, endOfDay } = this.props;
+
+            const graphDomain = moreProps.xScale.domain();
+            let graphStartTime = bigInt(graphDomain[0].getTime() * NANOSECONDS_IN_ONE_MILLISECOND);
+            let graphEndTime = bigInt(graphDomain[1].getTime() * NANOSECONDS_IN_ONE_MILLISECOND);
+
+            graphStartTime = graphStartTime.lesser(startOfDay) ? startOfDay : graphStartTime;
+            graphEndTime = graphEndTime.greater(endOfDay) ? endOfDay : graphEndTime;
+
+            this.setState(
+                {
+                    graphStartTime,
+                    graphEndTime,
+                }, () => {
+                    handlePanAndZoom(graphStartTime, graphEndTime);
+                },
+            );
+        }
+    }, 200);
+
+    constructor(props) {
+        super(props);
+
+        const { startOfDay, endOfDay } = props;
+
+        this.state = {
+            graphStartTime: startOfDay,
+            graphEndTime: endOfDay,
+
+        };
+    }
+
+    componentDidMount() {
+        this.chartCanvasRef.subscribe('chartCanvasEvents', { listener: this.handleEvents });
+    }
+
+    componentWillUnmount() {
+        this.chartCanvasRef.unsubscribe('chartCanvasEvents');
+    }
+
     render() {
+        const { graphStartTime, graphEndTime } = this.state;
+        console.log(graphEndTime, graphStartTime);
         const {
-            width, height, onTimeSelect, selectedDateTimeNano, topOfBookItems,
+            width, height, onTimeSelect, selectedDateTimeNano, topOfBookItems, startOfDay, endOfDay,
         } = this.props;
+
+        let clampValue = '';
+        if (startOfDay.equals(graphStartTime)) {
+            clampValue = 'left';
+            if (endOfDay.equals(graphEndTime)) {
+                clampValue = 'both';
+            }
+        } else if (endOfDay.equals(graphEndTime)) {
+            clampValue = 'right';
+        }
 
         topOfBookItems.forEach(element => {
             // @ts-ignore
@@ -51,6 +118,7 @@ class TopOfBookGraph extends Component<Props> {
 
         return (
             <ChartCanvas
+                ref={node => { this.chartCanvasRef = node; }}
                 width={width}
                 height={height}
                 ratio={width / height}
@@ -61,8 +129,7 @@ class TopOfBookGraph extends Component<Props> {
                 displayXAccessor={d => d.timestamp}
                 xAccessor={d => d.date}
                 xScale={scaleTime()}
-                panEvent={false}
-                zoomEvent={false}
+                clamp={clampValue === '' ? false : clampValue}
                 xExtents={[data[0].date, data[data.length - 1].date]}
             >
                 <Chart
