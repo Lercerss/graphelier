@@ -11,7 +11,10 @@ interface Props extends WithStyles<typeof styles> {
     className: string,
     onTimeSelect: (any) => void,
     selectedDateTimeNano: bigInt.BigInteger,
+    startOfDay: bigInt.BigInteger,
+    endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
+    handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
 }
 
 interface State {
@@ -59,7 +62,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
 
     render() {
         const {
-            classes, onTimeSelect, selectedDateTimeNano, topOfBookItems,
+            classes, onTimeSelect, selectedDateTimeNano, topOfBookItems, handlePanAndZoom, startOfDay, endOfDay,
         } = this.props;
         const { graphWidth, graphHeight } = this.state;
         return (
@@ -74,7 +77,10 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
                          width={graphWidth}
                          onTimeSelect={onTimeSelect}
                          selectedDateTimeNano={selectedDateTimeNano}
+                         startOfDay={startOfDay}
+                         endOfDay={endOfDay}
                          topOfBookItems={topOfBookItems}
+                         handlePanAndZoom={handlePanAndZoom}
                      />
                  )}
 
