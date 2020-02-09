@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
+import bigInt from 'big-integer';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 import { Box } from '@material-ui/core';
@@ -18,22 +19,21 @@ interface Props extends WithStyles<typeof styles> {
     maxQuantity: number,
     type: TransactionType,
     price: number,
+    instrument: string,
+    timestamp: bigInt.BigInteger,
 }
 
 class PriceLevel extends Component<Props> {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { orders, maxQuantity } = this.props;
+        // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+        const { orders, maxQuantity, instrument } = this.props;
 
         return !ordersEquals(orders, nextProps.orders) || maxQuantity !== nextProps.maxQuantity;
     }
 
     render() {
         const {
-            classes,
-            type,
-            price,
-            orders,
-            maxQuantity,
+            classes, type, price, orders, maxQuantity, instrument, timestamp,
         } = this.props;
         const formattedPrice = roundNumber(price, 2);
 
@@ -55,7 +55,10 @@ class PriceLevel extends Component<Props> {
                             <Order
                                 type={type}
                                 quantity={order.quantity}
+                                orderId={order.id}
                                 maxQuantity={maxQuantity}
+                                instrument={instrument}
+                                timestamp={timestamp}
                             />
                         </CSSTransition>
                     ))}

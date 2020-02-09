@@ -19,6 +19,10 @@ export const Styles = {
     ask: {
         backgroundColor: Colors.red,
     },
+    getOrderInfo: {
+        backgroundColor: Colors.yellow,
+        color: Colors.black,
+    },
     text: {
         color: Colors.white,
         fontSize: 13,

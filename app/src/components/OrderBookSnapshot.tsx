@@ -491,6 +491,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                         instrument={selectedInstrument}
                                         loading={loadingOrderbook}
+                                        timestamp={selectedDateTimeNano}
                                     />
                                 </Card>
                                 {(lastSodOffset.neq(0)) && (

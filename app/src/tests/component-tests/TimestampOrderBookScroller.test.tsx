@@ -37,6 +37,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             listItems={ORDER_BOOK_LIST_ITEMS}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
         expect(wrapper.props().timeOrDateIsNotSet).toBeDefined();
         expect(wrapper.props().timeOrDateIsNotSet).toEqual(false);
@@ -60,6 +61,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             listItems={ORDER_BOOK_LIST_ITEMS}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
         expect(wrapper.find(Box).length).toBeGreaterThanOrEqual(3);
     });
@@ -74,6 +76,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             instrument={INSTRUMENT}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
         expect(wrapper.find(MultiDirectionalScroll).length).toBe(0);
     });
@@ -87,6 +90,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             listItems={ORDER_BOOK_LIST_ITEMS}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
 
         expect(wrapper.find(MultiDirectionalScroll).length).toBe(1);
@@ -101,6 +105,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             listItems={{}}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
 
         wrapper.instance().middleReferenceItem = {
@@ -125,6 +130,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             listItems={ORDER_BOOK_LIST_ITEMS}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
 
         wrapper.instance().middleReferenceItem = {
@@ -161,6 +167,7 @@ describe('TimestampOrderbookScroller functionality', () => {
             listItems={ORDER_BOOK_LIST_ITEMS}
             maxQuantity={MAX_QUANTITY}
             loading={newLoadingOrderbook}
+            timestamp={bigInt(0)}
         />);
 
         const div = () => wrapper.find('#orderbookListItems');
@@ -201,6 +208,7 @@ describe('navigating by message functionality', () => {
             listItems={ORDER_BOOK_LIST_ITEMS}
             maxQuantity={MAX_QUANTITY}
             loading={loadingOrderbook}
+            timestamp={bigInt(0)}
         />);
 
         expect(getOrderBookPricesByMessageOffsetSpy).toHaveBeenCalledTimes(0);
