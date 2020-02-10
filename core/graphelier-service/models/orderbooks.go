@@ -268,15 +268,15 @@ func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMes
 	return
 }
 
-// TopBookPerXNano : Returns a list of the top book at every x nanosecond after applying each individual message in a list 
+// TopBookPerXNano : Returns a list of the top book at every x nanosecond after applying each individual message in a list
 func (orderbook *Orderbook) TopBookPerXNano(messages []*Message, x int) (topbook []*Point) {
 	firstNano := messages[0].Timestamp
-	lastNano := messages[len(messages) - x].Timestamp
+	lastNano := messages[len(messages)-x].Timestamp
 
-	for counter, nano := uint64(0), firstNano; nano <= lastNano; counter, nano = counter + 1, nano + 1 {
+	for counter, nano := uint64(0), firstNano; nano <= lastNano; counter, nano = counter+1, nano+1 {
 		nanoMessages := GetMessagesForTimestamp(messages, nano)
 		orderbook.ApplyMessagesToOrderbook(nanoMessages)
-		
+
 		if counter % uint64(x) == 0 {
 			tb := &Point{}
 			tb.Timestamp = nano
