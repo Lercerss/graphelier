@@ -16,6 +16,7 @@ import (
 type Datastore interface {
 	GetOrderbook(instrument string, timestamp uint64) (*models.Orderbook, error)
 	GetMessagesByTimestamp(instrument string, timestamp uint64) ([]*models.Message, error)
+	GetMessagesByTimestampRange(instrument string, startTimestamp, endTimestamp uint64) ([]*models.Message, error)
 	GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error)
 	GetSingleMessage(instrument string, sodOffset int64) (*models.Message, error)
 	GetInstruments() ([]string, error)
@@ -112,21 +113,25 @@ func (c *Connector) GetOrderbook(instrument string, timestamp uint64) (result *m
 }
 
 // GetMessagesByTimestamp : Finds the Message of an instrument based on the timestamp requested
-func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) (results []*models.Message, err error) {
-	defer utils.TraceTimer("mongo/GetMessagesByTimestamp")()
-
+func (c *Connector) GetMessagesByTimestamp(instrument string, timestamp uint64) ([]*models.Message, error) {
 	instrumentMeta, found := c.cache.meta[instrument]
 	if !found {
 		return nil, InstrumentNotFoundError{Instrument: instrument}
 	}
 	latestFullSnapshot := timestamp / instrumentMeta.Interval * instrumentMeta.Interval
+	return c.GetMessagesByTimestampRange(instrument, latestFullSnapshot, timestamp+1)
+}
+
+// GetMessagesByTimestampRange : Finds the Message of an instrument based on the timestamp requested
+func (c *Connector) GetMessagesByTimestampRange(instrument string, startTimestamp, endTimestamp uint64) (results []*models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetMessagesByTimestampRange")()
 
 	collection := c.Database("graphelier-db").Collection("messages")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
 		{Key: "timestamp", Value: bson.D{
-			{Key: "$lte", Value: timestamp},
-			{Key: "$gte", Value: latestFullSnapshot},
+			{Key: "$gte", Value: startTimestamp},
+			{Key: "$lt", Value: endTimestamp},
 		}},
 	}
 

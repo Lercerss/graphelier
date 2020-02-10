@@ -28,23 +28,28 @@ type Orderbook struct {
 // ApplyMessagesToOrderbook : Applies each individual message to the orderbook
 func (orderbook *Orderbook) ApplyMessagesToOrderbook(messages []*Message) {
 	for _, message := range messages {
-		orderbook.Timestamp = message.Timestamp
-		orderbook.LastSodOffset = message.SodOffset
-		if message.OrderID == 0 {
-			continue
-		}
-		switch message.Type {
-		case NewOrder:
-			orderbook.applyNewOrder(message)
-		case Modify:
-			orderbook.applyModify(message)
-		case Delete:
-			orderbook.applyDelete(message)
-		case Execute:
-			orderbook.applyExecute(message)
-		case Ignore:
-			// Pass
-		}
+		orderbook.ApplyMessage(message)
+	}
+}
+
+// ApplyMessage : Based on the message type, modifies the orders on the book
+func (orderbook *Orderbook) ApplyMessage(message *Message) {
+	orderbook.Timestamp = message.Timestamp
+	orderbook.LastSodOffset = message.SodOffset
+	if message.OrderID == 0 {
+		return
+	}
+	switch message.Type {
+	case NewOrder:
+		orderbook.applyNewOrder(message)
+	case Modify:
+		orderbook.applyModify(message)
+	case Delete:
+		orderbook.applyDelete(message)
+	case Execute:
+		orderbook.applyExecute(message)
+	case Ignore:
+		// Pass
 	}
 }
 
@@ -251,10 +256,9 @@ func (orderbook *Orderbook) BuildDeltabook(deltabook *Orderbook, message *Messag
 func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMessages int64) (deltabook *Orderbook) {
 	deltabook = &Orderbook{}
 	for i := int64(0); i < utils.Abs(numMessages); i++ {
-		var messageSlice []*Message
 		message := messages[i]
 		if numMessages > 0 {
-			orderbook.ApplyMessagesToOrderbook(append(messageSlice, message))
+			orderbook.ApplyMessage(message)
 		}
 		if message.OrderID == 0 || message.Type == Ignore {
 			continue
@@ -293,4 +297,35 @@ func (orderbook *Orderbook) backfillPoints(topbook []*Point, pointDistance uint6
 		topbook = append(topbook, &point)
 	}
 	return topbook
+}
+
+func (orderbook *Orderbook) YieldModifications(messages []*Message) (modifications *Modifications) {
+	modifications = &Modifications{
+		Timestamp:     orderbook.Timestamp,
+		Modifications: []Modification{},
+	}
+	for _, message := range messages {
+		orderbook.Timestamp = message.Timestamp
+		orderbook.LastSodOffset = message.SodOffset
+		if message.OrderID == 0 {
+			continue
+		}
+		switch message.Type {
+		case NewOrder:
+			orderbook.applyNewOrder(message)
+			modifications.Add(NewAddModification(
+				message.Price,
+				message.ShareQuantity,
+			))
+		case Modify:
+			orderbook.applyModify(message)
+		case Delete:
+			orderbook.applyDelete(message)
+		case Execute:
+			orderbook.applyExecute(message)
+		case Ignore:
+			// Pass
+		}
+	}
+	return modifications
 }

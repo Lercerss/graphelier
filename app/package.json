@@ -47,7 +47,8 @@
         "build": "NODE_ENV=production react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
+        "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+        "sample-socket": "node src/tests/samples/socket_client.jsx"
     },
     "devDependencies": {
         "eslint": "^6.1.0",
@@ -57,7 +58,8 @@
         "eslint-plugin-react": "^7.16.0",
         "eslint-plugin-react-hooks": "^1.7.0",
         "react-test-renderer": "^16.10.2",
-        "redux-mock-store": "^1.5.4"
+        "redux-mock-store": "^1.5.4",
+        "ws": "^7.2.1"
     },
     "browserslist": {
         "production": [

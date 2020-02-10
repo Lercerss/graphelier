@@ -76,4 +76,10 @@ var routes = Routes{
 		"/topbook/{instrument}/{start_timestamp}/{end_timestamp}/{num_points}",
 		hndlrs.CustomHandler{H: hndlrs.FetchTopBook},
 	},
+	Route{
+		"Playback",
+		"GET",
+		"/playback/{instrument}/{start_timestamp}/{speed}",
+		hndlrs.CustomHandler{H: hndlrs.StreamPlayback},
+	},
 }

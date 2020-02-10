@@ -31,6 +31,10 @@ func (se StatusError) Status() int {
 	return se.Code
 }
 
+type WebSocketError interface {
+	error
+}
+
 // Env : A struct that represents the database configuration
 type Env struct {
 	Datastore db.Datastore
@@ -53,6 +57,8 @@ func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case Error:
 			log.Errorf("HTTP %d - %s\n", e.Status(), e)
 			http.Error(w, e.Error(), e.Status())
+		case WebSocketError:
+			log.Errorf("WebSocketError: %s\n", err)
 		default:
 			log.Errorf("Error: %s\n", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
