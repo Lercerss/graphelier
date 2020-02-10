@@ -267,3 +267,23 @@ func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMes
 
 	return
 }
+
+// TopBookPerNano : Returns a list of the top of book at every nanosecond after applying each individual message in a list 
+func (orderbook *Orderbook) TopBookPerNano(messages []*Message) (topbook []*Point) {
+	firstNano := messages[0].Timestamp
+	lastNano := messages[len(messages) - 1].Timestamp
+
+	for nano := firstNano; nano <= lastNano; nano++ {
+		nanoMessages := GetMessagesForTimestamp(messages, nano)
+		orderbook.ApplyMessagesToOrderbook(nanoMessages)
+		
+		tb := &Point{}
+		tb.Timestamp = nano
+		tb.BestBid = orderbook.Bids[0].Price
+		tb.BestAsk = orderbook.Asks[0].Price
+		
+		topbook = append(topbook, tb)
+	}
+
+	return topbook
+}

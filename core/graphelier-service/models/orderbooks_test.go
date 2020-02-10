@@ -341,3 +341,27 @@ func TestDeltaPriceSort(t *testing.T) {
 	assert.Equal(t, float64(200), deltabook.Bids[0].Price)
 	assert.Equal(t, float64(100), deltabook.Bids[1].Price)
 }
+
+func TestTopBookPerNano(t *testing.T) {
+	setupEmpty()
+	messages = []*Message{
+		MakeMsg(DirectionAsk, OrderID(10), Price(100.0), Timestamp(99), SodOffset(1)),
+		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(99), SodOffset(2)),
+		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(99), SodOffset(3)),
+		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(99), SodOffset(4)),
+		MakeMsg(DirectionAsk, OrderID(50), Price(100.0), Timestamp(100), SodOffset(5)),
+		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(100), SodOffset(6)),
+		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(100), SodOffset(7)),
+		MakeMsg(DirectionBid, OrderID(80), Price(201.0), Timestamp(100), SodOffset(8)),
+	}
+	
+	topbook := orderbook.TopBookPerNano(messages)
+
+	assert.Equal(t, 2, len(topbook))
+	assert.Equal(t, uint64(99), topbook[0].Timestamp)
+	assert.Equal(t, uint64(100), topbook[1].Timestamp)
+	assert.Equal(t, 201.0, topbook[0].BestBid)
+	assert.Equal(t, 100.0, topbook[0].BestAsk)
+	assert.Equal(t, 201.0, topbook[1].BestBid)
+	assert.Equal(t, 100.0, topbook[1].BestAsk)
+}
