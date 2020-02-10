@@ -22,6 +22,7 @@ type Datastore interface {
 	RefreshCache() error
 	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
 	GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error)
+	GetMessagesWithinInterval(instrument string, startTimestamp uint64, endTimestamp uint64) (results []*models.Message, err error)
 }
 
 // Connector : A struct that represents the database
@@ -392,7 +393,7 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		if err != nil {
 			return nil, err
 		}
-		if int64(exactEnd - exactStart) <= maxCount {
+		if int64(exactEnd-exactStart) <= maxCount {
 			// return every nanosecond, not enough points
 			// x = 1 for no spacing between points
 			results = orderbook.TopBookPerXNano(messages, 1)
@@ -410,22 +411,13 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 // GetMessagesWithinInterval : Finds all messages within the interval of two timestamps
 func (c *Connector) GetMessagesWithinInterval(instrument string, startTimestamp uint64, endTimestamp uint64) (results []*models.Message, err error) {
 	defer utils.TraceTimer("mongo/GetMessagesWithinInterval")()
-	
-	meta, ok := c.cache.meta[instrument]
-	if !ok {
-		return nil, InstrumentNotFoundError{Instrument: instrument}
-	}
-	interval := meta.Interval
-
-	exactStart := timestampToIntervalMultiple(startTimestamp, interval)
-	exactEnd := timestampToIntervalMultiple(endTimestamp, interval)
 
 	collection := c.Database("graphelier-db").Collection("messages")
 	filter := bson.D{
 		{Key: "instrument", Value: instrument},
-		{Key: "interval_multiple", Value: bson.D{
-			{Key: "$lte", Value: exactStart},
-			{Key: "$gte", Value: exactEnd},
+		{Key: "timestamp", Value: bson.D{
+			{Key: "$gte", Value: startTimestamp},
+			{Key: "$lte", Value: endTimestamp},
 		}},
 	}
 
@@ -450,5 +442,5 @@ func (c *Connector) GetMessagesWithinInterval(instrument string, startTimestamp 
 		return nil, err
 	}
 
-	return results, nil 
+	return results, nil
 }
