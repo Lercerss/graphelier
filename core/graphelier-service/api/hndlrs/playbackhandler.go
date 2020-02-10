@@ -77,7 +77,10 @@ func (pb *PlaybackSession) Start() error {
 		modifications := pb.Orderbook.YieldModifications(messages)
 		log.Tracef("Generated %d modifications\n", len(modifications.Modifications))
 
-		pb.Socket.WriteJSON(modifications)
+		err := pb.Socket.WriteJSON(modifications)
+		if err != nil {
+			return err
+		}
 
 		pb.realtime = pb.realtime.Add(time.Duration(pb.interval))
 		log.Debugf("Sleeping for %v\n", time.Until(pb.realtime))
