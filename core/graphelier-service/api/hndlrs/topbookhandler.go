@@ -30,7 +30,6 @@ func FetchTopBook(env *Env, w http.ResponseWriter, r *http.Request) (err error) 
 		return StatusError{400, err}
 	}
 
-	// TODO: Handle small interval case
 	points, err := env.Datastore.GetTopOfBookByInterval(instrument, startTime, endTime, numPoints)
 	if err != nil {
 		return StatusError{400, err}

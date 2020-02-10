@@ -336,52 +336,117 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	}
 	log.Tracef("Documents in interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
 
-	// Add $mod comparator to interval_multiple filter
-	filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
+	if maxCount < count {
+		// Add $mod comparator to interval_multiple filter
+		filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
+		// Project snapshots to keep only the best bid and ask
+		findOptions := options.Find()
+		findOptions.Projection = bson.D{
+			{Key: "interval_multiple", Value: 1},
+			{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
+			{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
+			{Key: "bids.price", Value: 1},
+			{Key: "asks.price", Value: 1},
+		}
 
-	// Project snapshots to keep only the best bid and ask
-	findOptions := options.Find()
-	findOptions.Projection = bson.D{
-		{Key: "interval_multiple", Value: 1},
-		{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
-		{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
-		{Key: "bids.price", Value: 1},
-		{Key: "asks.price", Value: 1},
+		cursor, err := collection.Find(context.TODO(), filter, findOptions)
+		if err != nil {
+			return nil, err
+		}
+		defer cursor.Close(context.TODO())
+
+		for cursor.Next(context.TODO()) {
+			var p models.Point
+			var raw bson.RawValue
+			if raw, err = cursor.Current.LookupErr("interval_multiple"); err != nil {
+				return nil, err
+			}
+			p.Timestamp = uint64(raw.Int64()) * interval
+
+			if raw, err = cursor.Current.LookupErr("bids"); err != nil {
+				return nil, err
+			}
+			rawE, err := raw.Array().IndexErr(0)
+			if err != nil {
+				continue
+			}
+			p.BestBid = rawE.Value().Document().Lookup("price").Double()
+
+			if raw, err = cursor.Current.LookupErr("asks"); err != nil {
+				return nil, err
+			}
+			rawE, err = raw.Array().IndexErr(0)
+			if err != nil {
+				continue
+			}
+			p.BestAsk = rawE.Value().Document().Lookup("price").Double()
+
+			results = append(results, &p)
+		}
+	} else {
+		orderbook, err := c.GetOrderbook(instrument, startTimestamp)
+		if err != nil {
+			return nil, err
+		}
+		messages, err := c.GetMessagesWithinInterval(instrument, startTimestamp, endTimestamp)
+		if err != nil {
+			return nil, err
+		}
+		if int64(exactEnd - exactStart) <= maxCount {
+			// return every nanosecond
+			results = orderbook.TopBookPerNano(messages)
+		} else {
+			// return spaced nanoseconds
+		}
+		// TODO: remove 
+		//results = orderbook.TopBookPerMessage(messages, maxCount)
 	}
 
-	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	return results, nil
+}
+
+// GetMessagesWithinInterval : Finds all messages within the interval of two timestamps
+func (c *Connector) GetMessagesWithinInterval(instrument string, startTimestamp uint64, endTimestamp uint64) (results []*models.Message, err error) {
+	defer utils.TraceTimer("mongo/GetMessagesWithinInterval")()
+	
+	meta, ok := c.cache.meta[instrument]
+	if !ok {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	interval := meta.Interval
+
+	exactStart := timestampToIntervalMultiple(startTimestamp, interval)
+	exactEnd := timestampToIntervalMultiple(endTimestamp, interval)
+
+	collection := c.Database("graphelier-db").Collection("messages")
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "interval_multiple", Value: bson.D{
+			{Key: "$lte", Value: exactStart},
+			{Key: "$gte", Value: exactEnd},
+		}},
+	}
+
+	options := options.Find()
+	cursor, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(context.TODO())
 
 	for cursor.Next(context.TODO()) {
-		var m models.Point
-		var raw bson.RawValue
-		if raw, err = cursor.Current.LookupErr("interval_multiple"); err != nil {
-			return nil, err
-		}
-		m.Timestamp = uint64(raw.Int64()) * interval
-
-		if raw, err = cursor.Current.LookupErr("bids"); err != nil {
-			return nil, err
-		}
-		rawE, err := raw.Array().IndexErr(0)
+		var m models.Message
+		err := cursor.Decode(&m)
 		if err != nil {
-			continue
-		}
-		m.BestBid = rawE.Value().Document().Lookup("price").Double()
-
-		if raw, err = cursor.Current.LookupErr("asks"); err != nil {
 			return nil, err
 		}
-		rawE, err = raw.Array().IndexErr(0)
-		if err != nil {
-			continue
-		}
-		m.BestAsk = rawE.Value().Document().Lookup("price").Double()
 
 		results = append(results, &m)
 	}
-	return results, nil
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil 
 }
