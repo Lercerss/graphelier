@@ -210,3 +210,32 @@ describe('updating price level by message offset functionality', () => {
             .toEqual(ORDER_BOOK_LIST_ITEMS[135.67]);
     });
 });
+
+describe('graph zoom and pan data loading functionality', () => {
+    let mount, shallow;
+
+    const getTopOfBookOverTimeSpy = jest.spyOn(OrderBookService, 'getTopOfBookOverTime')
+        .mockImplementation((instrument, startTime, endTime, nDataPoints): Promise<any> => Promise.resolve(
+            {
+                data: [],
+            },
+        ));
+
+    beforeEach(() => {
+        mount = createMount();
+        shallow = createShallow({ dive: true });
+    });
+
+    afterEach(() => {
+        getTopOfBookOverTimeSpy.mockClear();
+        mount.cleanUp();
+    });
+
+    it('makes database call when there is a zoom or pan event', () => {
+        const wrapper = shallow(<OrderBookSnapshot />);
+
+        expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(0);
+        wrapper.instance().handlePanAndZoom(TIMESTAMP_PM, TIMESTAMP_PM);
+        expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(1);
+    });
+});
