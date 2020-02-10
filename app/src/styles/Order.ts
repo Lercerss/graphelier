@@ -2,15 +2,16 @@ import { Colors } from './App';
 
 export const Styles = {
     rectangle: {
-        marginLeft: 5,
-        paddingLeft: 3,
-        paddingRight: 3,
+        marginLeft: 3,
+        paddingLeft: 4,
+        paddingRight: 4,
         borderRadius: 3,
         display: 'flex',
         flexDirection: 'row' as const,
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
+        transition: 'width 500ms ease-in',
     },
     bid: {
         backgroundColor: Colors.green,

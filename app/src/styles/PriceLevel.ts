@@ -32,4 +32,20 @@ export const Styles = {
         paddingLeft: 30,
         width: '100%',
     },
+    orderEnter: {
+        opacity: 0,
+    },
+    orderEnterActive: {
+        opacity: 1,
+        transition: 'opacity 500ms ease-in, width 500ms ease-in, padding 300ms ease-in',
+    },
+    orderExit: {
+        opacity: 1,
+    },
+    orderExitActive: {
+        opacity: 0,
+        width: '0px !important',
+        padding: '0px',
+        transition: 'opacity 500ms ease-in, width 500ms ease-in, padding 300ms ease-in',
+    },
 };
