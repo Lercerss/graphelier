@@ -386,7 +386,7 @@ func TestTopBookPerXNano(t *testing.T) {
 	}
 
 	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, x)
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x))
 
 	assert.Equal(t, 2, len(topbook))
 	assert.Equal(t, uint64(99), topbook[0].Timestamp)
@@ -416,7 +416,7 @@ func TestTopBookPerNano(t *testing.T) {
 	}
 
 	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, x)
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x))
 
 	assert.Equal(t, 2, len(topbook))
 	assert.Equal(t, uint64(99), topbook[0].Timestamp)
@@ -446,7 +446,7 @@ func TestTopBookPerSkippedNano(t *testing.T) {
 	}
 
 	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, x)
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x))
 
 	assert.Equal(t, 2, len(topbook))
 	assert.Equal(t, uint64(99), topbook[0].Timestamp)

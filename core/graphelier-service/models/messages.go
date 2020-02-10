@@ -35,16 +35,3 @@ type MessagePage struct {
 	PageInfo Paginator  `json:"pageInfo"`
 	Messages []*Message `json:"messages"`
 }
-
-// GetMessagesForTimestamp : Returns all messages for a given nanosecond
-func GetMessagesForTimestamp(messages []*Message, nano uint64) (messagesFromTimestamp []*Message) {
-	for _, message := range messages {
-		if message.Timestamp == nano {
-			messagesFromTimestamp = append(messagesFromTimestamp, message)
-		} else {
-			continue
-		}
-	}
-
-	return messagesFromTimestamp
-}

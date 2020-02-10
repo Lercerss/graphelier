@@ -335,7 +335,7 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	if err != nil {
 		return nil, err
 	}
-	log.Tracef("Documents in interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
+	log.Tracef("Documents in orderbook interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
 
 	if maxCount < count {
 		// Add $mod comparator to interval_multiple filter
@@ -393,16 +393,12 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		if err != nil {
 			return nil, err
 		}
-		if int64(exactEnd-exactStart) <= maxCount {
-			// return every nanosecond, not enough points
-			// x = 1 for no spacing between points
-			results = orderbook.TopBookPerXNano(messages, 1)
-		} else {
-			// return spaced nanoseconds, too many points
-			// do not care about truncating
-			x := len(messages) / int(maxCount)
-			results = orderbook.TopBookPerXNano(messages, x)
+		x := len(messages) / int(maxCount)
+		if x == 0 {
+			x = 1
 		}
+		log.Tracef("Documents in message interval {%d,%d}=%d, keeping 1 in %d", startTimestamp, endTimestamp, len(messages), x)
+		results = orderbook.TopBookPerXNano(messages, uint64(x))
 	}
 
 	return results, nil
