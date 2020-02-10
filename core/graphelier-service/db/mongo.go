@@ -393,13 +393,15 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 			return nil, err
 		}
 		if int64(exactEnd - exactStart) <= maxCount {
-			// return every nanosecond
-			results = orderbook.TopBookPerNano(messages)
+			// return every nanosecond, not enough points
+			// x = 1 for no spacing between points
+			results = orderbook.TopBookPerXNano(messages, 1)
 		} else {
-			// return spaced nanoseconds
+			// return spaced nanoseconds, too many points
+			// do not care about truncating
+			x := len(messages) / int(maxCount)
+			results = orderbook.TopBookPerXNano(messages, x)
 		}
-		// TODO: remove 
-		//results = orderbook.TopBookPerMessage(messages, maxCount)
 	}
 
 	return results, nil
