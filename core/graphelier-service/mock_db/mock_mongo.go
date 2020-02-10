@@ -58,6 +58,21 @@ func (_mr *MockDatastoreMockRecorder) GetMessagesByTimestamp(arg0, arg1 interfac
 	return _mr.mock.ctrl.RecordCallWithMethodType(_mr.mock, "GetMessagesByTimestamp", reflect.TypeOf((*MockDatastore)(nil).GetMessagesByTimestamp), arg0, arg1)
 }
 
+// GetMessagesByTimestampRange mocks base method
+func (m *MockDatastore) GetMessagesByTimestampRange(instrument string, startTimestamp, endTimestamp uint64) ([]*models.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMessagesByTimestampRange", instrument, startTimestamp, endTimestamp)
+	ret0, _ := ret[0].([]*models.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMessagesByTimestampRange indicates an expected call of GetMessagesByTimestampRange
+func (mr *MockDatastoreMockRecorder) GetMessagesByTimestampRange(instrument, startTimestamp, endTimestamp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessagesByTimestampRange", reflect.TypeOf((*MockDatastore)(nil).GetMessagesByTimestampRange), instrument, startTimestamp, endTimestamp)
+}
+
 // GetMessagesWithPagination mocks base method
 func (_m *MockDatastore) GetMessagesWithPagination(instrument string, paginator *models.Paginator) ([]*models.Message, error) {
 	ret := _m.ctrl.Call(_m, "GetMessagesWithPagination", instrument, paginator)

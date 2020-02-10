@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 const WebSocket = require('ws');
 
 const endpoint = `ws://localhost:5050/playback/SPY/1577892050000000000/1.00`;
