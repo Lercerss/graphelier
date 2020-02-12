@@ -22,30 +22,26 @@ class Order extends Component<Props> {
         } = this.props;
         const quantityBoxSize = (quantity / maxQuantity) * 100;
         const minQuantityTextSize = 2;
-
+        const orderClasses = classNames(
+            classes.quantity,
+            classes.rectangle,
+            type === TransactionType.Bid ? classes.bid : classes.ask,
+        );
+        const shouldShowQuantity = quantityBoxSize > minQuantityTextSize;
         return (
-            quantityBoxSize > minQuantityTextSize ? (
+            <Tooltip
+                title={!shouldShowQuantity ? quantity : ''}
+                placement={'bottom'}
+                TransitionComponent={Zoom}
+                classes={{ tooltip: classes.offsetTooltip }}
+            >
                 <Box
-                    className={classNames(classes.rectangle, type === TransactionType.Bid ? classes.bid : classes.ask)}
-                    style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}
+                    className={orderClasses}
+                    style={{ width: `${quantityBoxSize}%` }}
                 >
-                    <Typography className={classes.text}>{quantity}</Typography>
+                    {shouldShowQuantity && <Typography className={classes.text}>{quantity}</Typography>}
                 </Box>
-            ) : (
-                <Tooltip
-                    title={quantity}
-                    placement={'bottom'}
-                    TransitionComponent={Zoom}
-                    classes={{ tooltip: classes.offsetTooltip }}
-                >
-                    <span
-                        className={`${classes.quantity} ${classNames(
-                            classes.rectangle, type === TransactionType.Bid ? classes.bid : classes.ask,
-                        )}`}
-                        style={{ minWidth: `${quantityBoxSize}%`, maxWidth: `${quantityBoxSize}%` }}
-                    />
-                </Tooltip>
-            )
+            </Tooltip>
         );
     }
 }

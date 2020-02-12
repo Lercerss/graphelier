@@ -153,7 +153,7 @@ describe('TimestampOrderbookScroller functionality', () => {
 
     it('calls the function for changing the loading props to false', () => {
         const newLoadingOrderbook: boolean = true;
-        const wrapper = mount(<TimestampOrderBookScroller
+        const wrapper = shallow(<TimestampOrderBookScroller
             timeOrDateIsNotSet={timeOrDateIsNotSet}
             handleUpdateWithDeltas={handleUpdateWithDeltas}
             lastSodOffset={bigInt(0)}
@@ -163,10 +163,10 @@ describe('TimestampOrderbookScroller functionality', () => {
             loading={newLoadingOrderbook}
         />);
 
-        const div = () => wrapper.find({ id: 'orderbookListItems' });
-        expect(div().hasClass('TimestampOrderBookScroller-hide-163')).toBe(true);
+        const div = () => wrapper.find('#orderbookListItems');
+        expect(div().hasClass(/TimestampOrderBookScroller-hide-\d*/)).toBe(true);
         wrapper.setProps({ loading: false });
-        expect(div().hasClass('TimestampOrderBookScroller-hide-163')).toBe(false);
+        expect(div().hasClass(/TimestampOrderBookScroller-hide-\d*/)).toBe(false);
     });
 });
 
