@@ -308,38 +308,8 @@ func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64
 	return results, nil
 }
 
-// GetTopOfBookByInterval : Reads the best bid and best ask from order book snapshots in the given interval
-func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error) {
-	defer utils.TraceTimer("mongo/GetTopOfBookByInterval")()
-
-	meta, ok := c.cache.meta[instrument]
-	if !ok {
-		return nil, InstrumentNotFoundError{Instrument: instrument}
-	}
-	interval := meta.Interval
-
-	exactStart := timestampToIntervalMultiple(startTimestamp, interval)
-	exactEnd := timestampToIntervalMultiple(endTimestamp, interval)
-
-	collection := c.Database("graphelier-db").Collection("orderbooks")
-	filter := bson.D{
-		{Key: "instrument", Value: instrument},
-		{Key: "interval_multiple", Value: bson.D{
-			{Key: "$gte", Value: exactStart},
-			{Key: "$lte", Value: exactEnd},
-		}},
-	}
-
-	// Count matching documents to select $mod filter
-	count, err := collection.CountDocuments(context.TODO(), filter)
-	if err != nil {
-		return nil, err
-	}
-	log.Tracef("Documents in orderbook interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
-
-	if maxCount < count {
-		// Add $mod comparator to interval_multiple filter
-		filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
+// helper function for GetTopOfBookByInterval, finds points based on a large interval given
+func getBigTopBookInterval(filter *bson.D, collection *mongo.Collection, interval uint64) (results []*models.Point, err error) {
 		// Project snapshots to keep only the best bid and ask
 		findOptions := options.Find()
 		findOptions.Projection = bson.D{
@@ -383,6 +353,47 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 			p.BestAsk = rawE.Value().Document().Lookup("price").Double()
 
 			results = append(results, &p)
+		}
+
+		return results, err
+}
+
+// GetTopOfBookByInterval : Reads the best bid and best ask from order book snapshots in the given interval
+func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error) {
+	defer utils.TraceTimer("mongo/GetTopOfBookByInterval")()
+
+	meta, ok := c.cache.meta[instrument]
+	if !ok {
+		return nil, InstrumentNotFoundError{Instrument: instrument}
+	}
+	interval := meta.Interval
+
+	exactStart := timestampToIntervalMultiple(startTimestamp, interval)
+	exactEnd := timestampToIntervalMultiple(endTimestamp, interval)
+
+	collection := c.Database("graphelier-db").Collection("orderbooks")
+	filter := bson.D{
+		{Key: "instrument", Value: instrument},
+		{Key: "interval_multiple", Value: bson.D{
+			{Key: "$gte", Value: exactStart},
+			{Key: "$lte", Value: exactEnd},
+		}},
+	}
+
+	// Count matching documents to select $mod filter
+	count, err := collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	log.Tracef("Documents in orderbook interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
+
+	if maxCount < count {
+		// Add $mod comparator to interval_multiple filter
+		filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
+	
+		results, err = getBigTopBookInterval(&filter, collection, interval)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		orderbook, err := c.GetOrderbook(instrument, startTimestamp)
