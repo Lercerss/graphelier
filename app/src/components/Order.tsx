@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 
-import { Typography, Tooltip, Button } from '@material-ui/core';
+import {
+    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+    Typography, Tooltip, Button, Box,
+} from '@material-ui/core';
 import Zoom from '@material-ui/core/Zoom';
 import bigInt from 'big-integer';
 import { Styles } from '../styles/Order';
@@ -27,7 +30,6 @@ interface State {
     price: number,
     messages: Array<Message>,
     infoDrawerShown : boolean,
-    orderClicked: boolean,
 }
 
 class Order extends Component<Props, State> {
@@ -40,15 +42,10 @@ class Order extends Component<Props, State> {
             createdOn: '',
             price: 0,
             messages: [],
-            orderClicked: false,
         };
     }
 
-    onDrawerClosed = () => {
-        this.setState({ orderClicked: false });
-    };
-
-    handleOnOrderClick() {
+    handleOnOrderClick = () => {
         const { instrument, timestamp, orderId } = this.props;
         OrderBookService.getOrderInformation(instrument, orderId, timestamp.toString())
             .then(response => {
@@ -62,10 +59,9 @@ class Order extends Component<Props, State> {
                     price,
                     messages,
                     infoDrawerShown: true,
-                    orderClicked: true,
                 });
             });
-    }
+    };
 
     renderOrderInformation() {
         const {
@@ -80,7 +76,6 @@ class Order extends Component<Props, State> {
                 createdOn={createdOn}
                 price={price}
                 messages={messages}
-                onDrawerClosed={this.onDrawerClosed}
             />
         );
     }
@@ -105,14 +100,14 @@ class Order extends Component<Props, State> {
                 TransitionComponent={Zoom}
                 classes={{ tooltip: classes.offsetTooltip }}
             >
-                <Button
+                <Box
                     className={orderClasses}
                     style={{ width: `${quantityBoxSize}%` }}
                     onClick={this.handleOnOrderClick}
                 >
                     {infoDrawerShown && this.renderOrderInformation()}
                     {shouldShowQuantity && <Typography className={classes.text}>{quantity}</Typography>}
-                </Button>
+                </Box>
             </Tooltip>
         );
     }

@@ -27,7 +27,6 @@ interface Props extends WithStyles<typeof styles>{
     createdOn: string,
     price: number,
     messages: Array<Message>,
-    onDrawerClosed: Function,
 }
 
 interface State {
@@ -47,11 +46,6 @@ class OrderInformation extends Component<Props, State> {
         return event => {
             if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
                 return;
-            }
-
-            if (open === false) {
-                const { onDrawerClosed } = this.props;
-                onDrawerClosed();
             }
 
             this.setState({ right: true, [side]: open });

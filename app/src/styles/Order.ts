@@ -12,6 +12,7 @@ export const Styles = {
         justifyContent: 'center',
         height: '100%',
         transition: 'width 500ms ease-in',
+        cursor: 'pointer',
     },
     bid: {
         backgroundColor: Colors.green,
@@ -21,7 +22,6 @@ export const Styles = {
     },
     getOrderInfo: {
         backgroundColor: Colors.yellow,
-        color: Colors.black,
     },
     text: {
         color: Colors.white,
