@@ -1,9 +1,15 @@
 import React, { Component } from 'react';
 import bigInt from 'big-integer';
 import { WithStyles, createStyles, withStyles } from '@material-ui/core/styles';
+import NanoDate from 'nano-date';
 import TopOfBookGraph from './TopOfBookGraph';
-import { TopOfBookItem } from '../models/OrderBook';
+import { TopOfBookItem, TopOfBookPackage } from '../models/OrderBook';
 import { Styles } from '../styles/TopOfBookGraphWrapper';
+import {
+    adaptTrueNanosecondsTimeToCurrentDateTimezone,
+    getNsSinceSod,
+    getSodNanoDate,
+} from '../utils/date-utils';
 
 const styles = createStyles(Styles);
 
@@ -51,6 +57,39 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
         window.removeEventListener('resize', this.updateDimensions);
     }
 
+    /**
+     * @desc Prepares the structure sent down to graph
+     * @private
+     */
+    private prepareTobPackage = (): TopOfBookPackage => {
+        const { topOfBookItems } = this.props;
+        let sodNanoDate: NanoDate = new NanoDate();
+
+        const adaptedTopOfBookItems = topOfBookItems.map((topOfBookItem: TopOfBookItem) => {
+            const bigIntegerTimestamp: bigInt.BigInteger = adaptTrueNanosecondsTimeToCurrentDateTimezone(
+                bigInt(topOfBookItem.timestamp),
+            );
+            const exact: NanoDate = new NanoDate(bigIntegerTimestamp.toString());
+            const nsSinceStartOfDay: number = getNsSinceSod(exact);
+
+            sodNanoDate = getSodNanoDate(exact);
+            return {
+                ...topOfBookItem,
+                date: exact,
+                nsSinceStartOfDay,
+            };
+        });
+
+        return {
+            topOfBookItems: adaptedTopOfBookItems,
+            sodNanoDate,
+        };
+    };
+
+    /**
+     * @function updateDimensions
+     * @desc Updates state following a resize of the window
+     */
     updateDimensions = () => {
         if (this.graphContainerRef.current) {
             this.setState({
@@ -62,9 +101,11 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
 
     render() {
         const {
-            classes, onTimeSelect, selectedDateTimeNano, topOfBookItems, handlePanAndZoom, startOfDay, endOfDay,
+            classes, onTimeSelect, selectedDateTimeNano, handlePanAndZoom, startOfDay, endOfDay,
         } = this.props;
         const { graphWidth, graphHeight } = this.state;
+        const topOfBookPackage: TopOfBookPackage = this.prepareTobPackage();
+
         return (
             <div
                 className={classes.graphWrapper}
@@ -79,7 +120,8 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
                          selectedDateTimeNano={selectedDateTimeNano}
                          startOfDay={startOfDay}
                          endOfDay={endOfDay}
-                         topOfBookItems={topOfBookItems}
+                         topOfBookItems={topOfBookPackage.topOfBookItems}
+                         sodNanoDate={topOfBookPackage.sodNanoDate}
                          handlePanAndZoom={handlePanAndZoom}
                      />
                  )}
