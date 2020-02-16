@@ -44,6 +44,9 @@ class Order extends Component<Props, State> {
         };
     }
 
+    /**
+     * @desc handles event for sending request to retrieve order information when order is clicked on
+     */
     handleOnOrderClick = () => {
         const { instrument, timestamp, orderId } = this.props;
         OrderBookService.getOrderInformation(instrument, orderId, timestamp.toString())
@@ -62,6 +65,10 @@ class Order extends Component<Props, State> {
             });
     };
 
+    /**
+     * @desc Renders the order Information component
+     * @returns {*}
+     */
     renderOrderInformation() {
         const {
             lastModified, createdOn, price, messages,

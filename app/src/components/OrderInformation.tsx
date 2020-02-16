@@ -42,6 +42,11 @@ class OrderInformation extends Component<Props, State> {
         };
     }
 
+    /**
+     * @desc Renders the Drawer slider when open is set to true.
+     * @param side :can be set to 'left' 'right' 'top' 'bottom' setting the side of the screen the drawer is shown
+     * @param open :boolean set to true when drawer is open
+     */
     renderToggleDrawer(side, open) {
         return event => {
             if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -52,9 +57,56 @@ class OrderInformation extends Component<Props, State> {
         };
     }
 
+    /**
+     * @desc Renders the message list table inside the drawer with 3 columns: timestamp, type and quantity.
+     * @returns {*}
+     */
+    renderMessageListTable() {
+        const { messages, classes } = this.props;
+        return (
+            <Table className={classes.messagesTable}>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Timestamp</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Quantity</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {messages.map(message => {
+                        const {
+                            // eslint-disable-next-line camelcase
+                            timestamp, message_type, share_qty, order_id,
+                        } = message;
+
+                        const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
+                        const time = nanosecondsToString(
+                            convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf(),
+                        );
+
+                        return (
+                            // eslint-disable-next-line camelcase
+                            <TableRow key={order_id}>
+                                <TableCell>{time}</TableCell>
+                                <TableCell>{MESSAGE_TYPE_ENUM[message_type].name}</TableCell>
+                                {/* eslint-disable-next-line camelcase */}
+                                <TableCell>{share_qty}</TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        );
+    }
+
+    /**
+     * @desc Renders the Drawer with a list of order information conatining order ID, quantity, last modified date,
+     * created on date and price
+     * @param side :side of the screen the Drawer opens from
+     */
     renderSlideList(side) {
         const {
-            orderId, quantity, lastModified, createdOn, price, messages, classes,
+            orderId, quantity, lastModified, createdOn, price, classes,
         } = this.props;
         return (
             <div
@@ -96,38 +148,7 @@ class OrderInformation extends Component<Props, State> {
                 </Table>
                 <Divider />
                 <h2 className={classes.messageHeader}>Messages</h2>
-                <Table className={classes.messagesTable}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Timestamp</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Quantity</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {messages.map(message => {
-                            const {
-                                // eslint-disable-next-line camelcase
-                                timestamp, message_type, share_qty, order_id,
-                            } = message;
-
-                            const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
-                            const time = nanosecondsToString(
-                                convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf(),
-                            );
-
-                            return (
-                                // eslint-disable-next-line camelcase
-                                <TableRow key={order_id}>
-                                    <TableCell>{time}</TableCell>
-                                    <TableCell>{MESSAGE_TYPE_ENUM[message_type].name}</TableCell>
-                                    {/* eslint-disable-next-line camelcase */}
-                                    <TableCell>{share_qty}</TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
+                {this.renderMessageListTable()}
             </div>
         );
     }
