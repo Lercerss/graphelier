@@ -25,8 +25,7 @@ interface Props extends WithStyles<typeof styles> {
 
 class PriceLevel extends Component<Props> {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-        const { orders, maxQuantity, instrument } = this.props;
+        const { orders, maxQuantity } = this.props;
 
         return !ordersEquals(orders, nextProps.orders) || maxQuantity !== nextProps.maxQuantity;
     }

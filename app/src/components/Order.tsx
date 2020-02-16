@@ -84,7 +84,7 @@ class Order extends Component<Props, State> {
         const {
             classes, type, quantity, maxQuantity,
         } = this.props;
-        const { infoDrawerShown } = this.state;
+        const { infoDrawerShown } = this.state; // TODO: needs to be changed with redux
         const quantityBoxSize = (quantity / maxQuantity) * 100;
         const minQuantityTextSize = 2;
         const orderClasses = classNames(

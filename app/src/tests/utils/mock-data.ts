@@ -204,3 +204,34 @@ export const MESSAGE_LIST = {
         },
     ],
 };
+
+export const MESSAGE_INFORMATION = {
+    instrument: 'SPY',
+    id: 20933587,
+    quantity: 598,
+    price: 135.66,
+    last_modified: '1577896319710937222',
+    created_on: '1577896319710937222',
+    messages: [
+        {
+            instrument: 'SPY',
+            timestamp: TIMESTAMP,
+            message_type: 1,
+            order_id: 20933587,
+            share_qty: 598,
+            price: 135.66,
+            direction: -1,
+            sod_offset: LAST_SOD_OFFSET,
+        },
+        {
+            instrument: 'SPY',
+            timestamp: TIMESTAMP,
+            message_type: 1,
+            order_id: 20933587,
+            share_qty: 2100,
+            price: 135.66,
+            direction: -1,
+            sod_offset: LAST_SOD_OFFSET,
+        },
+    ],
+};
