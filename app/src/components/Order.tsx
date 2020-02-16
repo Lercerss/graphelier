@@ -3,8 +3,7 @@ import { withStyles, WithStyles, createStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 
 import {
-    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    Typography, Tooltip, Button, Box,
+    Typography, Tooltip, Box,
 } from '@material-ui/core';
 import Zoom from '@material-ui/core/Zoom';
 import bigInt from 'big-integer';

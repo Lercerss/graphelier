@@ -3,7 +3,7 @@ import bigInt from 'big-integer';
 export const ENVIRONMENT = 'DEV';
 export const APP_NAME = 'Graphelier';
 export const BACKEND_PORT = 5050;
-let host = '18.218.121.174';
+let host = 'localhost';
 if (process.env.NODE_ENV === 'production') {
     host = '18.218.121.174';
 }

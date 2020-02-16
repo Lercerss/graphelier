@@ -54,7 +54,6 @@ class OrderInformation extends Component<Props, State> {
 
     renderSlideList(side) {
         const {
-            // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
             orderId, quantity, lastModified, createdOn, price, messages, classes,
         } = this.props;
         return (
