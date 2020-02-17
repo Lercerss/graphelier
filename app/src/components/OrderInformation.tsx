@@ -114,34 +114,49 @@ class OrderInformation extends Component<Props, State> {
                 onClick={this.renderToggleDrawer(side, false)}
                 onKeyDown={this.renderToggleDrawer(side, false)}
             >
-                <Table className={classes.orderInfo}>
-                    <TableHead className={classes.orderIdHeader}>
-                        <h2>
-                            {'ID: '}
-                            {orderId}
-                        </h2>
-                    </TableHead>
+                <Table
+                    className={classes.orderInfo}
+                >
                     <TableRow>
-                        <TableCell>
-                            {'Quantity: '}
-                            {quantity}
+                        <TableCell className={classes.orderIdHeader}>
+                            <h2 className={classes.orderId}>
+                                {'ID:'}
+                            </h2>
+                        </TableCell>
+                        <TableCell className={classes.orderIdHeader}>
+                            <h2 className={classes.orderIdValue}>{orderId}</h2>
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
-                            {'Last Modified: '}
+                        <TableCell className={classes.basicOrderInfo}>
+                            {'Quantity:'}
+                        </TableCell>
+                        <TableCell className={classes.basicOrderInfoValue}>
+                            { quantity }
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell className={classes.basicOrderInfo}>
+                            {'  Last Modified: '}
+                        </TableCell>
+                        <TableCell className={classes.basicOrderInfoValue}>
                             {getLocalTimeString(lastModified)}
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
-                            {'Created on: '}
+                        <TableCell className={classes.basicOrderInfo}>
+                            {'  Created on: '}
+                        </TableCell>
+                        <TableCell className={classes.basicOrderInfoValue}>
                             {getLocalTimeString(createdOn)}
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
-                            {'Price: $'}
+                        <TableCell className={classes.basicOrderInfo}>
+                            {'  Price:'}
+                        </TableCell>
+                        <TableCell className={classes.basicOrderInfoValue}>
+                            {'$'}
                             {price}
                         </TableCell>
                     </TableRow>
