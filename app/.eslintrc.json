@@ -24,6 +24,16 @@
         "arrow-body-style": "off",
         "array-callback-return": "off",
         "import/prefer-default-export": "off",
+        "import/extensions": [
+            "error",
+            "ignorePackages",
+            {
+                "js": "never",
+                "jsx": "never",
+                "ts": "never",
+                "tsx": "never"
+            }
+        ],
         "no-unused-vars": ["error", { "vars": "all", "args": "none"}],
         "no-unused-expressions": "off",
         "no-loop-func": "off",

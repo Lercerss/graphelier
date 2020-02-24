@@ -2,10 +2,12 @@ import NanoDate from 'nano-date';
 import moment from 'moment';
 import bigInt from 'big-integer';
 
+import { zeroLeftPad } from './number-utils';
+
 import {
     NANOSECONDS_IN_ONE_SECOND,
     NANOSECONDS_IN_ONE_DAY,
-    NANOSECONDS_IN_ONE_MILLISECOND,
+    NANOSECONDS_IN_ONE_MILLISECOND, NANOSECONDS_IN_ONE_HOUR, NANOSECONDS_IN_ONE_MINUTE, NANOSECONDS_IN_ONE_MICROSECOND,
 } from '../constants/Constants';
 
 const EDT_TIMEZONE_OFFSET_IN_MINUTES = 240;
@@ -110,14 +112,118 @@ export const getLocalTimeString = (nanosecondTimestamp: string) : string => {
 
 
 /**
- * @desc Given a nanosecond timestamp from the back-end, returns a Date object with correct timezone
- * @param nanosecondTimestamp {bigInt}
- * @return Date
+ * @desc Given a nanosecond timstamp as a bigInt, returns the bigInt with correct offset based on Date's timezone
+ * @param nanosecondTimestamp
+ * @return bigInt
  */
-export const getDateObjectForGraphScale = (nanosecondTimestamp: bigInt.BigInteger) => {
-    const localTimezoneDate = new Date();
+export const adaptTrueNanosecondsTimeToCurrentDateTimezone = (nanosecondTimestamp: bigInt.BigInteger) => {
+    const localTimezoneDate = new NanoDate();
     const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
-    return new Date(Number(nanosecondTimestamp
-        .plus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * 60 * 10 ** 9)
-        .divide(1000000)));
+    return nanosecondTimestamp.plus(
+        (localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE,
+    );
+};
+
+
+/**
+ * @desc Given a NanoDate object from the graph's x-axis, returns a nanosecond timestamp with correct back-end timezone
+ * @param graphDate NanoDate
+ * @return bigInt
+ */
+export const adaptCurrentDateTimezoneToTrueNanoseconds = (graphDate: NanoDate) => {
+    const localTimezoneDate = new NanoDate();
+    const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
+    return bigInt(graphDate.getTime())
+        .minus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE);
+};
+
+
+/**
+ * @desc Given a full blown NanoDate object, returns the nanoseconds since the start of that day
+ * @param exact {NanoDate}
+ * @return {number} integer
+ */
+export const getNsSinceSod = (exact: NanoDate): number => {
+    const nanoHours: number = exact.getHours() * NANOSECONDS_IN_ONE_HOUR;
+    const nanoMins: number = exact.getMinutes() * NANOSECONDS_IN_ONE_MINUTE;
+    const nanoSecs: number = exact.getSeconds() * NANOSECONDS_IN_ONE_SECOND;
+    const nanoMillis: number = exact.getMilliseconds() * NANOSECONDS_IN_ONE_MILLISECOND;
+    const nanoMicros: number = exact.getMicroseconds() * NANOSECONDS_IN_ONE_MICROSECOND;
+    const nanos: number = exact.getNanoseconds();
+
+    return nanoHours + nanoMins + nanoSecs + nanoMillis + nanoMicros + nanos;
+};
+
+
+/**
+ * @desc Given a NanoDate object, returns a new NanoDate corresponding to the start of that day
+ * @param nanoDate {NanoDate}
+ */
+export const getSodNanoDate = (nanoDate: NanoDate) => {
+    const sodNanoDate: NanoDate = new NanoDate(nanoDate);
+
+    sodNanoDate.setHours(0);
+    sodNanoDate.setMinutes(0);
+    sodNanoDate.setSeconds(0);
+    sodNanoDate.setMilliseconds(0);
+    sodNanoDate.setMicroseconds(0);
+    sodNanoDate.setNanoseconds(0);
+
+    return sodNanoDate;
+};
+
+
+/**
+ * @desc Given an integer representing nanoseconds since start of the day and the NanoDate object
+ * for that start of day, returns exact NanoDate
+ * @param nsSinceSod {number}
+ * @param sodNanoDate {NanoDate}
+ */
+export const getNanoDateFromNsSinceSod = (nsSinceSod: number, sodNanoDate: NanoDate) => {
+    let nsSinceSodAgg: number = nsSinceSod;
+
+    const hours: number = Math.floor(nsSinceSodAgg / NANOSECONDS_IN_ONE_HOUR);
+    nsSinceSodAgg -= (hours * NANOSECONDS_IN_ONE_HOUR);
+
+    const mins: number = Math.floor(nsSinceSodAgg / NANOSECONDS_IN_ONE_MINUTE);
+    nsSinceSodAgg -= (mins * NANOSECONDS_IN_ONE_MINUTE);
+
+    const secs: number = Math.floor(nsSinceSodAgg / NANOSECONDS_IN_ONE_SECOND);
+    nsSinceSodAgg -= (secs * NANOSECONDS_IN_ONE_SECOND);
+
+    const millis: number = Math.floor(nsSinceSodAgg / NANOSECONDS_IN_ONE_MILLISECOND);
+    nsSinceSodAgg -= (millis * NANOSECONDS_IN_ONE_MILLISECOND);
+
+    const micros: number = Math.floor(nsSinceSodAgg / NANOSECONDS_IN_ONE_MICROSECOND);
+    nsSinceSodAgg -= (micros * NANOSECONDS_IN_ONE_MICROSECOND);
+
+    const nanos: number = Math.floor(nsSinceSodAgg);
+
+    const nanoDate = new NanoDate(sodNanoDate);
+    nanoDate.setHours(hours);
+    nanoDate.setMinutes(mins);
+    nanoDate.setSeconds(secs);
+    nanoDate.setMilliseconds(millis);
+    nanoDate.setMicroseconds(micros);
+    nanoDate.setNanoseconds(nanos);
+
+    return nanoDate;
+};
+
+
+/**
+ * @desc Given a NanoDate object, recreates a string representation of format HH:mm:SS:llluuunnn
+ * @param nanoDate
+ */
+export const buildTimeInTheDayStringFromNanoDate = (nanoDate: NanoDate): string => {
+    return ''
+        .concat(zeroLeftPad(nanoDate.getHours(), 2))
+        .concat(':')
+        .concat(zeroLeftPad(nanoDate.getMinutes(), 2))
+        .concat(':')
+        .concat(zeroLeftPad(nanoDate.getSeconds(), 2))
+        .concat(':')
+        .concat(zeroLeftPad(nanoDate.getMilliseconds(), 3))
+        .concat(zeroLeftPad(nanoDate.getMicroseconds(), 3))
+        .concat(zeroLeftPad(nanoDate.getNanoseconds(), 3));
 };

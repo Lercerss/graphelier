@@ -49,6 +49,8 @@ interface State {
     loadingOrderbook: boolean,
     loadingGraph: boolean,
     graphUnavailable: boolean,
+    graphStartTime: bigInt.BigInteger,
+    graphEndTime: bigInt.BigInteger,
 }
 
 class OrderBookSnapshot extends Component<WithStyles, State> {
@@ -56,11 +58,9 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
      * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
      */
     handleResize = debounce(() => {
-        const { selectedDateNano } = this.state;
+        const { selectedDateNano, graphStartTime, graphEndTime } = this.state;
         if (selectedDateNano.neq(0)) {
-            const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-            const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
-            this.updateGraphData(startTime, endTime);
+            this.updateGraphData(graphStartTime, graphEndTime);
         }
     }, 100);
 
@@ -82,6 +82,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             loadingOrderbook: false,
             loadingGraph: false,
             graphUnavailable: false,
+            graphStartTime: bigInt(0),
+            graphEndTime: bigInt(0),
         };
     }
 
@@ -125,9 +127,16 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             () => {
                 const { selectedDateNano } = this.state;
                 if (selectedDateNano.neq(0)) {
-                    const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-                    const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
-                    this.updateGraphData(startTime, endTime);
+                    const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+                    const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+                    this.setState(
+                        {
+                            graphStartTime,
+                            graphEndTime,
+                        }, () => {
+                            this.updateGraphData(graphStartTime, graphEndTime);
+                        },
+                    );
                 }
             },
         );
@@ -161,8 +170,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
         const selectedDateTimeNano = selectedDateNano.plus(selectedTimeNano);
 
-        const startTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-        const endTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+        const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+        const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
 
         this.setState(
             {
@@ -170,10 +179,12 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                 selectedTimeString,
                 selectedDateNano,
                 selectedDateTimeNano,
+                graphStartTime,
+                graphEndTime,
             },
             () => {
                 this.handleChangeDateTime();
-                this.updateGraphData(startTime, endTime);
+                this.updateGraphData(graphStartTime, graphEndTime);
             },
         );
     };
@@ -268,10 +279,10 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     /**
      * @desc Updates the graph with tob values for new start time and end time bounds
      */
-    updateGraphData = (startTime: bigInt.BigInteger, endTime: bigInt.BigInteger) => {
+    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
         const { selectedInstrument } = this.state;
 
-        OrderBookService.getTopOfBookOverTime(selectedInstrument, startTime.toString(), endTime.toString(),
+        OrderBookService.getTopOfBookOverTime(selectedInstrument, graphStartTime.toString(), graphEndTime.toString(),
             this.getNumDataPoints())
             .then(response => {
                 // eslint-disable-next-line camelcase
@@ -279,6 +290,8 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
 
                 this.setState(
                     {
+                        graphStartTime,
+                        graphEndTime,
                         topOfBookItems: result,
                         loadingGraph: false,
                     },
@@ -297,12 +310,22 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
             });
     };
 
+    /**
+     * @desc handles updating the graph when zooming or panning the graph
+     * @param graphStartTime the new start time on the graph
+     * @param graphEndTime the new end time on the graph
+     */
+    handlePanAndZoom = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
+        this.updateGraphData(graphStartTime, graphEndTime);
+    };
+
     render() {
         const { classes } = this.props;
         const {
             listItems,
             maxQuantity,
             selectedDateTimeNano,
+            selectedDateNano,
             datePickerValue,
             selectedTimeString,
             lastSodOffset,
@@ -451,7 +474,10 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         <TopOfBookGraphWrapper
                                             className={classes.graph}
                                             onTimeSelect={this.handleSelectGraphDateTime}
+                                            handlePanAndZoom={this.handlePanAndZoom}
                                             selectedDateTimeNano={selectedDateTimeNano}
+                                            startOfDay={selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS)}
+                                            endOfDay={selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS)}
                                             topOfBookItems={topOfBookItems}
                                         />
                                     )}

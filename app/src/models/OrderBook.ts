@@ -1,4 +1,6 @@
 /* eslint-disable camelcase */
+import NanoDate from 'nano-date';
+
 export enum TransactionType { Ask, Bid }
 
 export interface Order {
@@ -45,8 +47,14 @@ export interface Message {
 }
 
 export interface TopOfBookItem {
-    date?: Date,
+    date?: NanoDate,
+    nsSinceStartOfDay: number,
     best_ask: number,
     best_bid: number,
     timestamp: string,
+}
+
+export interface TopOfBookPackage {
+    topOfBookItems: Array<TopOfBookItem>,
+    sodNanoDate: NanoDate
 }
