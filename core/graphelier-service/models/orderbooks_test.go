@@ -346,22 +346,22 @@ func TestDeltaPriceSort(t *testing.T) {
 func TestTopBookPerXNano(t *testing.T) {
 	setupEmpty()
 	messages = []*Message{
-		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(100), SodOffset(1)),
-		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(100), SodOffset(2)),
-		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(100), SodOffset(3)),
-		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(100), SodOffset(4)),
-		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
-		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
-		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
-		MakeMsg(DirectionBid, OrderID(80), Price(201.0), Timestamp(101), SodOffset(8)),
-		MakeMsg(DirectionAsk, OrderID(90), Price(102.0), Timestamp(102), SodOffset(9)),
-		MakeMsg(DirectionAsk, OrderID(100), Price(201.0), Timestamp(102), SodOffset(10)),
-		MakeMsg(DirectionBid, OrderID(110), Price(101.0), Timestamp(102), SodOffset(11)),
-		MakeMsg(DirectionBid, OrderID(120), Price(202.0), Timestamp(102), SodOffset(12)),
+		MakeMsg(DirectionAsk, Price(106.0), Timestamp(100)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(100)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(100)),
+		MakeMsg(DirectionBid, Price(201.0), Timestamp(100)),
+		MakeMsg(DirectionAsk, Price(108.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(201.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(102.0), Timestamp(102)),
+		MakeMsg(DirectionAsk, Price(201.0), Timestamp(102)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(102)),
+		MakeMsg(DirectionBid, Price(202.0), Timestamp(102)),
 	}
 
-	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 99, 103)
+	pointDistance := 2
+	topbook := orderbook.TopBookPerXNano(messages, uint64(pointDistance), 99, 103)
 
 	assert.Equal(t, 2, len(topbook))
 	assert.Equal(t, uint64(100), topbook[0].Timestamp)
@@ -376,22 +376,22 @@ func TestTopBookPerXNano(t *testing.T) {
 func TestTopBookBefore(t *testing.T) {
 	setupEmpty()
 	messages = []*Message{
-		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(98), SodOffset(1)),
-		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(98), SodOffset(2)),
-		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(98), SodOffset(3)),
-		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(98), SodOffset(4)),
-		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
-		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
-		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
-		MakeMsg(DirectionBid, OrderID(80), Price(201.0), Timestamp(101), SodOffset(8)),
-		MakeMsg(DirectionAsk, OrderID(90), Price(102.0), Timestamp(102), SodOffset(9)),
-		MakeMsg(DirectionAsk, OrderID(100), Price(201.0), Timestamp(102), SodOffset(10)),
-		MakeMsg(DirectionBid, OrderID(110), Price(101.0), Timestamp(102), SodOffset(11)),
-		MakeMsg(DirectionBid, OrderID(120), Price(202.0), Timestamp(102), SodOffset(12)),
+		MakeMsg(DirectionAsk, Price(106.0), Timestamp(98)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(98)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(98)),
+		MakeMsg(DirectionBid, Price(201.0), Timestamp(98)),
+		MakeMsg(DirectionAsk, Price(108.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(201.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(102.0), Timestamp(102)),
+		MakeMsg(DirectionAsk, Price(201.0), Timestamp(102)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(102)),
+		MakeMsg(DirectionBid, Price(202.0), Timestamp(102)),
 	}
 
-	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 99, 103)
+	pointDistance := 2
+	topbook := orderbook.TopBookPerXNano(messages, uint64(pointDistance), 99, 103)
 
 	assert.Equal(t, 3, len(topbook))
 	assert.Equal(t, uint64(98), topbook[0].Timestamp)
@@ -409,22 +409,22 @@ func TestTopBookBefore(t *testing.T) {
 func TestTopBookBetween(t *testing.T) {
 	setupEmpty()
 	messages = []*Message{
-		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(100), SodOffset(1)),
-		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(100), SodOffset(2)),
-		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(100), SodOffset(3)),
-		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(100), SodOffset(4)),
-		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
-		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
-		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
-		MakeMsg(DirectionBid, OrderID(80), Price(202.0), Timestamp(101), SodOffset(8)),
-		MakeMsg(DirectionAsk, OrderID(90), Price(102.0), Timestamp(105), SodOffset(9)),
-		MakeMsg(DirectionAsk, OrderID(100), Price(201.0), Timestamp(105), SodOffset(10)),
-		MakeMsg(DirectionBid, OrderID(110), Price(101.0), Timestamp(105), SodOffset(11)),
-		MakeMsg(DirectionBid, OrderID(120), Price(203.0), Timestamp(105), SodOffset(12)),
+		MakeMsg(DirectionAsk, Price(106.0), Timestamp(100)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(100)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(100)),
+		MakeMsg(DirectionBid, Price(201.0), Timestamp(100)),
+		MakeMsg(DirectionAsk, Price(108.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(202.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(102.0), Timestamp(105)),
+		MakeMsg(DirectionAsk, Price(201.0), Timestamp(105)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(105)),
+		MakeMsg(DirectionBid, Price(203.0), Timestamp(105)),
 	}
 
-	x := 1
-	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 100, 105)
+	pointDistance := 1
+	topbook := orderbook.TopBookPerXNano(messages, uint64(pointDistance), 100, 105)
 
 	assert.Equal(t, 6, len(topbook))
 	assert.Equal(t, uint64(100), topbook[0].Timestamp)
@@ -451,22 +451,22 @@ func TestTopBookBetween(t *testing.T) {
 func TestTopBookAfter(t *testing.T) {
 	setupEmpty()
 	messages = []*Message{
-		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(100), SodOffset(1)),
-		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(100), SodOffset(2)),
-		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(100), SodOffset(3)),
-		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(100), SodOffset(4)),
-		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
-		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
-		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
-		MakeMsg(DirectionBid, OrderID(80), Price(202.0), Timestamp(101), SodOffset(8)),
-		MakeMsg(DirectionAsk, OrderID(90), Price(102.0), Timestamp(102), SodOffset(9)),
-		MakeMsg(DirectionAsk, OrderID(100), Price(201.0), Timestamp(102), SodOffset(10)),
-		MakeMsg(DirectionBid, OrderID(110), Price(101.0), Timestamp(102), SodOffset(11)),
-		MakeMsg(DirectionBid, OrderID(120), Price(203.0), Timestamp(102), SodOffset(12)),
+		MakeMsg(DirectionAsk, Price(106.0), Timestamp(100)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(100)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(100)),
+		MakeMsg(DirectionBid, Price(201.0), Timestamp(100)),
+		MakeMsg(DirectionAsk, Price(108.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(200.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(101)),
+		MakeMsg(DirectionBid, Price(202.0), Timestamp(101)),
+		MakeMsg(DirectionAsk, Price(102.0), Timestamp(102)),
+		MakeMsg(DirectionAsk, Price(201.0), Timestamp(102)),
+		MakeMsg(DirectionBid, Price(101.0), Timestamp(102)),
+		MakeMsg(DirectionBid, Price(203.0), Timestamp(102)),
 	}
 
-	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 99, 106)
+	pointDistance := 2
+	topbook := orderbook.TopBookPerXNano(messages, uint64(pointDistance), 99, 106)
 
 	assert.Equal(t, 4, len(topbook))
 	assert.Equal(t, uint64(100), topbook[0].Timestamp)
@@ -481,4 +481,15 @@ func TestTopBookAfter(t *testing.T) {
 	assert.Equal(t, 102.0, topbook[2].BestAsk)
 	assert.Equal(t, 203.0, topbook[3].BestBid)
 	assert.Equal(t, 102.0, topbook[3].BestAsk)
+}
+
+func TestMessagesZero(t *testing.T) {
+	setupExistingOrders()
+	pointDistance := uint64(2)
+	topbook := orderbook.TopBookPerXNano([]*Message{}, pointDistance, 100, 105)
+
+	assert.Equal(t, 3, len(topbook))
+	assert.Equal(t, uint64(100), topbook[0].Timestamp)
+	assert.Equal(t, uint64(102), topbook[1].Timestamp)
+	assert.Equal(t, uint64(104), topbook[2].Timestamp)
 }

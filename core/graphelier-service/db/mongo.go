@@ -402,16 +402,21 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		if err != nil {
 			return nil, err
 		}
-		messages, err := c.GetMessagesWithinInterval(instrument, startTimestamp, endTimestamp)
+		messagesBeforeInterval, err := c.GetMessagesByTimestamp(instrument, startTimestamp)
 		if err != nil {
 			return nil, err
 		}
-		x := len(messages) / int(maxCount)
-		if x == 0 {
-			x = 1
+		orderbook.ApplyMessagesToOrderbook(messagesBeforeInterval)
+		messagesInterval, err := c.GetMessagesWithinInterval(instrument, startTimestamp, endTimestamp)
+		if err != nil {
+			return nil, err
 		}
-		log.Tracef("Applying messages to keep points at every %d", x)
-		results = orderbook.TopBookPerXNano(messages, uint64(x), startTimestamp, endTimestamp)
+		pointDistance := (endTimestamp - startTimestamp) / uint64(maxCount)
+		if pointDistance == 0 {
+			pointDistance = 1
+		}
+		log.Tracef("Applying messages to keep points at every %d", pointDistance)
+		results = orderbook.TopBookPerXNano(messagesInterval, uint64(pointDistance), startTimestamp, endTimestamp)
 	}
 
 	return results, nil

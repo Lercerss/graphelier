@@ -269,31 +269,28 @@ func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMes
 }
 
 // TopBookPerXNano : Returns a list of the top book at every x nanosecond after applying each individual message in a list
-func (orderbook *Orderbook) TopBookPerXNano(messages []*Message, x uint64, startTimetstamp uint64, endTimestamp uint64) (topbook []*Point) {
-	// handles points before messages
-	for currentMultiple := startTimetstamp/x + 1; currentMultiple < messages[0].Timestamp/x; currentMultiple++ {
-		point := CreatePoint(orderbook, currentMultiple*x)
-		topbook = append(topbook, &point)
-	}
-	lastMultipleCount := (messages[0].Timestamp - 1) / x
+func (orderbook *Orderbook) TopBookPerXNano(messages []*Message, pointDistance uint64, startTimestamp uint64, endTimestamp uint64) (topbook []*Point) {
+	lastMultipleCount := (startTimestamp - 1) / pointDistance
 
-	// handles points between messages
+	// handles points before and between messages
 	for _, message := range messages {
-		messageMultiple := (message.Timestamp - 1) / x
-		for currentMultiple := lastMultipleCount; currentMultiple < messageMultiple; currentMultiple++ {
-			point := CreatePoint(orderbook, (currentMultiple+1)*x)
-			topbook = append(topbook, &point)
-		}
+		messageMultiple := (message.Timestamp - 1) / pointDistance
+		topbook = orderbook.backfillPoints(topbook, pointDistance, lastMultipleCount, messageMultiple)
 		lastMultipleCount = messageMultiple
 		singleMsgSlice := []*Message{message}
 		orderbook.ApplyMessagesToOrderbook(singleMsgSlice)
 	}
-
 	// handles points after messages
-	for currentMultiple := lastMultipleCount + 1; currentMultiple <= endTimestamp/x; currentMultiple++ {
-		point := CreatePoint(orderbook, currentMultiple*x)
+	topbook = orderbook.backfillPoints(topbook, pointDistance, lastMultipleCount, endTimestamp/pointDistance)
+
+	return topbook
+}
+
+// add points for previous multiples of point distance
+func (orderbook *Orderbook) backfillPoints(topbook []*Point, pointDistance uint64, leftMultiple uint64, rightMultiple uint64) []*Point {
+	for currentMultiple := leftMultiple; currentMultiple < rightMultiple; currentMultiple++ {
+		point := CreatePoint(orderbook, (currentMultiple+1)*pointDistance)
 		topbook = append(topbook, &point)
 	}
-
 	return topbook
 }
