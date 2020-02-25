@@ -18,14 +18,3 @@ func CreatePoint(orderbook *Orderbook, timestamp uint64) (p Point) {
 	}
 	return p
 }
-
-// CreateTopBook : Creates the top of book by appending and managing an array
-func (point *Point) CreateTopBook(topbook []*Point, topbookLengthIndex uint64, messageTimestamp uint64) ([]*Point, uint64){
-	if topbookLengthIndex > 0 && messageTimestamp == topbook[topbookLengthIndex-1].Timestamp {
-		topbook[topbookLengthIndex-1] = point
-	} else {
-		topbook = append(topbook, point)
-		topbookLengthIndex++
-	}
-	return topbook, topbookLengthIndex
-}

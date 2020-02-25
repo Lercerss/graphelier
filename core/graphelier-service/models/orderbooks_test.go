@@ -342,31 +342,6 @@ func TestDeltaPriceSort(t *testing.T) {
 	assert.Equal(t, float64(100), deltabook.Bids[1].Price)
 }
 
-// TestTopBookPer1Nano : Checks for topbook at every nanosecond (when n = 1)
-func TestTopBookPer1Nano(t *testing.T) {
-	setupEmpty()
-	messages = []*Message{
-		MakeMsg(DirectionAsk, OrderID(10), Price(100.0), Timestamp(99), SodOffset(1)),
-		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(99), SodOffset(2)),
-		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(99), SodOffset(3)),
-		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(99), SodOffset(4)),
-		MakeMsg(DirectionAsk, OrderID(50), Price(100.0), Timestamp(100), SodOffset(5)),
-		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(100), SodOffset(6)),
-		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(100), SodOffset(7)),
-		MakeMsg(DirectionBid, OrderID(80), Price(201.0), Timestamp(100), SodOffset(8)),
-	}
-
-	topbook := orderbook.TopBookPerXNano(messages, 1)
-
-	assert.Equal(t, 2, len(topbook))
-	assert.Equal(t, uint64(99), topbook[0].Timestamp)
-	assert.Equal(t, uint64(100), topbook[1].Timestamp)
-	assert.Equal(t, 201.0, topbook[0].BestBid)
-	assert.Equal(t, 100.0, topbook[0].BestAsk)
-	assert.Equal(t, 201.0, topbook[1].BestBid)
-	assert.Equal(t, 100.0, topbook[1].BestAsk)
-}
-
 // TestTopBookPerXNano : Checks for topbook at every x nanosecond
 func TestTopBookPerXNano(t *testing.T) {
 	setupEmpty()
@@ -386,7 +361,7 @@ func TestTopBookPerXNano(t *testing.T) {
 	}
 
 	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, uint64(x))
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 99, 103)
 
 	assert.Equal(t, 2, len(topbook))
 	assert.Equal(t, uint64(100), topbook[0].Timestamp)
@@ -397,15 +372,15 @@ func TestTopBookPerXNano(t *testing.T) {
 	assert.Equal(t, 102.0, topbook[1].BestAsk)
 }
 
-// TestTopBookPerNano : Checks that the top of book is actually correct with the change in time
-func TestTopBookPerNano(t *testing.T) {
+// TestTopBookBefore : Tests the case where points are created before the first message
+func TestTopBookBefore(t *testing.T) {
 	setupEmpty()
 	messages = []*Message{
-		MakeMsg(DirectionAsk, OrderID(10), Price(100.0), Timestamp(100), SodOffset(1)),
-		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(100), SodOffset(2)),
-		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(100), SodOffset(3)),
-		MakeMsg(DirectionBid, OrderID(40), Price(208.0), Timestamp(100), SodOffset(4)),
-		MakeMsg(DirectionAsk, OrderID(50), Price(100.0), Timestamp(101), SodOffset(5)),
+		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(98), SodOffset(1)),
+		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(98), SodOffset(2)),
+		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(98), SodOffset(3)),
+		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(98), SodOffset(4)),
+		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
 		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
 		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
 		MakeMsg(DirectionBid, OrderID(80), Price(201.0), Timestamp(101), SodOffset(8)),
@@ -416,13 +391,94 @@ func TestTopBookPerNano(t *testing.T) {
 	}
 
 	x := 2
-	topbook := orderbook.TopBookPerXNano(messages, uint64(x))
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 99, 103)
 
-	assert.Equal(t, 2, len(topbook))
+	assert.Equal(t, 3, len(topbook))
+	assert.Equal(t, uint64(98), topbook[0].Timestamp)
+	assert.Equal(t, uint64(100), topbook[1].Timestamp)
+	assert.Equal(t, uint64(102), topbook[2].Timestamp)
+	assert.Equal(t, 201.0, topbook[0].BestBid)
+	assert.Equal(t, 106.0, topbook[0].BestAsk)
+	assert.Equal(t, 201.0, topbook[1].BestBid)
+	assert.Equal(t, 106.0, topbook[1].BestAsk)
+	assert.Equal(t, 202.0, topbook[2].BestBid)
+	assert.Equal(t, 102.0, topbook[2].BestAsk)
+}
+
+// TestTopBookBetween : Tests the case where points are created between messages
+func TestTopBookBetween(t *testing.T) {
+	setupEmpty()
+	messages = []*Message{
+		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(100), SodOffset(1)),
+		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(100), SodOffset(2)),
+		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(100), SodOffset(3)),
+		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(100), SodOffset(4)),
+		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
+		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
+		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
+		MakeMsg(DirectionBid, OrderID(80), Price(202.0), Timestamp(101), SodOffset(8)),
+		MakeMsg(DirectionAsk, OrderID(90), Price(102.0), Timestamp(105), SodOffset(9)),
+		MakeMsg(DirectionAsk, OrderID(100), Price(201.0), Timestamp(105), SodOffset(10)),
+		MakeMsg(DirectionBid, OrderID(110), Price(101.0), Timestamp(105), SodOffset(11)),
+		MakeMsg(DirectionBid, OrderID(120), Price(203.0), Timestamp(105), SodOffset(12)),
+	}
+
+	x := 1
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 100, 105)
+
+	assert.Equal(t, 6, len(topbook))
+	assert.Equal(t, uint64(100), topbook[0].Timestamp)
+	assert.Equal(t, uint64(101), topbook[1].Timestamp)
+	assert.Equal(t, uint64(102), topbook[2].Timestamp)
+	assert.Equal(t, uint64(103), topbook[3].Timestamp)
+	assert.Equal(t, uint64(104), topbook[4].Timestamp)
+	assert.Equal(t, uint64(105), topbook[5].Timestamp)
+	assert.Equal(t, 201.0, topbook[0].BestBid)
+	assert.Equal(t, 106.0, topbook[0].BestAsk)
+	assert.Equal(t, 202.0, topbook[1].BestBid)
+	assert.Equal(t, 106.0, topbook[1].BestAsk)
+	assert.Equal(t, 202.0, topbook[2].BestBid)
+	assert.Equal(t, 106.0, topbook[2].BestAsk)
+	assert.Equal(t, 202.0, topbook[3].BestBid)
+	assert.Equal(t, 106.0, topbook[3].BestAsk)
+	assert.Equal(t, 202.0, topbook[4].BestBid)
+	assert.Equal(t, 106.0, topbook[4].BestAsk)
+	assert.Equal(t, 203.0, topbook[5].BestBid)
+	assert.Equal(t, 102.0, topbook[5].BestAsk)
+}
+
+// TestTopBookAfter : Tests the case where points are created after the last message
+func TestTopBookAfter(t *testing.T) {
+	setupEmpty()
+	messages = []*Message{
+		MakeMsg(DirectionAsk, OrderID(10), Price(106.0), Timestamp(100), SodOffset(1)),
+		MakeMsg(DirectionAsk, OrderID(20), Price(200.0), Timestamp(100), SodOffset(2)),
+		MakeMsg(DirectionBid, OrderID(30), Price(101.0), Timestamp(100), SodOffset(3)),
+		MakeMsg(DirectionBid, OrderID(40), Price(201.0), Timestamp(100), SodOffset(4)),
+		MakeMsg(DirectionAsk, OrderID(50), Price(108.0), Timestamp(101), SodOffset(5)),
+		MakeMsg(DirectionAsk, OrderID(60), Price(200.0), Timestamp(101), SodOffset(6)),
+		MakeMsg(DirectionBid, OrderID(70), Price(101.0), Timestamp(101), SodOffset(7)),
+		MakeMsg(DirectionBid, OrderID(80), Price(202.0), Timestamp(101), SodOffset(8)),
+		MakeMsg(DirectionAsk, OrderID(90), Price(102.0), Timestamp(102), SodOffset(9)),
+		MakeMsg(DirectionAsk, OrderID(100), Price(201.0), Timestamp(102), SodOffset(10)),
+		MakeMsg(DirectionBid, OrderID(110), Price(101.0), Timestamp(102), SodOffset(11)),
+		MakeMsg(DirectionBid, OrderID(120), Price(203.0), Timestamp(102), SodOffset(12)),
+	}
+
+	x := 2
+	topbook := orderbook.TopBookPerXNano(messages, uint64(x), 99, 106)
+
+	assert.Equal(t, 4, len(topbook))
 	assert.Equal(t, uint64(100), topbook[0].Timestamp)
 	assert.Equal(t, uint64(102), topbook[1].Timestamp)
-	assert.Equal(t, 208.0, topbook[0].BestBid)
-	assert.Equal(t, 100.0, topbook[0].BestAsk)
-	assert.Equal(t, 208.0, topbook[1].BestBid)
-	assert.Equal(t, 100.0, topbook[1].BestAsk)
+	assert.Equal(t, uint64(104), topbook[2].Timestamp)
+	assert.Equal(t, uint64(106), topbook[3].Timestamp)
+	assert.Equal(t, 201.0, topbook[0].BestBid)
+	assert.Equal(t, 106.0, topbook[0].BestAsk)
+	assert.Equal(t, 203.0, topbook[1].BestBid)
+	assert.Equal(t, 102.0, topbook[1].BestAsk)
+	assert.Equal(t, 203.0, topbook[2].BestBid)
+	assert.Equal(t, 102.0, topbook[2].BestAsk)
+	assert.Equal(t, 203.0, topbook[3].BestBid)
+	assert.Equal(t, 102.0, topbook[3].BestAsk)
 }

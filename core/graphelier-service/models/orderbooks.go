@@ -269,26 +269,30 @@ func (orderbook *Orderbook) ApplyMessagesToDeltabook(messages []*Message, numMes
 }
 
 // TopBookPerXNano : Returns a list of the top book at every x nanosecond after applying each individual message in a list
-func (orderbook *Orderbook) TopBookPerXNano(messages []*Message, x uint64) (topbook []*Point) {
-	topbookLengthIndex := uint64(0)
-	for messagesIndex, message := range messages {
-		if message.Timestamp%x == 0 {
-			singleMsgSlice := []*Message{message}
-			orderbook.ApplyMessagesToOrderbook(singleMsgSlice)
-			point := CreatePoint(orderbook, message.Timestamp)
-			topbook, topbookLengthIndex = point.CreateTopBook(topbook, topbookLengthIndex, message.Timestamp)
-		} else if topbookLengthIndex > 0 {
-			// find last multiple
-			multipleTimestamp, err := utils.ExistsMultiple(message.Timestamp, messages[messagesIndex-1].Timestamp, x)
-			if !err {
-				// no multiple
-				continue
-			}
-			point := CreatePoint(orderbook, multipleTimestamp)
-			topbook, topbookLengthIndex = point.CreateTopBook(topbook, topbookLengthIndex, message.Timestamp)
-			singleMsgSlice := []*Message{message}
-			orderbook.ApplyMessagesToOrderbook(singleMsgSlice)
+func (orderbook *Orderbook) TopBookPerXNano(messages []*Message, x uint64, startTimetstamp uint64, endTimestamp uint64) (topbook []*Point) {
+	// handles points before messages
+	for currentMultiple := startTimetstamp/x + 1; currentMultiple < messages[0].Timestamp/x; currentMultiple++ {
+		point := CreatePoint(orderbook, currentMultiple*x)
+		topbook = append(topbook, &point)
+	}
+	lastMultipleCount := (messages[0].Timestamp - 1) / x
+
+	// handles points between messages
+	for _, message := range messages {
+		messageMultiple := (message.Timestamp - 1) / x
+		for currentMultiple := lastMultipleCount; currentMultiple < messageMultiple; currentMultiple++ {
+			point := CreatePoint(orderbook, (currentMultiple+1)*x)
+			topbook = append(topbook, &point)
 		}
+		lastMultipleCount = messageMultiple
+		singleMsgSlice := []*Message{message}
+		orderbook.ApplyMessagesToOrderbook(singleMsgSlice)
+	}
+
+	// handles points after messages
+	for currentMultiple := lastMultipleCount + 1; currentMultiple <= endTimestamp/x; currentMultiple++ {
+		point := CreatePoint(orderbook, currentMultiple*x)
+		topbook = append(topbook, &point)
 	}
 
 	return topbook

@@ -32,13 +32,3 @@ func TraceTimer(call string) func() {
 
 // Timer : See DebugTimer
 var Timer func(string) func() = DebugTimer
-
-// ExistsMultiple : Returns the biggest number that is a mutiple of another number within a range
-func ExistsMultiple(current uint64, previous uint64, multiple uint64) (uint64, bool) {
-	for i := current; i > previous; i-- {
-		if i%multiple == 0 {
-			return i, true
-		} 
-	}
-	return 0, false
-}

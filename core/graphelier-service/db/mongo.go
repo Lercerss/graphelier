@@ -310,52 +310,52 @@ func (c *Connector) GetSingleOrderMessages(instrument string, SODTimestamp int64
 
 // helper function for GetTopOfBookByInterval, finds points based on a large interval given
 func getBigTopBookInterval(filter *bson.D, collection *mongo.Collection, interval uint64) (results []*models.Point, err error) {
-		// Project snapshots to keep only the best bid and ask
-		findOptions := options.Find()
-		findOptions.Projection = bson.D{
-			{Key: "interval_multiple", Value: 1},
-			{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
-			{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
-			{Key: "bids.price", Value: 1},
-			{Key: "asks.price", Value: 1},
-		}
+	// Project snapshots to keep only the best bid and ask
+	findOptions := options.Find()
+	findOptions.Projection = bson.D{
+		{Key: "interval_multiple", Value: 1},
+		{Key: "bids", Value: bson.D{{Key: "$slice", Value: 1}}},
+		{Key: "asks", Value: bson.D{{Key: "$slice", Value: 1}}},
+		{Key: "bids.price", Value: 1},
+		{Key: "asks.price", Value: 1},
+	}
 
-		cursor, err := collection.Find(context.TODO(), filter, findOptions)
-		if err != nil {
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var p models.Point
+		var raw bson.RawValue
+		if raw, err = cursor.Current.LookupErr("interval_multiple"); err != nil {
 			return nil, err
 		}
-		defer cursor.Close(context.TODO())
+		p.Timestamp = uint64(raw.Int64()) * interval
 
-		for cursor.Next(context.TODO()) {
-			var p models.Point
-			var raw bson.RawValue
-			if raw, err = cursor.Current.LookupErr("interval_multiple"); err != nil {
-				return nil, err
-			}
-			p.Timestamp = uint64(raw.Int64()) * interval
-
-			if raw, err = cursor.Current.LookupErr("bids"); err != nil {
-				return nil, err
-			}
-			rawE, err := raw.Array().IndexErr(0)
-			if err != nil {
-				continue
-			}
-			p.BestBid = rawE.Value().Document().Lookup("price").Double()
-
-			if raw, err = cursor.Current.LookupErr("asks"); err != nil {
-				return nil, err
-			}
-			rawE, err = raw.Array().IndexErr(0)
-			if err != nil {
-				continue
-			}
-			p.BestAsk = rawE.Value().Document().Lookup("price").Double()
-
-			results = append(results, &p)
+		if raw, err = cursor.Current.LookupErr("bids"); err != nil {
+			return nil, err
 		}
+		rawE, err := raw.Array().IndexErr(0)
+		if err != nil {
+			continue
+		}
+		p.BestBid = rawE.Value().Document().Lookup("price").Double()
 
-		return results, err
+		if raw, err = cursor.Current.LookupErr("asks"); err != nil {
+			return nil, err
+		}
+		rawE, err = raw.Array().IndexErr(0)
+		if err != nil {
+			continue
+		}
+		p.BestAsk = rawE.Value().Document().Lookup("price").Double()
+
+		results = append(results, &p)
+	}
+
+	return results, err
 }
 
 // GetTopOfBookByInterval : Reads the best bid and best ask from order book snapshots in the given interval
@@ -385,12 +385,14 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 	if err != nil {
 		return nil, err
 	}
-	log.Tracef("Documents in orderbook interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
 
+	// if maxCount < count, find points with big interval (mongo query)
+	// else find points with small interval
 	if maxCount < count {
+		log.Tracef("Documents in orderbook interval {%d,%d}=%d, keeping 1 in %d", startTimestamp/interval, endTimestamp/interval, count, count/maxCount)
 		// Add $mod comparator to interval_multiple filter
 		filter[1].Value = append(filter[1].Value.(bson.D), bson.E{Key: "$mod", Value: bson.A{count / maxCount, 0}})
-	
+
 		results, err = getBigTopBookInterval(&filter, collection, interval)
 		if err != nil {
 			return nil, err
@@ -408,8 +410,8 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		if x == 0 {
 			x = 1
 		}
-		log.Tracef("Documents in message interval {%d,%d}=%d, keeping 1 in %d", startTimestamp, endTimestamp, len(messages), x)
-		results = orderbook.TopBookPerXNano(messages, uint64(x))
+		log.Tracef("Applying messages to keep points at every %d", x)
+		results = orderbook.TopBookPerXNano(messages, uint64(x), startTimestamp, endTimestamp)
 	}
 
 	return results, nil
