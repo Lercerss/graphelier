@@ -9,6 +9,7 @@ import Order from './Order';
 import { ordersEquals } from '../utils/order-book-utils';
 import { roundNumber } from '../utils/number-utils';
 import { TransactionType, Order as OrderType } from '../models/OrderBook';
+import { ANIMATION_TIME } from '../constants/Constants';
 
 const styles = createStyles(Styles);
 
@@ -43,7 +44,7 @@ class PriceLevel extends Component<Props> {
                     {orders.map((order: OrderType) => (
                         <CSSTransition
                             key={order.id}
-                            timeout={500}
+                            timeout={ANIMATION_TIME}
                             classNames={{
                                 enter: classes.orderEnter,
                                 enterActive: classes.orderEnterActive,
