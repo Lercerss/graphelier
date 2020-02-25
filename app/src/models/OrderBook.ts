@@ -1,5 +1,8 @@
 /* eslint-disable camelcase */
+<<<<<<< HEAD
 import NanoDate from 'nano-date';
+=======
+>>>>>>> [#126] Added redux state
 
 export enum TransactionType { Ask, Bid }
 
@@ -57,4 +60,19 @@ export interface TopOfBookItem {
 export interface TopOfBookPackage {
     topOfBookItems: Array<TopOfBookItem>,
     sodNanoDate: NanoDate
+}
+
+export interface OrderDetails {
+    instrument: string,
+    id: number,
+    quantity: number,
+    price: number,
+    last_modified: string,
+    created_on: string,
+    messages: Array<Message>,
+}
+
+export interface OrderInformationDrawer {
+    orderDetails?: OrderDetails,
+    showOrderInfoDrawer: boolean,
 }

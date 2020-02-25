@@ -9,7 +9,9 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import bigInt from 'big-integer';
-import { Message } from '../models/OrderBook';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import { Message, OrderInformationDrawer } from '../models/OrderBook';
 import { Styles } from '../styles/OrderInformation';
 import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
 import {
@@ -17,6 +19,7 @@ import {
     nanosecondsToString,
     splitNanosecondEpochTimestamp,
 } from '../utils/date-utils';
+import { showOrderInfoDrawer } from '../actions/actions';
 
 const styles = createStyles(Styles);
 
@@ -27,6 +30,7 @@ interface Props extends WithStyles<typeof styles>{
     createdOn: string,
     price: number,
     messages: Array<Message>,
+    onOrderInfoMounted: Function,
 }
 
 interface State {
@@ -48,9 +52,16 @@ class OrderInformation extends Component<Props, State> {
      * @param open :boolean set to true when drawer is open
      */
     renderToggleDrawer(side, open) {
+        const { onOrderInfoMounted } = this.props;
         return event => {
             if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
                 return;
+            }
+            if (!open) {
+                const orderInformationDrawer: OrderInformationDrawer = {
+                    showOrderInfoDrawer: false,
+                };
+                onOrderInfoMounted(orderInformationDrawer);
             }
 
             this.setState({ right: true, [side]: open });
@@ -185,4 +196,11 @@ class OrderInformation extends Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(OrderInformation);
+const mapStateToProps = () => ({});
+
+const mapDispatchToProps = (dispatch : Dispatch) => ({
+    // eslint-disable-next-line max-len
+    onOrderInfoMounted: (orderInformationDrawer: OrderInformationDrawer) => dispatch(showOrderInfoDrawer(orderInformationDrawer)),
+});
+
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(OrderInformation));
