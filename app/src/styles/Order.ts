@@ -23,6 +23,10 @@ export const Styles = {
     getOrderInfo: {
         backgroundColor: Colors.yellow,
     },
+    orderTextOnClick: {
+        color: Colors.black,
+        fontSize: 13,
+    },
     text: {
         color: Colors.white,
         fontSize: 13,

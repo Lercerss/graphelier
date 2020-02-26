@@ -10,10 +10,11 @@ import bigInt from 'big-integer';
 import { connect } from 'react-redux';
 import { Styles } from '../styles/Order';
 import {
-    Message, OrderInformationDrawer, TransactionType, OrderDetails,
+    OrderInformationDrawer, TransactionType, OrderDetails,
 } from '../models/OrderBook';
 import OrderBookService from '../services/OrderBookService';
 import { showOrderInfoDrawer } from '../actions/actions';
+import { RootState } from '../store';
 
 const styles = createStyles(Styles);
 
@@ -25,17 +26,11 @@ interface Props extends WithStyles<typeof styles> {
     orderId: number,
     timestamp: bigInt.BigInteger,
     onOrderClicked: Function,
+    orderIdFromState: number,
+    orderInfoDrawerShown: boolean,
 }
 
-interface State {
-    lastModified: string,
-    createdOn: string,
-    price: number,
-    messages: Array<Message>,
-    infoDrawerShown : boolean,
-}
-
-class Order extends Component<Props, State> {
+class Order extends Component<Props> {
     /**
      * @desc handles event for sending request to retrieve order information when order is clicked on
      */
@@ -68,7 +63,7 @@ class Order extends Component<Props, State> {
 
     render() {
         const {
-            classes, type, quantity, maxQuantity,
+            classes, type, quantity, maxQuantity, orderId, orderIdFromState, orderInfoDrawerShown,
         } = this.props;
         const quantityBoxSize = (quantity / maxQuantity) * 100;
         const minQuantityTextSize = 2;
@@ -76,6 +71,11 @@ class Order extends Component<Props, State> {
             classes.quantity,
             classes.rectangle,
             type === TransactionType.Bid ? classes.bid : classes.ask,
+        );
+        const clickedOrderClass = classNames(
+            classes.quantity,
+            classes.rectangle,
+            classes.getOrderInfo,
         );
         const shouldShowQuantity = quantityBoxSize > minQuantityTextSize;
         return (
@@ -86,18 +86,28 @@ class Order extends Component<Props, State> {
                 classes={{ tooltip: classes.offsetTooltip }}
             >
                 <Box
-                    className={orderClasses}
+                    className={orderInfoDrawerShown
+                    && orderIdFromState === orderId ? clickedOrderClass : orderClasses}
                     style={{ width: `${quantityBoxSize}%` }}
                     onClick={this.handleOnOrderClick}
                 >
-                    {shouldShowQuantity && <Typography className={classes.text}>{quantity}</Typography>}
+                    {shouldShowQuantity && (
+                        <Typography className={orderInfoDrawerShown
+                    && orderIdFromState === orderId ? classes.orderTextOnClick : classes.text}
+                        >
+                            {quantity}
+                        </Typography>
+                    )}
                 </Box>
             </Tooltip>
         );
     }
 }
 
-const mapStateToProps = () => ({});
+const mapStateToProps = (state: RootState) => ({
+    orderInfoDrawerShown: state.general.showOrderInfoDrawer,
+    orderIdFromState: state.general.orderDetails ? state.general.orderDetails.id : -1,
+});
 
 const mapDispatchToProps = (dispatch : Dispatch) => ({
     // eslint-disable-next-line max-len
