@@ -1,8 +1,5 @@
 /* eslint-disable camelcase */
-<<<<<<< HEAD
 import NanoDate from 'nano-date';
-=======
->>>>>>> [#126] Added redux state
 
 export enum TransactionType { Ask, Bid }
 
