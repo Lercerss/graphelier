@@ -1,17 +1,23 @@
 package models
 
-type Modification interface{}
-
-type ModificationImpl struct {
-	Type string `json:"type"`
+type Modification struct {
+	Type     string   `json:"type"`
+	Offset   uint64   `json:"offset"`
+	OrderID  uint64   `json:"order_id"`
+	Price    *float64 `json:"price,omitempty"`
+	Quantity *int64   `json:"quantity,omitempty"`
+	NewID    *uint64  `json:"index,omitempty"`
+	From     *float64 `json:"from,omitempty"`
+	To       *float64 `json:"to,omitempty"`
 }
 
 type Modifications struct {
-	Timestamp     uint64         `json:"timestamp,string"`
-	Modifications []Modification `json:"modifications"`
+	Timestamp     uint64          `json:"timestamp,string"`
+	Modifications []*Modification `json:"modifications"`
 }
 
-func (m *Modifications) Add(modification Modification) {
+func (m *Modifications) Add(modification *Modification, timestamp uint64) {
+	modification.Offset = timestamp - m.Timestamp
 	m.Modifications = append(m.Modifications, modification)
 }
 
@@ -22,70 +28,56 @@ const (
 	MOVE_ORDER_TYPE   = "move"
 )
 
-type AddOrder struct {
-	ModificationImpl
-	Price    float64 `json:"price"`
-	Quantity int64   `json:"quantity"`
-}
-
-type DropOrder struct {
-	ModificationImpl
-	Price float64 `json:"price"`
-	Index int32   `json:"index"`
-}
-
-type UpdateOrder struct {
-	ModificationImpl
-	Price    float64 `json:"price"`
-	Index    int32   `json:"index"`
-	Quantity int64   `json:"quantity"`
-}
-
-type MoveOrder struct {
-	ModificationImpl
-	From  float64 `json:"from"`
-	Index int32   `json:"index"`
-	To    float64 `json:"to"`
-}
-
-func NewAddModification(price float64, quantity int64) Modification {
-	return &AddOrder{
-		ModificationImpl: ModificationImpl{
-			Type: ADD_ORDER_TYPE,
-		},
-		Price:    price,
-		Quantity: quantity,
+func NewModification(messages []*Message, currentMessage int) *Modification {
+	if isMoveModification(messages, currentMessage) {
+		before := messages[currentMessage-1]
+		after := messages[currentMessage]
+		return &Modification{
+			Type:    MOVE_ORDER_TYPE,
+			To:      &after.Price,
+			From:    &before.Price,
+			NewID:   &after.OrderID,
+			OrderID: before.OrderID,
+		}
 	}
+	if isSkippable(messages, currentMessage) {
+		return nil
+	}
+	modification := &Modification{}
+	message := messages[currentMessage]
+	switch message.Type {
+	case NewOrder:
+		modification.Type = ADD_ORDER_TYPE
+		modification.Quantity = &message.ShareQuantity
+	case Modify:
+		modification.Type = UPDATE_ORDER_TYPE
+		modification.Quantity = &message.ShareQuantity
+	case Delete:
+		modification.Type = DROP_ORDER_TYPE
+	case Execute:
+		modification.Type = UPDATE_ORDER_TYPE
+		modification.Quantity = &message.ShareQuantity
+	default:
+		return nil
+	}
+	modification.OrderID = message.OrderID
+	modification.Price = &message.Price
+	return modification
 }
 
-func NewDropModification(price float64, index int32) Modification {
-	return &DropOrder{
-		ModificationImpl: ModificationImpl{
-			Type: DROP_ORDER_TYPE,
-		},
-		Price: price,
-		Index: index,
+func isMoveModification(messages []*Message, currentMessage int) bool {
+	if currentMessage == 0 {
+		return false
 	}
+	before := messages[currentMessage-1]
+	after := messages[currentMessage]
+	return after.Type == NewOrder &&
+		before.Type == Delete &&
+		before.Price != after.Price &&
+		before.ShareQuantity == after.ShareQuantity
 }
 
-func NewUpdateModification(price float64, index int32, quantity int64) Modification {
-	return &UpdateOrder{
-		ModificationImpl: ModificationImpl{
-			Type: UPDATE_ORDER_TYPE,
-		},
-		Price:    price,
-		Index:    index,
-		Quantity: quantity,
-	}
-}
-
-func NewMoveModification(from float64, index int32, to float64) Modification {
-	return &MoveOrder{
-		ModificationImpl: ModificationImpl{
-			Type: MOVE_ORDER_TYPE,
-		},
-		From:  from,
-		Index: index,
-		To:    to,
-	}
+func isSkippable(messages []*Message, currentMessage int) bool {
+	return currentMessage != len(messages)-1 &&
+		isMoveModification(messages, currentMessage+1)
 }

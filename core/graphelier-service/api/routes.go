@@ -79,7 +79,7 @@ var routes = Routes{
 	Route{
 		"Playback",
 		"GET",
-		"/playback/{instrument}/{start_timestamp}/{speed}",
+		"/playback/{instrument}/{start_timestamp}/{speed}", // TODO remove speed
 		hndlrs.CustomHandler{H: hndlrs.StreamPlayback},
 	},
 }

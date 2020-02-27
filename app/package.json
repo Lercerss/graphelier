@@ -48,7 +48,7 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
-        "sample-socket": "node src/tests/samples/socket_client.jsx"
+        "sample-socket": "node src/tests/samples/socket_client.js"
     },
     "devDependencies": {
         "eslint": "^6.1.0",

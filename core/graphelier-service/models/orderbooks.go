@@ -299,33 +299,23 @@ func (orderbook *Orderbook) backfillPoints(topbook []*Point, pointDistance uint6
 	return topbook
 }
 
+// YieldModifications: Generates modifications while applying a list of messages
 func (orderbook *Orderbook) YieldModifications(messages []*Message) (modifications *Modifications) {
 	modifications = &Modifications{
 		Timestamp:     orderbook.Timestamp,
-		Modifications: []Modification{},
+		Modifications: []*Modification{},
 	}
-	for _, message := range messages {
+	for currentMessage, message := range messages {
 		orderbook.Timestamp = message.Timestamp
 		orderbook.LastSodOffset = message.SodOffset
 		if message.OrderID == 0 {
 			continue
 		}
-		switch message.Type {
-		case NewOrder:
-			orderbook.applyNewOrder(message)
-			modifications.Add(NewAddModification(
-				message.Price,
-				message.ShareQuantity,
-			))
-		case Modify:
-			orderbook.applyModify(message)
-		case Delete:
-			orderbook.applyDelete(message)
-		case Execute:
-			orderbook.applyExecute(message)
-		case Ignore:
-			// Pass
+
+		if modification := NewModification(messages, currentMessage); modification != nil {
+			modifications.Add(modification, orderbook.Timestamp)
 		}
+		orderbook.ApplyMessage(message)
 	}
 	return modifications
 }

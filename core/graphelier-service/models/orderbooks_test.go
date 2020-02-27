@@ -483,7 +483,7 @@ func TestTopBookAfter(t *testing.T) {
 	assert.Equal(t, 102.0, topbook[3].BestAsk)
 }
 
-func TestMessagesZero(t *testing.T) {
+func TestTopBookNoMessages(t *testing.T) {
 	setupExistingOrders()
 	pointDistance := uint64(2)
 	topbook := orderbook.TopBookPerXNano([]*Message{}, pointDistance, 100, 105)

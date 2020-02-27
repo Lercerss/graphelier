@@ -23,7 +23,6 @@ type Datastore interface {
 	RefreshCache() error
 	GetSingleOrderMessages(instrument string, SODTimestamp int64, EODTimestamp int64, orderID int64) ([]*models.Message, error)
 	GetTopOfBookByInterval(instrument string, startTimestamp uint64, endTimestamp uint64, maxCount int64) (results []*models.Point, err error)
-	GetMessagesWithinInterval(instrument string, startTimestamp uint64, endTimestamp uint64) (results []*models.Message, err error)
 }
 
 // Connector : A struct that represents the database
@@ -412,7 +411,7 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 			return nil, err
 		}
 		orderbook.ApplyMessagesToOrderbook(messagesBeforeInterval)
-		messagesInterval, err := c.GetMessagesWithinInterval(instrument, startTimestamp, endTimestamp)
+		messagesInterval, err := c.GetMessagesByTimestampRange(instrument, startTimestamp, endTimestamp+1)
 		if err != nil {
 			return nil, err
 		}
@@ -422,43 +421,6 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		}
 		log.Tracef("Applying messages to keep points at every %d\n", pointDistance)
 		results = orderbook.TopBookPerXNano(messagesInterval, uint64(pointDistance), startTimestamp, endTimestamp)
-	}
-
-	return results, nil
-}
-
-// GetMessagesWithinInterval : Finds all messages within the interval of two timestamps
-func (c *Connector) GetMessagesWithinInterval(instrument string, startTimestamp uint64, endTimestamp uint64) (results []*models.Message, err error) {
-	defer utils.TraceTimer("mongo/GetMessagesWithinInterval")()
-
-	collection := c.Database("graphelier-db").Collection("messages")
-	filter := bson.D{
-		{Key: "instrument", Value: instrument},
-		{Key: "timestamp", Value: bson.D{
-			{Key: "$gte", Value: startTimestamp},
-			{Key: "$lte", Value: endTimestamp},
-		}},
-	}
-
-	options := options.Find()
-	cursor, err := collection.Find(context.TODO(), filter, options)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(context.TODO())
-
-	for cursor.Next(context.TODO()) {
-		var m models.Message
-		err := cursor.Decode(&m)
-		if err != nil {
-			return nil, err
-		}
-
-		results = append(results, &m)
-	}
-
-	if err := cursor.Err(); err != nil {
-		return nil, err
 	}
 
 	return results, nil
