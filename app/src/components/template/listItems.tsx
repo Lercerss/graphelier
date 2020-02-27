@@ -3,6 +3,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import AssignmentIcon from '@material-ui/icons/Assignment';
+import { PlayArrow } from '@material-ui/icons';
 import { NavLink } from 'react-router-dom';
 import '../../styles/index.css';
 
@@ -16,6 +17,18 @@ export const mainListItems = (
             <ListItem button>
                 <ListItemIcon>
                     <AssignmentIcon />
+                </ListItemIcon>
+                <ListItemText primary={'OrderBook Snapshot'} />
+            </ListItem>
+        </NavLink>
+        <NavLink
+            to={'/playback'}
+            className={'mainItemsList-removeLink'}
+            activeClassName={'mainItemsList-active'}
+        >
+            <ListItem button>
+                <ListItemIcon>
+                    <PlayArrow />
                 </ListItemIcon>
                 <ListItemText primary={'OrderBook Snapshot'} />
             </ListItem>

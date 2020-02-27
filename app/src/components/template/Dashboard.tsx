@@ -17,6 +17,7 @@ import OrderBookSnapshot from '../OrderBookSnapshot';
 import Home from '../Home';
 import NotFound from '../NotFound';
 import { Styles } from '../../styles/Dashboard';
+import OrderBookPlayback from '../OrderbookPlayback';
 
 const styles = theme => createStyles(Styles(theme));
 
@@ -110,6 +111,12 @@ class Dashboard extends Component<Props, State> {
                                     path={'/orderbook'}
                                     render={() => (
                                         <OrderBookSnapshot />
+                                    )}
+                                />
+                                <Route
+                                    path={'/playback'}
+                                    render={() => (
+                                        <OrderBookPlayback />
                                     )}
                                 />
                                 <Route component={NotFound} />
