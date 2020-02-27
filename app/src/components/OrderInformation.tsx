@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react';
 import { createStyles, WithStyles } from '@material-ui/core/styles';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
@@ -75,7 +76,10 @@ class OrderInformation extends Component<Props, State> {
     renderMessageListTable() {
         const { messages, classes } = this.props;
         return (
-            <Table className={classes.messagesTable}>
+            <Table
+                className={classes.messagesTable}
+                id={'orderMessageListTable'}
+            >
                 <TableHead>
                     <TableRow>
                         <TableCell>Timestamp</TableCell>
@@ -86,7 +90,6 @@ class OrderInformation extends Component<Props, State> {
                 <TableBody>
                     {messages.map(message => {
                         const {
-                            // eslint-disable-next-line camelcase
                             timestamp, message_type, share_qty, order_id,
                         } = message;
 
@@ -96,8 +99,10 @@ class OrderInformation extends Component<Props, State> {
                         );
 
                         return (
-                            // eslint-disable-next-line camelcase
-                            <TableRow key={order_id}>
+                            <TableRow
+                                key={order_id}
+                                id={'orderMessageListRow'}
+                            >
                                 <TableCell>{time}</TableCell>
                                 <TableCell>{MESSAGE_TYPE_ENUM[message_type].name}</TableCell>
                                 {/* eslint-disable-next-line camelcase */}
@@ -122,55 +127,58 @@ class OrderInformation extends Component<Props, State> {
         return (
             <div
                 role={'presentation'}
+                id={'orderDetailsTable'}
                 onClick={this.renderToggleDrawer(side, false)}
                 onKeyDown={this.renderToggleDrawer(side, false)}
             >
                 <Table
                     className={classes.orderInfo}
                 >
-                    <TableRow>
-                        <TableCell className={classes.orderIdHeader}>
-                            <h2 className={classes.orderId}>
-                                {'ID:'}
-                            </h2>
-                        </TableCell>
-                        <TableCell className={classes.orderIdHeader}>
-                            <h2 className={classes.orderIdValue}>{orderId}</h2>
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.basicOrderInfo}>
-                            {'Quantity:'}
-                        </TableCell>
-                        <TableCell className={classes.basicOrderInfoValue}>
-                            { quantity }
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.basicOrderInfo}>
-                            {'  Last Modified: '}
-                        </TableCell>
-                        <TableCell className={classes.basicOrderInfoValue}>
-                            {getLocalTimeString(lastModified)}
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.basicOrderInfo}>
-                            {'  Created on: '}
-                        </TableCell>
-                        <TableCell className={classes.basicOrderInfoValue}>
-                            {getLocalTimeString(createdOn)}
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.basicOrderInfo}>
-                            {'  Price:'}
-                        </TableCell>
-                        <TableCell className={classes.basicOrderInfoValue}>
-                            {'$'}
-                            {price}
-                        </TableCell>
-                    </TableRow>
+                    <TableBody>
+                        <TableRow id={'orderDetailsRow'}>
+                            <TableCell className={classes.orderIdHeader}>
+                                <h2 className={classes.orderId}>
+                                    {'ID:'}
+                                </h2>
+                            </TableCell>
+                            <TableCell className={classes.orderIdHeader}>
+                                <h2 className={classes.orderIdValue}>{orderId}</h2>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow id={'orderDetailsRow'}>
+                            <TableCell className={classes.basicOrderInfo}>
+                                {'Quantity:'}
+                            </TableCell>
+                            <TableCell className={classes.basicOrderInfoValue}>
+                                { quantity }
+                            </TableCell>
+                        </TableRow>
+                        <TableRow id={'orderDetailsRow'}>
+                            <TableCell className={classes.basicOrderInfo}>
+                                {'  Last Modified: '}
+                            </TableCell>
+                            <TableCell className={classes.basicOrderInfoValue}>
+                                {getLocalTimeString(lastModified)}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow id={'orderDetailsRow'}>
+                            <TableCell className={classes.basicOrderInfo}>
+                                {'  Created on: '}
+                            </TableCell>
+                            <TableCell className={classes.basicOrderInfoValue}>
+                                {getLocalTimeString(createdOn)}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow id={'orderDetailsRow'}>
+                            <TableCell className={classes.basicOrderInfo}>
+                                {'  Price:'}
+                            </TableCell>
+                            <TableCell className={classes.basicOrderInfoValue}>
+                                {'$'}
+                                {price}
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
                 </Table>
                 <Divider />
                 <h2 className={classes.messageHeader}>Messages</h2>

@@ -227,7 +227,7 @@ export const MESSAGE_INFORMATION = {
             instrument: 'SPY',
             timestamp: TIMESTAMP,
             message_type: 1,
-            order_id: 20933587,
+            order_id: 20933588,
             share_qty: 2100,
             price: 135.66,
             direction: -1,
