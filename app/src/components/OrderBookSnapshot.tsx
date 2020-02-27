@@ -536,4 +536,6 @@ const mapStateToProps = (state: RootState) => ({
     orderDetails: state.general.orderDetails,
 });
 
+export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
+
 export default withStyles(styles)(connect(mapStateToProps)(OrderBookSnapshot));

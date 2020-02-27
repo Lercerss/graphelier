@@ -30,7 +30,7 @@ interface Props extends WithStyles<typeof styles>{
     createdOn: string,
     price: number,
     messages: Array<Message>,
-    onOrderInfoMounted: Function,
+    onOrderInfoClosed: Function,
 }
 
 interface State {
@@ -52,7 +52,7 @@ class OrderInformation extends Component<Props, State> {
      * @param open :boolean set to true when drawer is open
      */
     renderToggleDrawer(side, open) {
-        const { onOrderInfoMounted } = this.props;
+        const { onOrderInfoClosed } = this.props;
         return event => {
             if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
                 return;
@@ -61,7 +61,7 @@ class OrderInformation extends Component<Props, State> {
                 const orderInformationDrawer: OrderInformationDrawer = {
                     showOrderInfoDrawer: false,
                 };
-                onOrderInfoMounted(orderInformationDrawer);
+                onOrderInfoClosed(orderInformationDrawer);
             }
 
             this.setState({ right: true, [side]: open });
@@ -200,7 +200,11 @@ const mapStateToProps = () => ({});
 
 const mapDispatchToProps = (dispatch : Dispatch) => ({
     // eslint-disable-next-line max-len
-    onOrderInfoMounted: (orderInformationDrawer: OrderInformationDrawer) => dispatch(showOrderInfoDrawer(orderInformationDrawer)),
+    onOrderInfoClosed: (orderInformationDrawer: OrderInformationDrawer) => dispatch(
+        showOrderInfoDrawer(orderInformationDrawer),
+    ),
 });
+
+export const NonConnectedOrderInformation = withStyles(styles)(OrderInformation);
 
 export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(OrderInformation));
