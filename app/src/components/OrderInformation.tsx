@@ -90,7 +90,7 @@ class OrderInformation extends Component<Props, State> {
                 <TableBody>
                     {messages.map(message => {
                         const {
-                            timestamp, message_type, share_qty, order_id,
+                            timestamp, message_type, share_qty, sod_offset,
                         } = message;
 
                         const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
@@ -100,12 +100,11 @@ class OrderInformation extends Component<Props, State> {
 
                         return (
                             <TableRow
-                                key={order_id}
+                                key={sod_offset}
                                 id={'orderMessageListRow'}
                             >
                                 <TableCell>{time}</TableCell>
                                 <TableCell>{MESSAGE_TYPE_ENUM[message_type].name}</TableCell>
-                                {/* eslint-disable-next-line camelcase */}
                                 <TableCell>{share_qty}</TableCell>
                             </TableRow>
                         );

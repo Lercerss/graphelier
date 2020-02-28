@@ -221,7 +221,7 @@ export const MESSAGE_INFORMATION = {
             share_qty: 598,
             price: 135.66,
             direction: -1,
-            sod_offset: LAST_SOD_OFFSET,
+            sod_offset: 3,
         },
         {
             instrument: 'SPY',
@@ -231,7 +231,7 @@ export const MESSAGE_INFORMATION = {
             share_qty: 2100,
             price: 135.66,
             direction: -1,
-            sod_offset: LAST_SOD_OFFSET,
+            sod_offset: 4,
         },
     ],
 };

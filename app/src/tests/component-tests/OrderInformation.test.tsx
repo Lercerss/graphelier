@@ -5,7 +5,7 @@ import OrderBookService from '../../services/OrderBookService';
 import { MESSAGE_INFORMATION } from '../utils/mock-data';
 
 describe('OrderInformation', () => {
-    let mount, shallow, messages, orderId, quantity, lastModified, createdOn, price, onOrderInfoMounted;
+    let mount, shallow, messages, orderId, quantity, lastModified, createdOn, price, onOrderInfoClosed;
     const getOrderInformation = jest.spyOn(OrderBookService, 'getOrderInformation')
         .mockImplementation((instrument, id, timestamp): Promise<any> => Promise.resolve(
             {
@@ -24,7 +24,7 @@ describe('OrderInformation', () => {
         lastModified = MESSAGE_INFORMATION.last_modified;
         createdOn = MESSAGE_INFORMATION.created_on;
         price = MESSAGE_INFORMATION.price;
-        onOrderInfoMounted = jest.fn();
+        onOrderInfoClosed = jest.fn();
     });
 
     it('should render the OrderInformation component without crashing', () => {
@@ -35,7 +35,7 @@ describe('OrderInformation', () => {
             createdOn={createdOn}
             price={price}
             messages={messages}
-            onOrderInfoMounted={onOrderInfoMounted}
+            onOrderInfoClosed={onOrderInfoClosed}
         />);
     });
 
@@ -47,7 +47,7 @@ describe('OrderInformation', () => {
             createdOn={createdOn}
             price={price}
             messages={messages}
-            onOrderInfoMounted={onOrderInfoMounted}
+            onOrderInfoClosed={onOrderInfoClosed}
         />);
         expect(wrapper.find('#orderDetailsTable')).toHaveLength(1);
         expect(wrapper.find('#orderDetailsRow')).toHaveLength(5);
