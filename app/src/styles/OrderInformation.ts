@@ -5,7 +5,7 @@ export const Styles = {
         padding: 40,
     },
     orderIdHeader: {
-        color: Colors.white,
+        color: '#FFFFFF !important',
         textAlign: 'center' as const,
         backgroundColor: LightThemeColors.palette.primary.main,
     },

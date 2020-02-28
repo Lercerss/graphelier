@@ -110,8 +110,9 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch : Dispatch) => ({
-    // eslint-disable-next-line max-len
-    onOrderClicked: (orderInformationDrawer: OrderInformationDrawer) => dispatch(showOrderInfoDrawer(orderInformationDrawer)),
+    onOrderClicked: (orderInformationDrawer: OrderInformationDrawer) => dispatch(
+        showOrderInfoDrawer(orderInformationDrawer),
+    ),
 });
 
 export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Order));

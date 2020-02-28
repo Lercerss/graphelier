@@ -204,10 +204,7 @@ class OrderInformation extends Component<Props, State> {
     }
 }
 
-const mapStateToProps = () => ({});
-
 const mapDispatchToProps = (dispatch : Dispatch) => ({
-    // eslint-disable-next-line max-len
     onOrderInfoClosed: (orderInformationDrawer: OrderInformationDrawer) => dispatch(
         showOrderInfoDrawer(orderInformationDrawer),
     ),
@@ -215,4 +212,4 @@ const mapDispatchToProps = (dispatch : Dispatch) => ({
 
 export const NonConnectedOrderInformation = withStyles(styles)(OrderInformation);
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(OrderInformation));
+export default withStyles(styles)(connect(null, mapDispatchToProps)(OrderInformation));
