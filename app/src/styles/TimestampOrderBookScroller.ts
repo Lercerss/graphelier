@@ -1,3 +1,5 @@
+import { ANIMATION_TIME } from '../constants/Constants';
+
 export const Styles = {
     container: {
         width: '100%',
@@ -53,5 +55,33 @@ export const Styles = {
     },
     show: {
         display: 'inherit',
+    },
+    levelEnter: {
+        lineHeight: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
+        opacity: 0,
+    },
+    levelEnterActive: {
+        lineHeight: 1.5,
+        opacity: 1,
+        paddingTop: '5px',
+        paddingBottom: '5px',
+        transition: `padding-bottom ${ANIMATION_TIME}ms ease-in, padding-top ${ANIMATION_TIME}ms ease-in,`
+        + `line-height ${ANIMATION_TIME}ms ease-in, opacity ${ANIMATION_TIME}ms ease-in`,
+    },
+    levelExit: {
+        lineHeight: 1.5,
+        opacity: 1,
+        paddingTop: '5px',
+        paddingBottom: '5px',
+    },
+    levelExitActive: {
+        lineHeight: 0,
+        opacity: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
+        transition: `padding-bottom ${ANIMATION_TIME}ms ease-in, padding-top ${ANIMATION_TIME}ms ease-in,`
+        + `line-height ${ANIMATION_TIME}ms ease-in, opacity ${ANIMATION_TIME}ms ease-in`,
     },
 };
