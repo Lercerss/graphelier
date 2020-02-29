@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import {
-    withStyles,
     Typography,
     FormControl,
     Card, Select, MenuItem,
 } from '@material-ui/core';
-import { WithStyles, createStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
+import { createStyles, WithStyles } from '@material-ui/styles';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
@@ -29,10 +30,19 @@ import {
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
-import { ListItems, OrderBook, TopOfBookItem } from '../models/OrderBook';
+import {
+    ListItems, OrderBook, OrderDetails, TopOfBookItem,
+} from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
+import { RootState } from '../store';
+import OrderInformation from './OrderInformation';
 
-const styles = createStyles(Styles);
+const styles = theme => createStyles(Styles(theme));
+
+interface Props extends WithStyles<typeof styles>{
+    orderDetails: OrderDetails,
+    showOrderInfoDrawer: boolean,
+}
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
@@ -53,7 +63,7 @@ interface State {
     graphEndTime: bigInt.BigInteger,
 }
 
-class OrderBookSnapshot extends Component<WithStyles, State> {
+class OrderBookSnapshot extends Component<Props, State> {
     /**
      * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
      */
@@ -320,7 +330,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, orderDetails, showOrderInfoDrawer } = this.props;
         const {
             listItems,
             maxQuantity,
@@ -417,7 +427,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         {'Date'}
                                     </Typography>
                                     <KeyboardDatePicker
-                                        className={classes.datePicker}
                                         value={datePickerValue}
                                         onChange={date => this.handleChangeDate(date)}
                                         placeholder={'DD/MM/YYYY'}
@@ -491,6 +500,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                         instrument={selectedInstrument}
                                         loading={loadingOrderbook}
+                                        timestamp={selectedDateTimeNano}
                                     />
                                 </Card>
                                 {(lastSodOffset.neq(0)) && (
@@ -505,10 +515,27 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 )}
                             </div>
                         )}
+                    { orderDetails && showOrderInfoDrawer && (
+                        <OrderInformation
+                            orderId={orderDetails.id}
+                            quantity={orderDetails.quantity}
+                            lastModified={orderDetails.last_modified}
+                            createdOn={orderDetails.created_on}
+                            price={orderDetails.price}
+                            messages={orderDetails.messages}
+                        />
+                    )}
                 </Typography>
             </MuiPickersUtilsProvider>
         );
     }
 }
 
-export default withStyles(styles)(OrderBookSnapshot);
+const mapStateToProps = (state: RootState) => ({
+    showOrderInfoDrawer: state.general.showOrderInfoDrawer,
+    orderDetails: state.general.orderDetails,
+});
+
+export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
+
+export default withStyles(styles)(connect(mapStateToProps)(OrderBookSnapshot));

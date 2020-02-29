@@ -58,3 +58,18 @@ export interface TopOfBookPackage {
     topOfBookItems: Array<TopOfBookItem>,
     sodNanoDate: NanoDate
 }
+
+export interface OrderDetails {
+    instrument: string,
+    id: number,
+    quantity: number,
+    price: number,
+    last_modified: string,
+    created_on: string,
+    messages: Array<Message>,
+}
+
+export interface OrderInformationDrawer {
+    orderDetails?: OrderDetails,
+    showOrderInfoDrawer: boolean,
+}

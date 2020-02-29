@@ -1,7 +1,11 @@
-import { GeneralActions, GeneralState, SAVE_REACT_APP_NAME } from '../actions/types';
+import {
+    GeneralActions, GeneralState, SAVE_REACT_APP_NAME, SHOW_ORDER_INFO_DRAWER,
+} from '../actions/types';
 
 const initialState : GeneralState = {
     appName: '',
+    orderDetails: undefined,
+    showOrderInfoDrawer: false,
 };
 
 const generalReducers = (state = initialState, action : GeneralActions) : GeneralState => {
@@ -10,6 +14,12 @@ const generalReducers = (state = initialState, action : GeneralActions) : Genera
         return {
             ...state,
             appName: action.payload,
+        };
+    case SHOW_ORDER_INFO_DRAWER:
+        return {
+            ...state,
+            showOrderInfoDrawer: action.payload.showOrderInfoDrawer,
+            orderDetails: action.payload.orderDetails,
         };
     default: return state;
     }

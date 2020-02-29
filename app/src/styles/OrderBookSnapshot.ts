@@ -45,7 +45,7 @@ export const Styles = theme => ({
     inlineFlexEnd: {
         display: 'flex',
         marginTop: 15,
-        alignItems: 'center',
+        alignItems: 'center' as const,
     },
     transparentBackground: {
         backgroundColor: 'transparent',
@@ -63,7 +63,7 @@ export const Styles = theme => ({
         display: 'flex',
     },
     expandRow: {
-        alignItems: 'center',
+        alignItems: 'center' as const,
         justifyContent: 'space-between',
         marginBottom: '10px',
     },
@@ -97,11 +97,11 @@ export const Styles = theme => ({
         alignItems: 'center',
     },
     dateTimeSelect: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        flexDirection: 'column' as const,
+        alignItems: 'flex-start' as const,
     },
     selectMessage: {
-        textAlign: 'center',
+        textAlign: 'center' as const,
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(3),
         borderRadius: '5px',
@@ -118,7 +118,7 @@ export const Styles = theme => ({
         paddingBottom: '20px',
     },
     noDataMessage: {
-        textAlign: 'center',
+        textAlign: 'center' as const,
         width: '100%',
         height: '100%',
         marginBottom: '20px',

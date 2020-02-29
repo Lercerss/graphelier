@@ -29,6 +29,7 @@ interface Props extends WithStyles<typeof styles> {
     handleUpdateWithDeltas: Function,
     instrument: string,
     loading: boolean,
+    timestamp: bigInt.BigInteger,
 }
 
 
@@ -122,7 +123,7 @@ class TimestampOrderBookScroller extends Component<Props> {
 
     render() {
         const {
-            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading,
+            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading, instrument, timestamp,
         } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
 
@@ -201,10 +202,13 @@ class TimestampOrderBookScroller extends Component<Props> {
                                                 className={classes.pricePoint}
                                             >
                                                 <PriceLevel
+                                                    key={listItem.price}
                                                     type={listItem.type}
                                                     price={listItem.price}
                                                     orders={listItem.orders}
                                                     maxQuantity={quantityBoxSize}
+                                                    instrument={instrument}
+                                                    timestamp={timestamp}
                                                 />
                                             </Box>
                                         </CSSTransition>
