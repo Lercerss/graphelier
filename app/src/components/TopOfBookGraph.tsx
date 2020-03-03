@@ -94,7 +94,7 @@ class TopOfBookGraph extends Component<Props> {
                 height={height}
                 ratio={width / height}
                 seriesName={'topOfBook'}
-                pointsPerPxThreshold={1}
+                pointsPerPxThreshold={10}
                 data={topOfBookItems}
                 type={'svg'}
                 xAccessor={xAccessor}
