@@ -493,3 +493,21 @@ func TestMessagesZero(t *testing.T) {
 	assert.Equal(t, uint64(102), topbook[1].Timestamp)
 	assert.Equal(t, uint64(104), topbook[2].Timestamp)
 }
+
+func TestOrderIdsNotSorted(t *testing.T) {
+	// Orders were incorrectly assumed to be sorted by ID
+	// This stopped `Orderbook.getOrderIndex` from finding some orders
+	// As a result, some valid messages were being ignored which invalidated the order book state
+	setupExistingOrders()
+	orderbook.Asks[0].Orders[0].ID = 3
+	orderbook.Asks[0].Orders[1].ID = 2
+	orderbook.Asks[0].Orders[2].ID = 1
+
+	orderbook.ApplyMessagesToOrderbook([]*Message{
+		MakeMsg(DirectionAsk, OrderID(1), TypeDelete),
+		MakeMsg(DirectionAsk, OrderID(2), TypeDelete),
+	})
+
+	assert.Equal(t, 1, len(orderbook.Asks[0].Orders))
+	assert.Equal(t, uint64(3), orderbook.Asks[0].Orders[0].ID)
+}
