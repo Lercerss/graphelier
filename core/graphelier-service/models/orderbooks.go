@@ -174,7 +174,7 @@ func (orderbook *Orderbook) getOrderIndex(index int, message *Message) (int, boo
 
 	for ; i < len(orders); i++ {
 		lastID = orders[i].ID
-		if lastID >= message.OrderID {
+		if lastID == message.OrderID {
 			break
 		}
 	}

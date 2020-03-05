@@ -415,7 +415,7 @@ func (c *Connector) GetTopOfBookByInterval(instrument string, startTimestamp uin
 		if pointDistance == 0 {
 			pointDistance = 1
 		}
-		log.Tracef("Applying messages to keep points at every %d", pointDistance)
+		log.Tracef("Applying messages to keep points at every %d\n", pointDistance)
 		results = orderbook.TopBookPerXNano(messagesInterval, uint64(pointDistance), startTimestamp, endTimestamp)
 	}
 
