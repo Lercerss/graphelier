@@ -112,6 +112,14 @@ class Dashboard extends Component<Props, State> {
                                         <OrderBookSnapshot />
                                     )}
                                 />
+                                <Route
+                                    path={'/timeline'}
+                                    render={() => (
+                                        <div>
+                                            {'Timeline'}
+                                        </div>
+                                    )}
+                                />
                                 <Route component={NotFound} />
                             </Switch>
                         </Container>
