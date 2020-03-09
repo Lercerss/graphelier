@@ -79,7 +79,7 @@ var routes = Routes{
 	Route{
 		"Playback",
 		"GET",
-		"/playback/{instrument}/{start_timestamp}/",
+		"/playback/{instrument}/{timestamp}/",
 		hndlrs.CustomHandler{H: hndlrs.StreamPlayback},
 	},
 }

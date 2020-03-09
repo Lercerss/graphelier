@@ -281,8 +281,7 @@ func (orderbook *Orderbook) TopBookPerXNano(messages []*Message, pointDistance u
 		messageMultiple := (message.Timestamp - 1) / pointDistance
 		topbook = orderbook.backfillPoints(topbook, pointDistance, lastMultipleCount, messageMultiple)
 		lastMultipleCount = messageMultiple
-		singleMsgSlice := []*Message{message}
-		orderbook.ApplyMessagesToOrderbook(singleMsgSlice)
+		orderbook.ApplyMessage(message)
 	}
 	// handles points after messages
 	topbook = orderbook.backfillPoints(topbook, pointDistance, lastMultipleCount, endTimestamp/pointDistance)
@@ -299,7 +298,7 @@ func (orderbook *Orderbook) backfillPoints(topbook []*Point, pointDistance uint6
 	return topbook
 }
 
-// YieldModifications: Generates modifications while applying a list of messages
+// YieldModifications : Generates modifications while applying a list of messages
 func (orderbook *Orderbook) YieldModifications(messages []*Message) (modifications *Modifications) {
 	modifications = &Modifications{
 		Timestamp:     orderbook.Timestamp,
@@ -312,7 +311,11 @@ func (orderbook *Orderbook) YieldModifications(messages []*Message) (modificatio
 			continue
 		}
 
-		if modification := NewModification(messages, currentMessage); modification != nil {
+		var order *Order = nil
+		if orders, index := orderbook.getOrders(message); orders != nil && index >= 0 {
+			order = (*orders)[index]
+		}
+		if modification := NewModification(messages, currentMessage, order); modification != nil {
 			modifications.Add(modification, orderbook.Timestamp)
 		}
 		orderbook.ApplyMessage(message)

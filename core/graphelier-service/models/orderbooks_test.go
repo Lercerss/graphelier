@@ -511,3 +511,28 @@ func TestOrderIdsNotSorted(t *testing.T) {
 	assert.Equal(t, 1, len(orderbook.Asks[0].Orders))
 	assert.Equal(t, uint64(3), orderbook.Asks[0].Orders[0].ID)
 }
+
+func TestYieldModifications(t *testing.T) {
+	setupExistingOrders()
+
+	messages := []*Message{
+		MakeMsg(TypeExecute, ShareQuantity(5)),          // UpdateOrder
+		MakeMsg(TypeExecute, OrderID(0)),                // Ignored
+		MakeMsg(TypeDelete),                             // DropOrder
+		MakeMsg(TypeDelete),                             // Ignored
+		MakeMsg(TypeDelete, OrderID(2)),                 // Ignored
+		MakeMsg(TypeNewOrder, OrderID(4), Price(200.0)), // MoveOrder
+	}
+
+	result := orderbook.YieldModifications(messages)
+	assert.Equal(t, 3, len(result.Modifications))
+
+	modification := result.Modifications[0]
+	assert.Equal(t, UpdateOrderType, modification.Type)
+
+	modification = result.Modifications[1]
+	assert.Equal(t, DropOrderType, modification.Type)
+
+	modification = result.Modifications[2]
+	assert.Equal(t, MoveOrderType, modification.Type)
+}

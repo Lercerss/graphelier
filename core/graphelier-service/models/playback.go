@@ -1,5 +1,6 @@
 package models
 
+// Modification : Represents an event on a specific order, happening at a given offset time
 type Modification struct {
 	Type     string   `json:"type"`
 	Offset   uint64   `json:"offset"`
@@ -11,60 +12,65 @@ type Modification struct {
 	To       *float64 `json:"to,omitempty"`
 }
 
+// Modifications : Holds a list of Modification, starting at a given time
 type Modifications struct {
 	Timestamp     uint64          `json:"timestamp,string"`
 	Modifications []*Modification `json:"modifications"`
 }
 
+// Add : Appends a Modification to the current array
 func (m *Modifications) Add(modification *Modification, timestamp uint64) {
 	modification.Offset = timestamp - m.Timestamp
 	m.Modifications = append(m.Modifications, modification)
 }
 
+// Modification Type values
 const (
-	ADD_ORDER_TYPE    = "add"
-	DROP_ORDER_TYPE   = "drop"
-	UPDATE_ORDER_TYPE = "update"
-	MOVE_ORDER_TYPE   = "move"
+	AddOrderType    = "add"
+	DropOrderType   = "drop"
+	UpdateOrderType = "update"
+	MoveOrderType   = "move"
 )
 
-func NewModification(messages []*Message, currentMessage int) *Modification {
+// NewModification : Generates a Modification for the message at index `currentMessage` affecting given Order
+func NewModification(messages []*Message, currentMessage int, order *Order) *Modification {
 	if isMoveModification(messages, currentMessage) {
 		before := messages[currentMessage-1]
 		after := messages[currentMessage]
 		return &Modification{
-			Type:    MOVE_ORDER_TYPE,
+			Type:    MoveOrderType,
 			To:      &after.Price,
 			From:    &before.Price,
 			NewID:   &after.OrderID,
 			OrderID: before.OrderID,
 		}
 	}
-	if isSkippable(messages, currentMessage) {
+	if isSkippable(messages, currentMessage, order) {
 		return nil
 	}
-	modification := &Modification{}
 	message := messages[currentMessage]
+	modification := &Modification{
+		OrderID: message.OrderID,
+		Price:   &message.Price,
+	}
 	switch message.Type {
 	case NewOrder:
-		modification.Type = ADD_ORDER_TYPE
-		modification.Quantity = &message.ShareQuantity
-	case Modify:
-		modification.Type = UPDATE_ORDER_TYPE
+		modification.Type = AddOrderType
 		modification.Quantity = &message.ShareQuantity
 	case Delete:
-		modification.Type = DROP_ORDER_TYPE
+		modification.Type = DropOrderType
+	case Modify:
+		modification.fillUpdate(message, order)
 	case Execute:
-		modification.Type = UPDATE_ORDER_TYPE
-		modification.Quantity = &message.ShareQuantity
+		modification.fillUpdate(message, order)
 	default:
 		return nil
 	}
-	modification.OrderID = message.OrderID
-	modification.Price = &message.Price
 	return modification
 }
 
+// Checks if the message at given index corresponds to a move
+// i.e. an order gets deleted then re-created at a different price level at the same timestamp
 func isMoveModification(messages []*Message, currentMessage int) bool {
 	if currentMessage == 0 {
 		return false
@@ -77,7 +83,27 @@ func isMoveModification(messages []*Message, currentMessage int) bool {
 		before.ShareQuantity == after.ShareQuantity
 }
 
-func isSkippable(messages []*Message, currentMessage int) bool {
-	return currentMessage != len(messages)-1 &&
-		isMoveModification(messages, currentMessage+1)
+// Checks if the message should generate a modification or be skipped
+func isSkippable(messages []*Message, currentMessage int, order *Order) bool {
+	return (order == nil && messages[currentMessage].Type != NewOrder) ||
+		(currentMessage != len(messages)-1 && isMoveModification(messages, currentMessage+1))
+}
+
+func (modification *Modification) fillUpdate(message *Message, order *Order) {
+	if message.ShareQuantity < order.Quantity && message.ShareQuantity > 0 {
+		// Reducing order size
+		modification.Type = UpdateOrderType
+		modification.Quantity = new(int64)
+		*modification.Quantity = order.Quantity - message.ShareQuantity
+	} else if message.ShareQuantity < 0 {
+		// Order goes to the back of the price level
+		modification.Type = MoveOrderType
+		modification.To, modification.From = &message.Price, &message.Price
+		modification.Price = nil
+		modification.Quantity = new(int64)
+		*modification.Quantity = order.Quantity - message.ShareQuantity
+	} else {
+		// Deleted order
+		modification.Type = DropOrderType
+	}
 }

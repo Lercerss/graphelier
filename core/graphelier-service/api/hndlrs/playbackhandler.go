@@ -3,6 +3,7 @@ package hndlrs
 import (
 	"graphelier/core/graphelier-service/db"
 	"graphelier/core/graphelier-service/models"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,8 +14,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// SocketConn : Indirection layer for access to websocket.Conn
+type SocketConn interface {
+	RemoteAddr() net.Addr
+	WriteJSON(interface{}) error
+	ReadMessage() (int, []byte, error)
+	Close() error
+}
+
+// PlaybackSession : Handles lifetime of a playback session with the client over a websocket connection
 type PlaybackSession struct {
-	Socket    *websocket.Conn
+	Socket    SocketConn
 	Orderbook *models.Orderbook
 	Delay     uint64
 	Loader    MessageLoader
@@ -23,11 +33,13 @@ type PlaybackSession struct {
 	running   bool
 }
 
+// MessageLoader : Interface for asynchronous retrieval of messages, each call to LoadMessages should be stateful and move the bounds
 type MessageLoader interface {
 	LoadMessages()
 	Init(*models.Orderbook, chan []*models.Message)
 }
 
+// TimeIntervalLoader : Loads messages by time intervals
 type TimeIntervalLoader struct {
 	Instrument       string
 	Datastore        db.Datastore
@@ -36,6 +48,7 @@ type TimeIntervalLoader struct {
 	currentTimestamp uint64
 }
 
+// CountIntervalLoader : Loads messages by regular count intervals
 type CountIntervalLoader struct {
 	Instrument  string
 	Datastore   db.Datastore
@@ -56,7 +69,7 @@ func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {
 	delay *= 1e9
 	params := mux.Vars(r)
 	instrument := params["instrument"]
-	startTimestamp, err := strconv.ParseUint(params["start_timestamp"], 10, 64)
+	startTimestamp, err := strconv.ParseUint(params["timestamp"], 10, 64)
 	if err != nil {
 		return StatusError{400, err}
 	}
@@ -132,14 +145,14 @@ func (pb *PlaybackSession) handleStreaming() error {
 // receive messages from the client and aborts the session on close
 func (pb *PlaybackSession) handleSocketControl() {
 	for pb.running {
-		type_, _, err := pb.Socket.ReadMessage()
+		sockMsgType, _, err := pb.Socket.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseNoStatusReceived, websocket.CloseGoingAway) {
 				log.Errorf("Unexpected error while waiting for input: %v\n", err)
 			}
 			pb.running = false
 		}
-		switch type_ {
+		switch sockMsgType {
 		case websocket.CloseMessage:
 			log.Infof("Terminating playback session with %s\n", pb.Socket.RemoteAddr())
 			pb.running = false
@@ -183,8 +196,11 @@ func (pb *PlaybackSession) Close() {
 
 // LoadMessages : Reads the next batch of messages from the datastore, by timestamp range
 func (loader *TimeIntervalLoader) LoadMessages() {
-	loader.currentTimestamp += loader.Interval
-	log.Debugf("Loading messages for {%d, %d}\n", loader.currentTimestamp, loader.currentTimestamp+loader.Interval)
+	log.Debugf(
+		"Loading messages for {%d, %d}\n",
+		loader.currentTimestamp,
+		loader.currentTimestamp+loader.Interval,
+	)
 	messages, err := loader.Datastore.GetMessagesByTimestampRange(
 		loader.Instrument,
 		loader.currentTimestamp,
@@ -195,6 +211,7 @@ func (loader *TimeIntervalLoader) LoadMessages() {
 		close(loader.messages)
 		return
 	}
+	loader.currentTimestamp += loader.Interval
 	loader.messages <- messages
 }
 
@@ -206,8 +223,11 @@ func (loader *TimeIntervalLoader) Init(orderbook *models.Orderbook, messages cha
 
 // LoadMessages : Reads the next batch of messages from the datastore, by number of messages
 func (loader *CountIntervalLoader) LoadMessages() {
-	loader.currentPage.SodOffset += loader.currentPage.NMessages
-	log.Debugf("Loading messages for {%d, %d}\n", loader.currentPage.SodOffset, loader.currentPage.SodOffset+loader.currentPage.NMessages)
+	log.Debugf(
+		"Loading messages for {%d, %d}\n",
+		loader.currentPage.SodOffset,
+		loader.currentPage.SodOffset+loader.currentPage.NMessages,
+	)
 	messages, err := loader.Datastore.GetMessagesWithPagination(
 		loader.Instrument,
 		&loader.currentPage,
@@ -217,6 +237,7 @@ func (loader *CountIntervalLoader) LoadMessages() {
 		close(loader.messages)
 		return
 	}
+	loader.currentPage.SodOffset += loader.currentPage.NMessages
 	loader.messages <- messages
 }
 
