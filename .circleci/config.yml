@@ -66,10 +66,10 @@ jobs:
             - run:
                   name: Test service
                   command: |
-                    mkdir -p /tmp/artifacts
-                    go test --coverprofile="go-cover.out" -v graphelier/core/graphelier-service/...
-                    go tool cover -html="go-cover.out" -o coverage.html
-                    mv coverage.html /tmp/artifacts
+                      mkdir -p /tmp/artifacts
+                      go test --coverprofile="go-cover.out" -v graphelier/core/graphelier-service/...
+                      go tool cover -html="go-cover.out" -o coverage.html
+                      mv coverage.html /tmp/artifacts
             - store_artifacts:
                   path: /tmp/artifacts
 
@@ -164,11 +164,35 @@ workflows:
                   region: AWS_DEFAULT_REGION
                   tag: "${CIRCLE_SHA1}"
                   path: ./core/db
+            - aws-ecr/build-and-push-image:
+                  name: build_news_ecr
+                  filters:
+                      branches:
+                          only:
+                              - master
+                  account-url: AWS_ECR_URL
+                  repo: "graphelier-news"
+                  region: AWS_DEFAULT_REGION
+                  tag: "${CIRCLE_SHA1}"
+                  path: ./news/service
+            - aws-ecr/build-and-push-image:
+                  name: build_newsdb_ecr
+                  filters:
+                      branches:
+                          only:
+                              - master
+                  account-url: AWS_ECR_URL
+                  repo: "news-db"
+                  region: AWS_DEFAULT_REGION
+                  tag: "${CIRCLE_SHA1}"
+                  path: ./news/db
             - aws-ecs/deploy-service-update:
                   requires:
                       - build_service_ecr
                       - build_app_ecr
                       - build_mongo_ecr
+                      - build_newsdb_ecr
+                      - build_news_ecr
                   filters:
                       branches:
                           only:
@@ -177,4 +201,4 @@ workflows:
                   family: "app"
                   cluster-name: "Graphelier-cluster"
                   service-name: "Graphelier-service"
-                  container-image-name-updates: "container=graphelier-app,image-and-tag=${AWS_ECR_URL}/graphelier-app:${CIRCLE_SHA1},container=graphelier-service,image-and-tag=${AWS_ECR_URL}/graphelier-service:${CIRCLE_SHA1},container=mongo,image-and-tag=${AWS_ECR_URL}/mongo:${CIRCLE_SHA1}"
+                  container-image-name-updates: "container=graphelier-app,image-and-tag=${AWS_ECR_URL}/graphelier-app:${CIRCLE_SHA1},container=graphelier-service,image-and-tag=${AWS_ECR_URL}/graphelier-service:${CIRCLE_SHA1},container=mongo,image-and-tag=${AWS_ECR_URL}/mongo:${CIRCLE_SHA1},container=graphelier-news,image-and-tag=${AWS_ECR_URL}/graphelier-news:${CIRCLE_SHA1},container=news-db,image-and-tag=${AWS_ECR_URL}/news-db:${CIRCLE_SHA1}"
