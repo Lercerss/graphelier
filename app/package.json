@@ -9,6 +9,7 @@
         "@material-ui/lab": "^4.0.0-alpha.32",
         "@material-ui/pickers": "^3.2.9",
         "@material-ui/styles": "^4.4.1",
+        "@merc/react-timeline": "^0.1.42",
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.1",
         "@types/react": "^16.9.17",
@@ -26,10 +27,12 @@
         "dateformat": "^3.0.3",
         "enzyme": "^3.10.0",
         "enzyme-adapter-react-16": "^1.15.1",
+        "install": "^0.13.0",
         "lodash": "^4.17.15",
         "mdi-material-ui": "^6.12.0",
         "moment": "^2.24.0",
         "nano-date": "^4.1.0",
+        "npm": "^6.14.2",
         "react": "^16.9.0",
         "react-dom": "^16.9.0",
         "react-helmet": "^5.2.1",
@@ -41,6 +44,7 @@
         "react-use-dimensions": "^1.2.1",
         "redux": "^4.0.4",
         "redux-thunk": "^2.3.0",
+        "styled-components": "^5.0.1",
         "typescript": "^3.7.4"
     },
     "scripts": {

@@ -14,6 +14,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
 import { mainListItems } from './listItems';
 import OrderBookSnapshot from '../OrderBookSnapshot';
+import NewsTimeline from '../NewsTimeline';
 import Home from '../Home';
 import NotFound from '../NotFound';
 import { Styles } from '../../styles/Dashboard';
@@ -115,9 +116,7 @@ class Dashboard extends Component<Props, State> {
                                 <Route
                                     path={'/timeline'}
                                     render={() => (
-                                        <div>
-                                            {'Timeline'}
-                                        </div>
+                                        <NewsTimeline />
                                     )}
                                 />
                                 <Route component={NotFound} />
