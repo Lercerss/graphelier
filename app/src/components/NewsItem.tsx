@@ -13,7 +13,7 @@ import {
     NewsItemInfo,
 } from '../models/NewsTimeline';
 
-const styles = theme => createStyles(Styles(theme));
+const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
     newsItemInfo: NewsItemInfo,

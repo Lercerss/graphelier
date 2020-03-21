@@ -20,7 +20,7 @@ import {
 import CustomLoader from './CustomLoader';
 import NewsItem from './NewsItem';
 
-const styles = theme => createStyles(Styles(theme));
+const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles> {}
 
