@@ -9,6 +9,8 @@ import {
     Timeline,
     Events,
     TextEvent,
+    themes,
+    createTheme,
 } from '@merc/react-timeline';
 import { Styles } from '../styles/NewsTimeline';
 
@@ -17,7 +19,6 @@ import {
 } from '../models/NewsTimeline';
 import CustomLoader from './CustomLoader';
 import NewsItem from './NewsItem';
-
 
 const styles = theme => createStyles(Styles(theme));
 
@@ -43,7 +44,7 @@ class NewsTimeline extends Component<Props, State> {
                     + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
                     + '20150310-001',
                     instrument: 'SPY',
-                    published_date: '1/1/20',
+                    published_date: '1/1/2020',
                 },
             ],
         };
@@ -59,6 +60,13 @@ class NewsTimeline extends Component<Props, State> {
             layout: 'inline-evts',
         };
 
+        const customTheme = createTheme(themes.default, {
+            card: {
+                width: 'fit-content',
+                height: 'fit-content',
+            },
+        });
+
         return (
             <Typography
                 component={'div'}
@@ -71,18 +79,24 @@ class NewsTimeline extends Component<Props, State> {
                     )
                     : (
                         <div>
-                            <Timeline opts={opts}>
+                            <Timeline
+                                opts={opts}
+                                theme={customTheme}
+                            >
                                 <Events>
-                                    <TextEvent
-                                        date={newsItems[0].published_date}
-                                        text={''}
-                                    >
-                                        <NewsItem
-                                            newsItemInfo={newsItems[0]}
-                                        />
-                                    </TextEvent>
+                                    {newsItems.map(newsItem => (
+                                        <TextEvent
+                                            date={newsItem.published_date}
+                                            text={''}
+                                        >
+                                            <NewsItem
+                                                newsItemInfo={newsItem}
+                                            />
+                                        </TextEvent>
+                                    ))}
                                 </Events>
                             </Timeline>
+                            <div className={classes.fade} />
                         </div>
                     )}
             </Typography>

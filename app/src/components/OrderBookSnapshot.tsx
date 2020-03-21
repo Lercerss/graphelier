@@ -28,6 +28,7 @@ import {
     NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
     NANOSECONDS_IN_SIXTEEN_HOURS,
     NUM_DATA_POINTS_RATIO,
+    NANOSECONDS_IN_ONE_MILLISECOND,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -120,6 +121,34 @@ class OrderBookSnapshot extends Component<Props, State> {
         });
 
         window.addEventListener('resize', this.handleResize);
+
+        const { search } = window.location;
+        const params = new URLSearchParams(search);
+        const instrument = params.get('instrument');
+        const timestamp = params.get('timestamp');
+        if (instrument && timestamp) {
+            const selectedDateTimeNano = bigInt(timestamp);
+            const {
+                timeNanoseconds,
+                dateNanoseconds,
+            } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+
+            const selectedTimeString = nanosecondsToString(timeNanoseconds);
+            const selectedDateNano = bigInt(dateNanoseconds);
+            const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+            const datePickerValue = moment(selectedDateNano.divide(NANOSECONDS_IN_ONE_MILLISECOND).valueOf());
+
+            this.setState({
+                selectedInstrument: instrument,
+                selectedDateTimeNano,
+                selectedDateNano: bigInt(dateNanoseconds),
+                selectedTimeString,
+                datePickerValue,
+                graphStartTime,
+                graphEndTime,
+            });
+        }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {

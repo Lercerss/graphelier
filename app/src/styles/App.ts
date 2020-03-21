@@ -11,6 +11,11 @@ export const Colors = {
     paleBlue: '#9be7ff',
     grey: '#808080',
     lightGrey: '#D3D3D3',
+    indigo: '#3f51b5',
+    emerald: '#4caf50',
+    orange: '#ef6c00',
+    purple: '#9c27b0',
+    grey: '#616770',
 };
 
 export const LightThemeColors = {

@@ -6,6 +6,8 @@ export const Styles = theme => ({
     },
     container: {
         backgroundColor: 'transparent',
+        width: '90%',
+        margin: '0 auto',
     },
     divTopBook: {
         display: 'flex',
