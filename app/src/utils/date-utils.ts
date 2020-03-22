@@ -9,6 +9,7 @@ import {
     NANOSECONDS_IN_ONE_DAY,
     NANOSECONDS_IN_ONE_MILLISECOND, NANOSECONDS_IN_ONE_HOUR, NANOSECONDS_IN_ONE_MINUTE, NANOSECONDS_IN_ONE_MICROSECOND,
 } from '../constants/Constants';
+import { SplitNanosecondTimestamp } from '../models/OrderBook';
 
 const EDT_TIMEZONE_OFFSET_IN_MINUTES = 240;
 
@@ -17,7 +18,7 @@ const EDT_TIMEZONE_OFFSET_IN_MINUTES = 240;
  * @param date
  * @returns {bigInt}
  */
-export const dateStringToEpoch = (date: string) => {
+export const dateStringToEpoch = (date: string): bigInt.BigInteger => {
     const dateObj = moment.utc(date);
     const nanoDate = new NanoDate(dateObj.valueOf());
     return bigInt(nanoDate.getTime());
@@ -28,7 +29,7 @@ export const dateStringToEpoch = (date: string) => {
  * @param nanosecondTimestamp {Number}
  * @returns {string}
  */
-export const nanosecondsToString = (nanosecondTimestamp: number) => {
+export const nanosecondsToString = (nanosecondTimestamp: number): string => {
     const nanoseconds = Math.floor(nanosecondTimestamp % NANOSECONDS_IN_ONE_SECOND);
     const seconds = Math.floor((nanosecondTimestamp / NANOSECONDS_IN_ONE_SECOND) % 60);
     const minutes = Math.floor((nanosecondTimestamp / (NANOSECONDS_IN_ONE_SECOND * 60)) % 60);
@@ -74,23 +75,12 @@ export const convertNanosecondsUTCToCurrentTimezone = (nanosecondTimestamp: bigI
 };
 
 /**
- * @desc Given a nanosecond epoch date, returns time string in the format YYYY-MM-DD
- * @param nanosecondDate {bigInt}
- * @returns {string}
- */
-export const epochToDateString = (nanosecondDate: bigInt.BigInteger): string => {
-    // We only need day precision, so get the date in milliseconds
-    const millisecondDate = nanosecondDate.over(bigInt(NANOSECONDS_IN_ONE_MILLISECOND));
-    return moment.utc(millisecondDate.valueOf()).format('YYYY-MM-DD');
-};
-
-/**
  * @desc Given a nanosecond epoch timestamp, returns an object with date nanoseconds and time nanoseconds
  * @param nanosecondTimestamp {bigInt}
  * @returns {{timeNanoseconds: Number, dateNanoseconds: bigInt}} The timestamp split into its date
  * nanoseconds and its time in nanoseconds
  */
-export const splitNanosecondEpochTimestamp = (nanosecondTimestamp: bigInt.BigInteger) => {
+export const splitNanosecondEpochTimestamp = (nanosecondTimestamp: bigInt.BigInteger): SplitNanosecondTimestamp => {
     const timeNanoseconds = nanosecondTimestamp.mod(bigInt(NANOSECONDS_IN_ONE_DAY));
     const dateNanoseconds = nanosecondTimestamp.minus(timeNanoseconds);
     return {
@@ -116,11 +106,12 @@ export const getLocalTimeString = (nanosecondTimestamp: string) : string => {
  * @param nanosecondTimestamp
  * @return bigInt
  */
-export const adaptTrueNanosecondsTimeToCurrentDateTimezone = (nanosecondTimestamp: bigInt.BigInteger) => {
+export const adaptTrueNanosecondsTimeToCurrentDateTimezone = (nanosecondTimestamp: bigInt.BigInteger):
+    bigInt.BigInteger => {
     const localTimezoneDate = new NanoDate(nanosecondTimestamp.toString());
-    const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
+    const localTimezoneOffsetInMinutes = localTimezoneDate.getTimezoneOffset();
     return nanosecondTimestamp.plus(
-        (localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE,
+        (localTimezoneOffsetInMinutes - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE,
     );
 };
 
@@ -130,7 +121,7 @@ export const adaptTrueNanosecondsTimeToCurrentDateTimezone = (nanosecondTimestam
  * @param graphDate NanoDate
  * @return bigInt
  */
-export const adaptCurrentDateTimezoneToTrueNanoseconds = (graphDate: NanoDate) => {
+export const adaptCurrentDateTimezoneToTrueNanoseconds = (graphDate: NanoDate): bigInt.BigInteger => {
     return bigInt(graphDate.getTime())
         .minus((graphDate.getTimezoneOffset() - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE);
 };
@@ -156,8 +147,9 @@ export const getNsSinceSod = (exact: NanoDate): number => {
 /**
  * @desc Given a NanoDate object, returns a new NanoDate corresponding to the start of that day
  * @param nanoDate {NanoDate}
+ * @return sodNanoDate {NanoDate}
  */
-export const getSodNanoDate = (nanoDate: NanoDate) => {
+export const getSodNanoDate = (nanoDate: NanoDate): NanoDate => {
     const sodNanoDate: NanoDate = new NanoDate(nanoDate);
 
     sodNanoDate.setHours(0);
@@ -176,8 +168,9 @@ export const getSodNanoDate = (nanoDate: NanoDate) => {
  * for that start of day, returns exact NanoDate
  * @param nsSinceSod {number}
  * @param sodNanoDate {NanoDate}
+ * @return nanoDate {NanoDate}
  */
-export const getNanoDateFromNsSinceSod = (nsSinceSod: number, sodNanoDate: NanoDate) => {
+export const getNanoDateFromNsSinceSod = (nsSinceSod: number, sodNanoDate: NanoDate): NanoDate => {
     let nsSinceSodAgg: number = nsSinceSod;
 
     const hours: number = Math.floor(nsSinceSodAgg / NANOSECONDS_IN_ONE_HOUR);
@@ -212,6 +205,7 @@ export const getNanoDateFromNsSinceSod = (nsSinceSod: number, sodNanoDate: NanoD
 /**
  * @desc Given a NanoDate object, recreates a string representation of format HH:mm:SS:llluuunnn
  * @param nanoDate
+ * @return string
  */
 export const buildTimeInTheDayStringFromNanoDate = (nanoDate: NanoDate): string => {
     return ''

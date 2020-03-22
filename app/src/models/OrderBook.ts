@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import NanoDate from 'nano-date';
+import bigInt from 'big-integer';
 
 export enum TransactionType { Ask, Bid }
 
@@ -79,4 +80,9 @@ export interface OrderInformationDrawer {
 export interface SelectedTimestampInfo {
     currentOrderbookTimestamp: string,
     lastModificationType?: LastModificationType.MESSAGE | LastModificationType.GRAPH | LastModificationType.ORDER_INFO,
+}
+
+export interface SplitNanosecondTimestamp {
+    timeNanoseconds: number,
+    dateNanoseconds: bigInt.BigInteger,
 }
