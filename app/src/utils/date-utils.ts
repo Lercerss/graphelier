@@ -112,12 +112,12 @@ export const getLocalTimeString = (nanosecondTimestamp: string) : string => {
 
 
 /**
- * @desc Given a nanosecond timstamp as a bigInt, returns the bigInt with correct offset based on Date's timezone
+ * @desc Given a nanosecond timestamp as a bigInt, returns the bigInt with correct offset based on Date's timezone
  * @param nanosecondTimestamp
  * @return bigInt
  */
 export const adaptTrueNanosecondsTimeToCurrentDateTimezone = (nanosecondTimestamp: bigInt.BigInteger) => {
-    const localTimezoneDate = new NanoDate();
+    const localTimezoneDate = new NanoDate(nanosecondTimestamp.toString());
     const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
     return nanosecondTimestamp.plus(
         (localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE,
@@ -131,10 +131,8 @@ export const adaptTrueNanosecondsTimeToCurrentDateTimezone = (nanosecondTimestam
  * @return bigInt
  */
 export const adaptCurrentDateTimezoneToTrueNanoseconds = (graphDate: NanoDate) => {
-    const localTimezoneDate = new NanoDate();
-    const localTimezoneOffsetInNano = localTimezoneDate.getTimezoneOffset();
     return bigInt(graphDate.getTime())
-        .minus((localTimezoneOffsetInNano - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE);
+        .minus((graphDate.getTimezoneOffset() - EDT_TIMEZONE_OFFSET_IN_MINUTES) * NANOSECONDS_IN_ONE_MINUTE);
 };
 
 
