@@ -58,7 +58,7 @@ func timestampToIntervalMultiple(timestamp uint64, interval uint64) uint64 {
 
 // NewConnection : The database connection
 func NewConnection() (*Connector, error) {
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017/graphelier-db")
+	clientOptions := options.Client().ApplyURI("mongodb://service-db:27017/graphelier-db")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
 	if err != nil {
