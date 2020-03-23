@@ -136,7 +136,7 @@ jobs:
                   name: Test news-scripts
                   command: |
                       source venv/bin/activate
-                      mamba `find . -name *.spec.py` --format=documentation --enable-coverage
+                      mamba `find . -name "*.spec.py"` --format=documentation --enable-coverage
                       coverage html --omit="venv/lib/*"
             - store_artifacts:
                   path: htmlcov

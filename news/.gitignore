@@ -1,3 +1,9 @@
 venv
 .vscode
 __pycache__
+
+
+keys*
+htmlcov/
+.coverage
+
