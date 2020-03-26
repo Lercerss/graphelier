@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var ob_messages []*models.Message = []*models.Message{
+var obMessages []*models.Message = []*models.Message{
 	MakeMsg(DirectionAsk, OrderID(12), SodOffset(1)),
 	MakeMsg(DirectionBid, OrderID(13), SodOffset(2)),
 	MakeMsg(DirectionAsk, OrderID(15), SodOffset(3)),
@@ -24,13 +24,13 @@ func TestFetchOrderbookDeltaSuccess(t *testing.T) {
 
 	mockedDB.EXPECT().
 		GetSingleMessage("test", int64(1)).
-		Return(ob_messages[0], nil)
+		Return(obMessages[0], nil)
 	mockedDB.EXPECT().
 		GetOrderbook("test", uint64(1)).
 		Return(&models.Orderbook{}, nil)
 	mockedDB.EXPECT().
 		GetMessagesWithPagination("test", &models.Paginator{NMessages: 3, SodOffset: 0}).
-		Return(ob_messages, nil)
+		Return(obMessages, nil)
 
 	var deltabook models.Orderbook
 	err := MakeRequest(
@@ -105,7 +105,7 @@ func TestFetchOrderbookDeltaNegativeNMessages(t *testing.T) {
 		Return(&models.Orderbook{Timestamp: 0, LastSodOffset: 0, Instrument: "test"}, nil)
 	mockedDB.EXPECT().
 		GetMessagesWithPagination("test", &models.Paginator{NMessages: 5, SodOffset: 0}).
-		Return(ob_messages, nil)
+		Return(obMessages, nil)
 
 	var deltabook models.Orderbook
 	err := MakeRequest(
@@ -139,23 +139,23 @@ func TestFetchOrderbookDeltaExecuteHiddenOrder(t *testing.T) {
 	mockedDB := MockDb(t)
 	defer Ctrl.Finish()
 
-	test_messages := make([]*models.Message, len(ob_messages))
-	copy(test_messages, ob_messages)
-	test_messages = append(
-		ob_messages,
+	testMessages := make([]*models.Message, len(obMessages))
+	copy(testMessages, obMessages)
+	testMessages = append(
+		obMessages,
 		// Add an execute for hideen order
 		MakeMsg(OrderID(0), SodOffset(4), TypeExecute),
 	)
 
 	mockedDB.EXPECT().
 		GetSingleMessage("test", int64(1)).
-		Return(ob_messages[0], nil)
+		Return(obMessages[0], nil)
 	mockedDB.EXPECT().
 		GetOrderbook("test", uint64(1)).
 		Return(&models.Orderbook{}, nil)
 	mockedDB.EXPECT().
 		GetMessagesWithPagination("test", &models.Paginator{NMessages: 4, SodOffset: 0}).
-		Return(test_messages, nil)
+		Return(testMessages, nil)
 
 	var deltabook models.Orderbook
 	err := MakeRequest(
@@ -184,7 +184,7 @@ func TestFetchOrderbookSuccess(t *testing.T) {
 		Return(&models.Orderbook{Instrument: "test"}, nil)
 	mockedDB.EXPECT().
 		GetMessagesByTimestamp("test", uint64(1)).
-		Return(ob_messages, nil)
+		Return(obMessages, nil)
 
 	var orderbook models.Orderbook
 	err := MakeRequest(

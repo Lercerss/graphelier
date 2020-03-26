@@ -11,13 +11,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// MakeRequest : Sends a test request to the given handler
 func MakeRequest(
 	method func(e *handlers.Env, w http.ResponseWriter, r *http.Request) error,
 	connector db.Datastore,
 	verb string,
 	route string,
 	params map[string]string,
-	result interface{}) error {
+	result interface{},
+) error {
 	req := httptest.NewRequest(verb, route, nil)
 	writer := httptest.NewRecorder()
 	if params != nil {
