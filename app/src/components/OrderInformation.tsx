@@ -20,7 +20,7 @@ import {
     nanosecondsToString,
     splitNanosecondEpochTimestamp,
 } from '../utils/date-utils';
-import { showOrderInfoDrawer } from '../actions/actions';
+import { saveOrderbookTimestamp, showOrderInfoDrawer } from '../actions/actions';
 
 const styles = createStyles(Styles);
 
@@ -32,6 +32,7 @@ interface Props extends WithStyles<typeof styles>{
     price: number,
     messages: Array<Message>,
     onOrderInfoClosed: Function,
+    onMessageSelectedSetTimestamp: Function,
 }
 
 interface State {
@@ -45,6 +46,15 @@ class OrderInformation extends Component<Props, State> {
         this.state = {
             right: true,
         };
+    }
+
+    handleOnMessageClick(timestamp) {
+        const { onOrderInfoClosed, onMessageSelectedSetTimestamp } = this.props;
+        const orderInformationDrawer: OrderInformationDrawer = {
+            showOrderInfoDrawer: false,
+        };
+        onOrderInfoClosed(orderInformationDrawer);
+        onMessageSelectedSetTimestamp(timestamp);
     }
 
     /**
@@ -102,6 +112,8 @@ class OrderInformation extends Component<Props, State> {
                             <TableRow
                                 key={sod_offset}
                                 id={'orderMessageListRow'}
+                                className={classes.orderMessageListRow}
+                                onClick={() => this.handleOnMessageClick(timestamp)}
                             >
                                 <TableCell>{time}</TableCell>
                                 <TableCell>{MESSAGE_TYPE_ENUM[message_type].name}</TableCell>
@@ -206,6 +218,9 @@ class OrderInformation extends Component<Props, State> {
 const mapDispatchToProps = (dispatch : Dispatch) => ({
     onOrderInfoClosed: (orderInformationDrawer: OrderInformationDrawer) => dispatch(
         showOrderInfoDrawer(orderInformationDrawer),
+    ),
+    onMessageSelectedSetTimestamp: (currentOrderbookTimestamp: string) => dispatch(
+        saveOrderbookTimestamp(currentOrderbookTimestamp),
     ),
 });
 

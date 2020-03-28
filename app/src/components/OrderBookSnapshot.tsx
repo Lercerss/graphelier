@@ -13,6 +13,7 @@ import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 
 import moment from 'moment';
+import { Dispatch } from 'redux';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     dateStringToEpoch,
@@ -36,17 +37,19 @@ import {
 import CustomLoader from './CustomLoader';
 import { RootState } from '../store';
 import OrderInformation from './OrderInformation';
+import { saveOrderbookTimestamp } from '../actions/actions';
 
 const styles = theme => createStyles(Styles(theme));
 
 interface Props extends WithStyles<typeof styles>{
     orderDetails: OrderDetails,
     showOrderInfoDrawer: boolean,
+    onTimestampSelected: Function,
+    currentOrderbookTimestamp: string,
 }
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
-    selectedDateTimeNano: bigInt.BigInteger,
     selectedDateNano: bigInt.BigInteger,
     selectedTimeString: string,
     datePickerValue: moment.Moment | null,
@@ -79,7 +82,6 @@ class OrderBookSnapshot extends Component<Props, State> {
 
         this.state = {
             lastSodOffset: bigInt(0),
-            selectedDateTimeNano: bigInt(0),
             selectedDateNano: bigInt(0),
             selectedTimeString: '00:00:00.000000000',
             datePickerValue: null,
@@ -174,11 +176,14 @@ class OrderBookSnapshot extends Component<Props, State> {
             },
         );
 
+        const { onTimestampSelected } = this.props;
+
         const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
         const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
         const selectedDateString = date.format('YYYY-MM-DD');
         const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
         const selectedDateTimeNano = selectedDateNano.plus(selectedTimeNano);
+        onTimestampSelected(selectedDateTimeNano.toString());
 
         const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
         const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
@@ -188,7 +193,6 @@ class OrderBookSnapshot extends Component<Props, State> {
                 datePickerValue: date,
                 selectedTimeString,
                 selectedDateNano,
-                selectedDateTimeNano,
                 graphStartTime,
                 graphEndTime,
             },
@@ -205,7 +209,10 @@ class OrderBookSnapshot extends Component<Props, State> {
      * in utc nanoseconds
      */
     handleSelectGraphDateTime = (value: string) => {
-        const selectedDateTimeNano = bigInt(value);
+        const { onTimestampSelected, currentOrderbookTimestamp } = this.props;
+        onTimestampSelected(value);
+        // const selectedDateTimeNano = bigInt(value);
+        const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
         const {
             timeNanoseconds,
         } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
@@ -215,7 +222,6 @@ class OrderBookSnapshot extends Component<Props, State> {
         this.setState(
             {
                 selectedTimeString,
-                selectedDateTimeNano,
             },
             () => this.handleChangeDateTime(),
         );
@@ -226,7 +232,8 @@ class OrderBookSnapshot extends Component<Props, State> {
      *  for viewing the orderbook
      */
     handleChangeDateTime = () => {
-        const { selectedDateTimeNano } = this.state;
+        const { currentOrderbookTimestamp } = this.props;
+        const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
         if (selectedDateTimeNano.neq(0)) {
             this.updateOrderBook();
         }
@@ -251,7 +258,6 @@ class OrderBookSnapshot extends Component<Props, State> {
                 selectedTimeString: nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(
                     bigInt(timeNanoseconds),
                 ).valueOf()),
-                selectedDateTimeNano: bigInt(timestamp),
                 listItems: newListItems,
                 maxQuantity: newMaxQuantity,
             },
@@ -262,9 +268,10 @@ class OrderBookSnapshot extends Component<Props, State> {
      * @desc Updates the Orderbook with new prices
      */
     updateOrderBook = () => {
-        const { selectedDateTimeNano, selectedInstrument } = this.state;
+        const { selectedInstrument } = this.state;
+        const { currentOrderbookTimestamp } = this.props;
         this.setState({ loadingOrderbook: true });
-        OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
+        OrderBookService.getOrderBookPrices(selectedInstrument, currentOrderbookTimestamp)
             .then(response => {
                 // eslint-disable-next-line camelcase
                 const { asks, bids, last_sod_offset } = response.data;
@@ -330,11 +337,12 @@ class OrderBookSnapshot extends Component<Props, State> {
     };
 
     render() {
-        const { classes, orderDetails, showOrderInfoDrawer } = this.props;
+        const {
+            classes, orderDetails, showOrderInfoDrawer, currentOrderbookTimestamp,
+        } = this.props;
         const {
             listItems,
             maxQuantity,
-            selectedDateTimeNano,
             selectedDateNano,
             datePickerValue,
             selectedTimeString,
@@ -347,7 +355,7 @@ class OrderBookSnapshot extends Component<Props, State> {
             loadingGraph,
             graphUnavailable,
         } = this.state;
-
+        const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
         let messageText;
         if (selectedDateTimeNano.equals(0)) {
             if (selectedInstrument.length === 0) messageText = 'Select an instrument';
@@ -534,8 +542,15 @@ class OrderBookSnapshot extends Component<Props, State> {
 const mapStateToProps = (state: RootState) => ({
     showOrderInfoDrawer: state.general.showOrderInfoDrawer,
     orderDetails: state.general.orderDetails,
+    currentOrderbookTimestamp: state.general.currentOrderbookTimestamp,
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+    onTimestampSelected: (currentOrderBookTimestamp: string) => dispatch(
+        saveOrderbookTimestamp(currentOrderBookTimestamp),
+    ),
 });
 
 export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
 
-export default withStyles(styles)(connect(mapStateToProps)(OrderBookSnapshot));
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(OrderBookSnapshot));

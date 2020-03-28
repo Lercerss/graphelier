@@ -38,4 +38,7 @@ export const Styles = {
     messagesTable: {
         marginTop: -20,
     },
+    orderMessageListRow: {
+        cursor: 'pointer',
+    },
 };
