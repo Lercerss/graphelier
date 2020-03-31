@@ -5,7 +5,7 @@ export const Styles = theme => ({
         color: Colors.red,
     },
     selectUnitInput: {
-        width: '7rem',
+        width: '8rem',
     },
     selectUnitSpeedInput: {
         width: '6rem',
@@ -20,10 +20,23 @@ export const Styles = theme => ({
     marginLeft: {
         marginLeft: theme.spacing(2),
     },
-    buttonColor: {
+    button: {
         backgroundColor: LightThemeColors.palette.primary.main,
         color: Colors.white,
         height: '2rem',
+        padding: '0.75rem',
+        alignItems: 'center',
+        display: 'flex',
         marginTop: 'auto',
+        transitionDuration: '0.25s',
+        borderRadius: '10%',
+        '&:hover': {
+            backgroundColor: '#2f8cd4',
+            // color: LightThemeColors.palette.primary.main,
+            cursor: 'pointer',
+        },
+    },
+    selectedButton: {
+        borderBottom: '0.25rem solid black',
     },
 });

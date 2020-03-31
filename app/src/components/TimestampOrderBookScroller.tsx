@@ -7,6 +7,7 @@ import {
 import ChevronLeftSharpIcon from '@material-ui/icons/ChevronLeftSharp';
 import ChevronRightSharpIcon from '@material-ui/icons/ChevronRightSharp';
 import bigInt from 'big-integer';
+import { connect } from 'react-redux';
 import { Styles } from '../styles/TimestampOrderBookScroller';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
@@ -15,6 +16,7 @@ import { getOrderBookListItemsAsArray, listItemsEquals } from '../utils/order-bo
 import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
 import { ListItems } from '../models/OrderBook';
+import { RootState } from '../store';
 
 const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
 
@@ -30,8 +32,14 @@ interface Props extends WithStyles<typeof styles> {
     loading: boolean,
 }
 
+interface PropsFromState {
+    playback: boolean,
+}
 
-class TimestampOrderBookScroller extends Component<Props> {
+type AllProps = Props & PropsFromState;
+
+
+class TimestampOrderBookScroller extends Component<AllProps> {
     middleReferenceItem;
 
     componentDidMount() {
@@ -50,10 +58,12 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { listItems } = this.props;
+        const { listItems, playback } = this.props;
 
         if (!listItemsEquals(prevProps.listItems || {}, listItems || {})) {
-            this.handleScrollToTopOfTheBook();
+            if (!playback) {
+                this.handleScrollToTopOfTheBook();
+            }
         }
     }
 
@@ -66,20 +76,26 @@ class TimestampOrderBookScroller extends Component<Props> {
      * @param e
      */
     onKeyUp = e => {
-        if (e.keyCode === LEFT_ARROW_KEY_CODE) this.handleGoToPreviousMessage();
-        else if (e.keyCode === RIGHT_ARROW_KEY_CODE) this.handleGoToNextMessage();
+        const { playback } = this.props;
+        if (!playback) {
+            if (e.keyCode === LEFT_ARROW_KEY_CODE) this.handleGoToPreviousMessage();
+            else if (e.keyCode === RIGHT_ARROW_KEY_CODE) this.handleGoToNextMessage();
+        }
     };
 
     /**
      * @desc handler for the event of scrolling to the top of the book entity
      */
     handleScrollToTopOfTheBook = () => {
-        this.middleReferenceItem
-        && this.middleReferenceItem.current
-        && this.middleReferenceItem.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-        });
+        const { playback } = this.props;
+        if (!playback) {
+            this.middleReferenceItem
+            && this.middleReferenceItem.current
+            && this.middleReferenceItem.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
     };
 
     /**
@@ -87,7 +103,10 @@ class TimestampOrderBookScroller extends Component<Props> {
      * the message's timestamp
      */
     handleGoToNextMessage = () => {
-        this.handleGoToMessageByOffset(1);
+        const { playback } = this.props;
+        if (!playback) {
+            this.handleGoToMessageByOffset(1);
+        }
     };
 
     /**
@@ -95,7 +114,10 @@ class TimestampOrderBookScroller extends Component<Props> {
      * the message's timestamp
      */
     handleGoToPreviousMessage = () => {
-        this.handleGoToMessageByOffset(-1);
+        const { playback } = this.props;
+        if (!playback) {
+            this.handleGoToMessageByOffset(-1);
+        }
     };
 
     /**
@@ -104,19 +126,21 @@ class TimestampOrderBookScroller extends Component<Props> {
      */
     handleGoToMessageByOffset = (offset: number) => {
         const {
-            lastSodOffset, handleUpdateWithDeltas, instrument,
+            lastSodOffset, handleUpdateWithDeltas, instrument, playback,
         } = this.props;
-        OrderBookService.getPriceLevelsByMessageOffset(
-            instrument,
-            lastSodOffset.toString(),
-            offset.toString(),
-        )
-            .then(response => {
-                handleUpdateWithDeltas(response.data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        if (!playback) {
+            OrderBookService.getPriceLevelsByMessageOffset(
+                instrument,
+                lastSodOffset.toString(),
+                offset.toString(),
+            )
+                .then(response => {
+                    handleUpdateWithDeltas(response.data);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
     };
 
     render() {
@@ -209,4 +233,10 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 }
 
-export default withStyles(styles)(TimestampOrderBookScroller);
+const mapStateToProps = (state: RootState, ownProps) => ({
+    playback: state.general.playback,
+});
+
+export const NonConnectedTimestampOrderBookScroller = withStyles(styles)(TimestampOrderBookScroller);
+
+export default withStyles(styles)(connect(mapStateToProps, null)(TimestampOrderBookScroller));

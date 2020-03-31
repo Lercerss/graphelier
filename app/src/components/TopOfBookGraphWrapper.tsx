@@ -10,6 +10,8 @@ import {
     getNsSinceSod,
     getSodNanoDate,
 } from '../utils/date-utils';
+// import {connect} from 'react-redux';
+// import {RootState} from '../store';
 
 const styles = createStyles(Styles);
 
@@ -28,6 +30,11 @@ interface State {
     graphHeight: number,
 }
 
+// interface PropsFromState {
+//     playback: boolean,
+// }
+
+// type AllProps = Props & PropsFromState;
 
 class TopOfBookGraphWrapper extends Component<Props, State> {
     private readonly graphContainerRef: React.RefObject<HTMLDivElement>;
@@ -131,4 +138,13 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
     }
 }
 
+// const mapStateToProps = (state: RootState) => ({
+//     playback: state.general.playback,
+// });
+//
+// const mapDispatchToProps = () => ({
+//
+// });
+
+// export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(TopOfBookGraphWrapper));
 export default withStyles(styles)(TopOfBookGraphWrapper);

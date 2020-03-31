@@ -1,8 +1,13 @@
 import React from 'react';
+// import configureMockStore from 'redux-mock-store';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { Box } from '@material-ui/core';
 import bigInt from 'big-integer';
-import TimestampOrderBookScroller from '../../components/TimestampOrderBookScroller';
+// import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+import { Provider } from 'react-redux';
+import TimestampOrderBookScroller, { NonConnectedTimestampOrderBookScroller }
+    from '../../components/TimestampOrderBookScroller';
 import {
     INSTRUMENT, MAX_QUANTITY,
     ORDER_BOOK_FROM_BACKEND,
@@ -14,14 +19,22 @@ import OrderBookService from '../../services/OrderBookService';
 import { TransactionType } from '../../models/OrderBook';
 
 describe('TimestampOrderbookScroller functionality', () => {
-    let mount, shallow;
+    const initialState = {
+        general: {
+            playback: false,
+        },
+    };
+    const mockStore = configureStore();
+    let mount, shallow, store, playback;
     const timeOrDateIsNotSet = false;
     const handleUpdateWithDeltas = jest.fn();
     const loadingOrderbook: boolean = false;
 
     beforeEach(() => {
+        store = mockStore(initialState);
         mount = createMount();
         shallow = createShallow({ dive: true });
+        playback = false;
     });
 
     afterEach(() => {
@@ -29,15 +42,18 @@ describe('TimestampOrderbookScroller functionality', () => {
     });
 
     it('renders a TimestampOrderbookScroller component with expected props', () => {
-        const wrapper = mount(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={ORDER_BOOK_LIST_ITEMS}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = mount(
+            <NonConnectedTimestampOrderBookScroller
+                timeOrDateIsNotSet={timeOrDateIsNotSet}
+                handleUpdateWithDeltas={handleUpdateWithDeltas}
+                lastSodOffset={bigInt(0)}
+                instrument={INSTRUMENT}
+                listItems={ORDER_BOOK_LIST_ITEMS}
+                maxQuantity={MAX_QUANTITY}
+                loading={loadingOrderbook}
+                playback={playback}
+            />,
+        );
         expect(wrapper.props().timeOrDateIsNotSet).toBeDefined();
         expect(wrapper.props().timeOrDateIsNotSet).toEqual(false);
         expect(wrapper.props().handleUpdateWithDeltas).toBeDefined();
@@ -52,56 +68,74 @@ describe('TimestampOrderbookScroller functionality', () => {
     });
 
     it('renders a TimestampOrderbookScroller component with correct amount of material ui boxes', () => {
-        const wrapper = shallow(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={ORDER_BOOK_LIST_ITEMS}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = mount(
+            <Provider store={store}>
+                <TimestampOrderBookScroller
+                    timeOrDateIsNotSet={timeOrDateIsNotSet}
+                    handleUpdateWithDeltas={handleUpdateWithDeltas}
+                    lastSodOffset={bigInt(0)}
+                    instrument={INSTRUMENT}
+                    listItems={ORDER_BOOK_LIST_ITEMS}
+                    maxQuantity={MAX_QUANTITY}
+                    loading={loadingOrderbook}
+                    store={store}
+                />
+            </Provider>,
+        );
         expect(wrapper.find(Box).length).toBeGreaterThanOrEqual(3);
     });
 
     it('renders a TimestampOrderbookScroller component with no MultiDirectionalScroll '
         + 'if listItems is undefined', () => {
         // @ts-ignore
-        const wrapper = mount(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = mount(
+            <Provider store={store}>
+                <TimestampOrderBookScroller
+                    timeOrDateIsNotSet={timeOrDateIsNotSet}
+                    handleUpdateWithDeltas={handleUpdateWithDeltas}
+                    lastSodOffset={bigInt(0)}
+                    instrument={INSTRUMENT}
+                    maxQuantity={MAX_QUANTITY}
+                    loading={loadingOrderbook}
+                    store={store}
+                />
+            </Provider>,
+        );
         expect(wrapper.find(MultiDirectionalScroll).length).toBe(0);
     });
 
     it('renders a TimestampOrderbookScroller component with a MultiDirectionalScroll if listItems is defined', () => {
-        const wrapper = mount(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={ORDER_BOOK_LIST_ITEMS}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = mount(
+            <Provider store={store}>
+                <TimestampOrderBookScroller
+                    timeOrDateIsNotSet={timeOrDateIsNotSet}
+                    handleUpdateWithDeltas={handleUpdateWithDeltas}
+                    lastSodOffset={bigInt(0)}
+                    instrument={INSTRUMENT}
+                    listItems={ORDER_BOOK_LIST_ITEMS}
+                    maxQuantity={MAX_QUANTITY}
+                    loading={loadingOrderbook}
+                    store={store}
+                />
+            </Provider>,
+        );
 
         expect(wrapper.find(MultiDirectionalScroll).length).toBe(1);
     });
 
     it('should detect minimal amounts of PriceLevel components given props and update in props', () => {
-        const wrapper = shallow(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={{}}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = shallow(
+            <NonConnectedTimestampOrderBookScroller
+                timeOrDateIsNotSet={timeOrDateIsNotSet}
+                handleUpdateWithDeltas={handleUpdateWithDeltas}
+                lastSodOffset={bigInt(0)}
+                instrument={INSTRUMENT}
+                listItems={ORDER_BOOK_LIST_ITEMS}
+                maxQuantity={MAX_QUANTITY}
+                loading={loadingOrderbook}
+                playback={playback}
+            />,
+        );
 
         wrapper.instance().middleReferenceItem = {
             current: {
@@ -117,15 +151,18 @@ describe('TimestampOrderbookScroller functionality', () => {
     });
 
     it('should detect a scroll to top of the book given props and update in props', () => {
-        const wrapper = shallow(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={ORDER_BOOK_LIST_ITEMS}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = shallow(
+            <NonConnectedTimestampOrderBookScroller
+                timeOrDateIsNotSet={timeOrDateIsNotSet}
+                handleUpdateWithDeltas={handleUpdateWithDeltas}
+                lastSodOffset={bigInt(0)}
+                instrument={INSTRUMENT}
+                listItems={ORDER_BOOK_LIST_ITEMS}
+                maxQuantity={MAX_QUANTITY}
+                loading={loadingOrderbook}
+                playback={playback}
+            />,
+        );
 
         wrapper.instance().middleReferenceItem = {
             current: {
@@ -153,25 +190,31 @@ describe('TimestampOrderbookScroller functionality', () => {
 
     it('calls the function for changing the loading props to false', () => {
         const newLoadingOrderbook: boolean = true;
-        const wrapper = shallow(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={ORDER_BOOK_LIST_ITEMS}
-            maxQuantity={MAX_QUANTITY}
-            loading={newLoadingOrderbook}
-        />);
+        const wrapper = shallow(
+            <NonConnectedTimestampOrderBookScroller
+                timeOrDateIsNotSet={timeOrDateIsNotSet}
+                handleUpdateWithDeltas={handleUpdateWithDeltas}
+                lastSodOffset={bigInt(0)}
+                instrument={INSTRUMENT}
+                listItems={ORDER_BOOK_LIST_ITEMS}
+                maxQuantity={MAX_QUANTITY}
+                loading={newLoadingOrderbook}
+                playback={playback}
+            />,
+        );
 
         const div = () => wrapper.find('#orderbookListItems');
-        expect(div().hasClass(/TimestampOrderBookScroller-hide-\d*/)).toBe(true);
+        expect(div().hasClass(/.*-hide-\d*/)).toBe(true);
         wrapper.setProps({ loading: false });
-        expect(div().hasClass(/TimestampOrderBookScroller-hide-\d*/)).toBe(false);
+        expect(div().hasClass(/.*-show-\d*/)).toBe(true);
     });
 });
 
 describe('navigating by message functionality', () => {
-    let mount, shallow;
+    const initialState = { playback: false };
+    const mockStore = configureStore();
+    // eslint-disable-next-line no-unused-vars
+    let mount, shallow, store, playback;
     const timeOrDateIsNotSet = false;
     const handleUpdateWithDeltas = jest.fn();
     const loadingOrderbook: boolean = false;
@@ -183,8 +226,10 @@ describe('navigating by message functionality', () => {
         ));
 
     beforeEach(() => {
+        store = mockStore(initialState);
         mount = createMount();
         shallow = createShallow({ dive: true });
+        playback = false;
     });
 
     afterEach(() => {
@@ -193,15 +238,18 @@ describe('navigating by message functionality', () => {
     });
 
     it('makes appropriate database call when the previous and next message arrows are clicked', () => {
-        const wrapper = shallow(<TimestampOrderBookScroller
-            timeOrDateIsNotSet={timeOrDateIsNotSet}
-            handleUpdateWithDeltas={handleUpdateWithDeltas}
-            lastSodOffset={bigInt(0)}
-            instrument={INSTRUMENT}
-            listItems={ORDER_BOOK_LIST_ITEMS}
-            maxQuantity={MAX_QUANTITY}
-            loading={loadingOrderbook}
-        />);
+        const wrapper = shallow(
+            <NonConnectedTimestampOrderBookScroller
+                timeOrDateIsNotSet={timeOrDateIsNotSet}
+                handleUpdateWithDeltas={handleUpdateWithDeltas}
+                lastSodOffset={bigInt(0)}
+                instrument={INSTRUMENT}
+                listItems={ORDER_BOOK_LIST_ITEMS}
+                maxQuantity={MAX_QUANTITY}
+                loading={loadingOrderbook}
+                playback={playback}
+            />,
+        );
 
         expect(getOrderBookPricesByMessageOffsetSpy).toHaveBeenCalledTimes(0);
 

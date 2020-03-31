@@ -19,6 +19,7 @@ import {
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 import NanoDate from 'nano-date';
+import { connect } from 'react-redux';
 import {
     adaptCurrentDateTimezoneToTrueNanoseconds, adaptTrueNanosecondsTimeToCurrentDateTimezone,
     buildTimeInTheDayStringFromNanoDate,
@@ -26,6 +27,7 @@ import {
 } from '../utils/date-utils';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
+import { RootState } from '../store';
 
 interface Props {
     height: number,
@@ -36,10 +38,16 @@ interface Props {
     endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
-    sodNanoDate: NanoDate,
+    sodNanoDate: NanoDate
 }
 
-class TopOfBookGraph extends Component<Props> {
+interface PropsFromState {
+    playback: boolean,
+}
+
+type AllProps = Props & PropsFromState;
+
+class TopOfBookGraph extends Component<AllProps> {
     private chartCanvasRef: any;
 
     /**
@@ -47,8 +55,8 @@ class TopOfBookGraph extends Component<Props> {
      * @description Asynchronous behaviour for user interaction (pan and zoom) with the graph
      */
     handleEvents = debounce((type, moreProps) => {
-        const { sodNanoDate } = this.props;
-        if (type === 'panend' || type === 'zoom') {
+        const { sodNanoDate, playback } = this.props;
+        if (!playback && (type === 'panend' || type === 'zoom')) {
             const { handlePanAndZoom, startOfDay, endOfDay } = this.props;
             const graphDomain: Array<number> = moreProps.xScale.domain();
             const leftBoundNano: NanoDate = getNanoDateFromNsSinceSod(graphDomain[0], sodNanoDate);
@@ -178,4 +186,12 @@ class TopOfBookGraph extends Component<Props> {
     }
 }
 
-export default TopOfBookGraph;
+const mapStateToProps = (state: RootState) => ({
+    playback: state.general.playback,
+});
+
+const mapDispatchToProps = () => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(TopOfBookGraph);

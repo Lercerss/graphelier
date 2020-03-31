@@ -1,6 +1,6 @@
 import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
-import MessageList from '../../components/MessageList';
+import { NonConnectedMessageList as MessageList } from '../../components/MessageList';
 import OrderBookService from '../../services/OrderBookService';
 import {
     INSTRUMENT, LAST_SOD_OFFSET_CLIENT, MESSAGE_LIST, ORDER_BOOK_FROM_BACKEND,
@@ -75,6 +75,7 @@ describe('MessageList', () => {
             lastSodOffset={LAST_SOD_OFFSET_CLIENT}
             instrument={INSTRUMENT}
             handleUpdateWithDeltas={jest.fn()}
+            loading={false}
         />);
 
         wrapper.instance().selectedMessageItem = {

@@ -7,6 +7,8 @@ import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
 import bigInt from 'big-integer';
 
+import { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE, TILDE_KEY_CODE,
@@ -22,6 +24,7 @@ import {
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import { Message } from '../models/OrderBook';
+import { RootState } from '../store';
 
 const styles = createStyles(Styles);
 
@@ -38,13 +41,19 @@ interface State {
     lastSodOffsetBottom: bigInt.BigInteger,
 }
 
+interface PropsFromState {
+    playback: boolean,
+}
+
+type AllProps = Props & PropsFromState;
+
 const CustomTooltip = withStyles({
     tooltip: {
         fontSize: '0.75rem',
     },
 })(Tooltip);
 
-class MessageList extends Component<Props, State> {
+class MessageList extends Component<AllProps, State> {
     selectedMessageItem;
 
     constructor(props) {
@@ -125,11 +134,14 @@ class MessageList extends Component<Props, State> {
      * @returns {void}
      */
     private handleScrollBackToSelectedMessage = () => {
-        this.selectedMessageItem && this.selectedMessageItem.current
-        && this.selectedMessageItem.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-        });
+        const { playback } = this.props;
+        if (!playback) {
+            this.selectedMessageItem && this.selectedMessageItem.current
+            && this.selectedMessageItem.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
     };
 
     /**
@@ -174,52 +186,58 @@ class MessageList extends Component<Props, State> {
      */
     handleHitEdge(direction) {
         const { lastSodOffsetTop, lastSodOffsetBottom } = this.state;
-        const { instrument } = this.props;
+        const { instrument, playback } = this.props;
         // eslint-disable-next-line react/destructuring-assignment
         const existingMessages = this.state.messages;
 
-        if (direction === 'top') {
-            const nMessages = -MESSAGE_LIST_DEFAULT_PAGE_SIZE;
-            OrderBookService.getMessageList(instrument, lastSodOffsetTop.toString(), nMessages)
-                .then(response => {
-                    const { pageInfo, messages } = response.data;
-                    this.setState({
-                        messages: messages ? messages.concat(existingMessages) : existingMessages,
-                        lastSodOffsetTop: bigInt(pageInfo.sod_offset),
+        if (!playback) {
+            if (direction === 'top') {
+                const nMessages = -MESSAGE_LIST_DEFAULT_PAGE_SIZE;
+                OrderBookService.getMessageList(instrument, lastSodOffsetTop.toString(), nMessages)
+                    .then(response => {
+                        const { pageInfo, messages } = response.data;
+                        this.setState({
+                            messages: messages ? messages.concat(existingMessages) : existingMessages,
+                            lastSodOffsetTop: bigInt(pageInfo.sod_offset),
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err);
                     });
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        } else if (direction === 'bottom') {
-            OrderBookService.getMessageList(instrument, lastSodOffsetBottom.toString())
-                .then(response => {
-                    const { pageInfo, messages } = response.data;
-                    this.setState({
-                        messages: messages ? existingMessages.concat(messages) : existingMessages,
-                        lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
+            } else if (direction === 'bottom') {
+                OrderBookService.getMessageList(instrument, lastSodOffsetBottom.toString())
+                    .then(response => {
+                        const { pageInfo, messages } = response.data;
+                        this.setState({
+                            messages: messages ? existingMessages.concat(messages) : existingMessages,
+                            lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err);
                     });
+            }
+        }
+    }
+
+    handleOnMessageClick(sodOffset) {
+        const {
+            handleUpdateWithDeltas, lastSodOffset, instrument, playback,
+        } = this.props;
+        const currentSodOffset = bigInt(sodOffset).minus(lastSodOffset);
+        if (!playback) {
+            OrderBookService.getPriceLevelsByMessageOffset(
+                instrument,
+                lastSodOffset.toString(),
+                currentSodOffset.toString(),
+            )
+                .then(response => {
+                    handleUpdateWithDeltas(response.data);
                 })
                 .catch(err => {
                     console.log(err);
                 });
         }
-    }
-
-    handleOnMessageClick(sodOffset) {
-        const { handleUpdateWithDeltas, lastSodOffset, instrument } = this.props;
-        const currentSodOffset = bigInt(sodOffset).minus(lastSodOffset);
-        OrderBookService.getPriceLevelsByMessageOffset(
-            instrument,
-            lastSodOffset.toString(),
-            currentSodOffset.toString(),
-        )
-            .then(response => {
-                handleUpdateWithDeltas(response.data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
     }
 
     /**
@@ -298,4 +316,14 @@ class MessageList extends Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(MessageList);
+const mapDispatchToProps = (dispatch : Dispatch) => ({
+
+});
+
+const mapStateToProps = (state: RootState) => ({
+    playback: state.general.playback,
+});
+
+export const NonConnectedMessageList = withStyles(styles)(MessageList);
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(MessageList));

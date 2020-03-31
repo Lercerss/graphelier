@@ -3,15 +3,16 @@ import {
     withStyles,
     Typography,
     FormControl,
-    Card, Select, MenuItem,
+    Card, Select, MenuItem, createStyles, WithStyles,
 } from '@material-ui/core';
-import { WithStyles, createStyles } from '@material-ui/core/styles';
+// import { WithStyles, createStyles } from '@material-ui/core/styles';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 
 import moment from 'moment';
+import { connect, Provider } from 'react-redux';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     dateStringToEpoch,
@@ -31,8 +32,10 @@ import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../util
 import MessageList from './MessageList';
 import { ListItems, OrderBook, TopOfBookItem } from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
+import PlaybackControl from './PlaybackControl';
+import { RootState, getStore } from '../store';
 
-const styles = createStyles(Styles);
+const styles = theme => createStyles(Styles(theme));
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
@@ -53,7 +56,16 @@ interface State {
     graphEndTime: bigInt.BigInteger,
 }
 
-class OrderBookSnapshot extends Component<WithStyles, State> {
+interface Props extends WithStyles<typeof styles> {
+}
+
+interface PropsFromState {
+    playback: boolean,
+}
+
+type AllProps = Props & PropsFromState;
+
+class OrderBookSnapshot extends Component<AllProps, State> {
     /**
      * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
      */
@@ -341,7 +353,9 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
         let messageText;
         if (selectedDateTimeNano.equals(0)) {
             if (selectedInstrument.length === 0) messageText = 'Select an instrument';
-            else { messageText = 'Select a date'; }
+            else {
+                messageText = 'Select a date';
+            }
         }
 
         return (
@@ -351,15 +365,15 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                     className={classes.container}
                 >
                     {(selectedDateTimeNano.equals(0) || selectedInstrument.length === 0)
-                && (
-                    <Typography
-                        variant={'body1'}
-                        color={'textPrimary'}
-                        className={classes.selectMessage}
-                    >
-                        {messageText}
-                    </Typography>
-                )}
+                    && (
+                        <Typography
+                            variant={'body1'}
+                            color={'textPrimary'}
+                            className={classes.selectMessage}
+                        >
+                            {messageText}
+                        </Typography>
+                    )}
                     <FormControl className={classes.formControl}>
 
                         <div
@@ -373,7 +387,7 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                 >
                                     {'Instrument'}
                                 </Typography>
-                                { loadingInstruments ? (
+                                {loadingInstruments ? (
                                     <div className={classes.inlineFlex}>
                                         <CustomLoader
                                             size={'1rem'}
@@ -417,7 +431,6 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                                         {'Date'}
                                     </Typography>
                                     <KeyboardDatePicker
-                                        className={classes.datePicker}
                                         value={datePickerValue}
                                         onChange={date => this.handleChangeDate(date)}
                                         placeholder={'DD/MM/YYYY'}
@@ -449,66 +462,81 @@ class OrderBookSnapshot extends Component<WithStyles, State> {
                             </div>
                         </div>
                     </FormControl>
+                    <Provider store={getStore()}>
+                        <PlaybackControl
+                            selectedDateTimeNano={selectedDateTimeNano}
+                            selectedInstrument={selectedInstrument}
+                            handleTimeChange={this.handleSelectGraphDateTime}
+                        />
+                    </Provider>
                     {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
-                        && (
-                            <div>
-                                <Card className={classes.graphCard}>
-                                    {graphUnavailable && (
-                                        <Typography
-                                            className={classes.noDataMessage}
-                                            variant={'body1'}
-                                            color={'textPrimary'}
-                                        >
-                                            {'Could not retrieve graph for this day.'}
-                                        </Typography>
-                                    )}
-                                    {loadingGraph && (
-                                        <div className={classes.graphLoader}>
-                                            <CustomLoader
-                                                size={'5rem'}
-                                                type={'circular'}
-                                            />
-                                        </div>
-                                    )}
-                                    { !loadingGraph && !graphUnavailable && topOfBookItems.length !== 0 && (
-                                        <TopOfBookGraphWrapper
-                                            className={classes.graph}
-                                            onTimeSelect={this.handleSelectGraphDateTime}
-                                            handlePanAndZoom={this.handlePanAndZoom}
-                                            selectedDateTimeNano={selectedDateTimeNano}
-                                            startOfDay={selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS)}
-                                            endOfDay={selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS)}
-                                            topOfBookItems={topOfBookItems}
+                    && (
+                        <div>
+                            <Card className={classes.graphCard}>
+                                {graphUnavailable && (
+                                    <Typography
+                                        className={classes.noDataMessage}
+                                        variant={'body1'}
+                                        color={'textPrimary'}
+                                    >
+                                        {'Could not retrieve graph for this day.'}
+                                    </Typography>
+                                )}
+                                {loadingGraph && (
+                                    <div className={classes.graphLoader}>
+                                        <CustomLoader
+                                            size={'5rem'}
+                                            type={'circular'}
                                         />
-                                    )}
-                                </Card>
-                                <Card>
-                                    <TimestampOrderBookScroller
-                                        listItems={listItems}
-                                        maxQuantity={maxQuantity}
+                                    </div>
+                                )}
+                                {!loadingGraph && !graphUnavailable && topOfBookItems.length !== 0 && (
+                                    <TopOfBookGraphWrapper
+                                        className={classes.graph}
+                                        onTimeSelect={this.handleSelectGraphDateTime}
+                                        handlePanAndZoom={this.handlePanAndZoom}
+                                        selectedDateTimeNano={selectedDateTimeNano}
+                                        startOfDay={selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS)}
+                                        endOfDay={selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS)}
+                                        topOfBookItems={topOfBookItems}
+                                    />
+                                )}
+                            </Card>
+                            <Card>
+                                <TimestampOrderBookScroller
+                                    listItems={listItems}
+                                    maxQuantity={maxQuantity}
+                                    lastSodOffset={lastSodOffset}
+                                    timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
+                                    handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                    instrument={selectedInstrument}
+                                    loading={loadingOrderbook}
+                                />
+                            </Card>
+                            {(lastSodOffset.neq(0)) && (
+                                <Card className={classes.messageListCard}>
+                                    <MessageList
                                         lastSodOffset={lastSodOffset}
-                                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
-                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                         instrument={selectedInstrument}
+                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                         loading={loadingOrderbook}
                                     />
                                 </Card>
-                                {(lastSodOffset.neq(0)) && (
-                                    <Card className={classes.messageListCard}>
-                                        <MessageList
-                                            lastSodOffset={lastSodOffset}
-                                            instrument={selectedInstrument}
-                                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                                            loading={loadingOrderbook}
-                                        />
-                                    </Card>
-                                )}
-                            </div>
-                        )}
+                            )}
+                        </div>
+                    )}
                 </Typography>
             </MuiPickersUtilsProvider>
         );
     }
 }
 
-export default withStyles(styles)(OrderBookSnapshot);
+const mapStateToProps = (state: RootState) => ({
+    playback: state.general.playback,
+});
+
+const mapDispatchToProps = () => ({});
+
+export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(OrderBookSnapshot));

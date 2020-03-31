@@ -90,18 +90,18 @@ export const Styles = theme => ({
     inline: {
         display: 'flex',
         marginTop: 15,
-        alignItems: 'center',
+        alignItems: 'center' as const,
     },
     inputSelect: {
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'center' as const,
     },
     dateTimeSelect: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        flexDirection: 'column' as const,
+        alignItems: 'flex-start' as const,
     },
     selectMessage: {
-        textAlign: 'center',
+        textAlign: 'center' as const,
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(3),
         borderRadius: '5px',
@@ -114,12 +114,12 @@ export const Styles = theme => ({
     },
     graphLoader: {
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'center' as const,
         justifyContent: 'center',
         paddingBottom: '20px',
     },
     noDataMessage: {
-        textAlign: 'center',
+        textAlign: 'center' as const,
         width: '100%',
         height: '100%',
         marginBottom: '20px',
