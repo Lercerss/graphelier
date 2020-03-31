@@ -23,6 +23,9 @@ export const LightThemeColors = {
         primary: {
             main: '#41aeff',
         },
+        secondary: {
+            main: '#ec24b5',
+        },
     },
 };
 
