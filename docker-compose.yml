@@ -11,8 +11,8 @@ services:
     ports:
       - "5050:5050"
     depends_on:
-      - "mongo"
-  mongo:
+      - "service-db"
+  service-db:
     build:
       context: ./core/db
     container_name: "graphelier-db"
@@ -20,6 +20,22 @@ services:
       - "27017:27017"
     volumes:
       - "graphelier-db:/data/db"
+  graphelier-news:
+    build:
+      context: ./news/service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "news-db"
+  news-db:
+    build:
+      context: ./news/db
+    container_name: "news-db"
+    ports:
+      - "27016:27017"
+    volumes:
+      - "news-db:/data/db"
 
 volumes:
   graphelier-db:
+  news-db:

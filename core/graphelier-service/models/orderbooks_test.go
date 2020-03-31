@@ -483,7 +483,7 @@ func TestTopBookAfter(t *testing.T) {
 	assert.Equal(t, 102.0, topbook[3].BestAsk)
 }
 
-func TestMessagesZero(t *testing.T) {
+func TestTopBookNoMessages(t *testing.T) {
 	setupExistingOrders()
 	pointDistance := uint64(2)
 	topbook := orderbook.TopBookPerXNano([]*Message{}, pointDistance, 100, 105)
@@ -492,4 +492,47 @@ func TestMessagesZero(t *testing.T) {
 	assert.Equal(t, uint64(100), topbook[0].Timestamp)
 	assert.Equal(t, uint64(102), topbook[1].Timestamp)
 	assert.Equal(t, uint64(104), topbook[2].Timestamp)
+}
+
+func TestOrderIdsNotSorted(t *testing.T) {
+	// Orders were incorrectly assumed to be sorted by ID
+	// This stopped `Orderbook.getOrderIndex` from finding some orders
+	// As a result, some valid messages were being ignored which invalidated the order book state
+	setupExistingOrders()
+	orderbook.Asks[0].Orders[0].ID = 3
+	orderbook.Asks[0].Orders[1].ID = 2
+	orderbook.Asks[0].Orders[2].ID = 1
+
+	orderbook.ApplyMessagesToOrderbook([]*Message{
+		MakeMsg(DirectionAsk, OrderID(1), TypeDelete),
+		MakeMsg(DirectionAsk, OrderID(2), TypeDelete),
+	})
+
+	assert.Equal(t, 1, len(orderbook.Asks[0].Orders))
+	assert.Equal(t, uint64(3), orderbook.Asks[0].Orders[0].ID)
+}
+
+func TestYieldModifications(t *testing.T) {
+	setupExistingOrders()
+
+	messages := []*Message{
+		MakeMsg(TypeExecute, ShareQuantity(5)),          // UpdateOrder
+		MakeMsg(TypeExecute, OrderID(0)),                // Ignored
+		MakeMsg(TypeDelete),                             // DropOrder
+		MakeMsg(TypeDelete),                             // Ignored
+		MakeMsg(TypeDelete, OrderID(2)),                 // Ignored
+		MakeMsg(TypeNewOrder, OrderID(4), Price(200.0)), // MoveOrder
+	}
+
+	result := orderbook.YieldModifications(messages)
+	assert.Equal(t, 3, len(result.Modifications))
+
+	modification := result.Modifications[0]
+	assert.Equal(t, UpdateOrderType, modification.Type)
+
+	modification = result.Modifications[1]
+	assert.Equal(t, DropOrderType, modification.Type)
+
+	modification = result.Modifications[2]
+	assert.Equal(t, MoveOrderType, modification.Type)
 }

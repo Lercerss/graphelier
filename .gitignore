@@ -8,3 +8,4 @@ docker-compose_windows.yml
 **/.idea
 
 node_modules
+.vscode

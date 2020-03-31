@@ -45,7 +45,7 @@ export const Styles = theme => ({
     inlineFlexEnd: {
         display: 'flex',
         marginTop: 15,
-        alignItems: 'center',
+        alignItems: 'center' as const,
     },
     transparentBackground: {
         backgroundColor: 'transparent',
@@ -63,7 +63,7 @@ export const Styles = theme => ({
         display: 'flex',
     },
     expandRow: {
-        alignItems: 'center',
+        alignItems: 'center' as const,
         justifyContent: 'space-between',
         marginBottom: '10px',
     },

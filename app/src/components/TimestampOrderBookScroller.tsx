@@ -8,12 +8,13 @@ import ChevronLeftSharpIcon from '@material-ui/icons/ChevronLeftSharp';
 import ChevronRightSharpIcon from '@material-ui/icons/ChevronRightSharp';
 import bigInt from 'big-integer';
 import { connect } from 'react-redux';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Styles } from '../styles/TimestampOrderBookScroller';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
 import { getOrderBookListItemsAsArray, listItemsEquals } from '../utils/order-book-utils';
 
-import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE } from '../constants/Constants';
+import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE, ANIMATION_TIME } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
 import { ListItems } from '../models/OrderBook';
 import { RootState } from '../store';
@@ -30,6 +31,7 @@ interface Props extends WithStyles<typeof styles> {
     handleUpdateWithDeltas: Function,
     instrument: string,
     loading: boolean,
+    timestamp: bigInt.BigInteger,
 }
 
 interface PropsFromState {
@@ -145,7 +147,7 @@ class TimestampOrderBookScroller extends Component<AllProps> {
 
     render() {
         const {
-            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading,
+            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading, instrument, timestamp,
         } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
 
@@ -196,7 +198,8 @@ class TimestampOrderBookScroller extends Component<AllProps> {
                         listItems
                     && (
                         <MultiDirectionalScroll position={50}>
-                            <div
+
+                            <TransitionGroup
                                 id={'orderbookListItems'}
                                 className={loading ? classes.hide : classes.show}
                             >
@@ -207,23 +210,35 @@ class TimestampOrderBookScroller extends Component<AllProps> {
                                         this.middleReferenceItem = createRef();
                                     }
                                     return (
-                                        <Box
+                                        <CSSTransition
                                             key={listItem.price}
-                                            // @ts-ignore
-                                            ref={listItem.isMiddle ? this.middleReferenceItem : null}
-                                            className={classes.pricePoint}
+                                            timeout={ANIMATION_TIME}
+                                            classNames={{
+                                                enter: classes.levelEnter,
+                                                enterActive: classes.levelEnterActive,
+                                                exit: classes.levelExit,
+                                                exitActive: classes.levelExitActive,
+                                            }}
                                         >
-                                            <PriceLevel
-                                                key={listItem.price}
-                                                type={listItem.type}
-                                                price={listItem.price}
-                                                orders={listItem.orders}
-                                                maxQuantity={quantityBoxSize}
-                                            />
-                                        </Box>
+                                            <Box
+                                                // @ts-ignore
+                                                ref={listItem.isMiddle ? this.middleReferenceItem : null}
+                                                className={classes.pricePoint}
+                                            >
+                                                <PriceLevel
+                                                    key={listItem.price}
+                                                    type={listItem.type}
+                                                    price={listItem.price}
+                                                    orders={listItem.orders}
+                                                    maxQuantity={quantityBoxSize}
+                                                    instrument={instrument}
+                                                    timestamp={timestamp}
+                                                />
+                                            </Box>
+                                        </CSSTransition>
                                     );
                                 })}
-                            </div>
+                            </TransitionGroup>
                         </MultiDirectionalScroll>
                     )
                     }

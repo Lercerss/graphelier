@@ -66,10 +66,10 @@ jobs:
             - run:
                   name: Test service
                   command: |
-                    mkdir -p /tmp/artifacts
-                    go test --coverprofile="go-cover.out" -v graphelier/core/graphelier-service/...
-                    go tool cover -html="go-cover.out" -o coverage.html
-                    mv coverage.html /tmp/artifacts
+                      mkdir -p /tmp/artifacts
+                      go test --coverprofile="go-cover.out" -v graphelier/core/graphelier-service/...
+                      go tool cover -html="go-cover.out" -o coverage.html
+                      mv coverage.html /tmp/artifacts
             - store_artifacts:
                   path: /tmp/artifacts
 
@@ -110,6 +110,43 @@ jobs:
                   command: |
                       source venv/bin/activate
                       pylint scripts
+
+    build_news_scripts:
+        docker:
+            - image: circleci/python:3.7-buster
+        working_directory: ~/graphelier/news/scripts
+        steps:
+            - attach_workspace:
+                  at: ~/graphelier
+            - restore_cache:
+                  keys:
+                      - v0-news-scripts-{{ checksum "requirements.txt" }}
+                      - v0-news-scripts-
+            - run:
+                  name: Install news-scripts dependencies
+                  command: |
+                      python -m venv venv
+                      source venv/bin/activate
+                      pip install -r requirements.txt
+            - save_cache:
+                  key: v0-news-scripts-{{ checksum "requirements.txt" }}
+                  paths:
+                      - venv
+            - run:
+                  name: Test news-scripts
+                  command: |
+                      source venv/bin/activate
+                      mamba `find . -name *.spec.py` --format=documentation --enable-coverage
+                      coverage html --omit="venv/lib/*"
+            - store_artifacts:
+                  path: htmlcov
+            - store_artifacts:
+                  path: .coverage
+            - run:
+                  name: Lint news-scripts
+                  command: |
+                      source venv/bin/activate
+                      pylint scripts
 orbs:
     aws-ecr: circleci/aws-ecr@6.7.0
     aws-ecs: circleci/aws-ecs@1.0.4
@@ -125,6 +162,9 @@ workflows:
                   requires:
                       - prepare
             - build_scripts:
+                  requires:
+                      - prepare
+            - build_news_scripts:
                   requires:
                       - prepare
     push_and_deploy:
@@ -164,11 +204,35 @@ workflows:
                   region: AWS_DEFAULT_REGION
                   tag: "${CIRCLE_SHA1}"
                   path: ./core/db
+            - aws-ecr/build-and-push-image:
+                  name: build_news_ecr
+                  filters:
+                      branches:
+                          only:
+                              - master
+                  account-url: AWS_ECR_URL
+                  repo: "graphelier-news"
+                  region: AWS_DEFAULT_REGION
+                  tag: "${CIRCLE_SHA1}"
+                  path: ./news/service
+            - aws-ecr/build-and-push-image:
+                  name: build_newsdb_ecr
+                  filters:
+                      branches:
+                          only:
+                              - master
+                  account-url: AWS_ECR_URL
+                  repo: "news-db"
+                  region: AWS_DEFAULT_REGION
+                  tag: "${CIRCLE_SHA1}"
+                  path: ./news/db
             - aws-ecs/deploy-service-update:
                   requires:
                       - build_service_ecr
                       - build_app_ecr
                       - build_mongo_ecr
+                      - build_newsdb_ecr
+                      - build_news_ecr
                   filters:
                       branches:
                           only:
@@ -177,4 +241,4 @@ workflows:
                   family: "app"
                   cluster-name: "Graphelier-cluster"
                   service-name: "Graphelier-service"
-                  container-image-name-updates: "container=graphelier-app,image-and-tag=${AWS_ECR_URL}/graphelier-app:${CIRCLE_SHA1},container=graphelier-service,image-and-tag=${AWS_ECR_URL}/graphelier-service:${CIRCLE_SHA1},container=mongo,image-and-tag=${AWS_ECR_URL}/mongo:${CIRCLE_SHA1}"
+                  container-image-name-updates: "container=graphelier-app,image-and-tag=${AWS_ECR_URL}/graphelier-app:${CIRCLE_SHA1},container=graphelier-service,image-and-tag=${AWS_ECR_URL}/graphelier-service:${CIRCLE_SHA1},container=service-db,image-and-tag=${AWS_ECR_URL}/mongo:${CIRCLE_SHA1},container=graphelier-news,image-and-tag=${AWS_ECR_URL}/graphelier-news:${CIRCLE_SHA1},container=news-db,image-and-tag=${AWS_ECR_URL}/news-db:${CIRCLE_SHA1}"

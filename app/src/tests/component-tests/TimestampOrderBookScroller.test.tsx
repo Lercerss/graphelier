@@ -25,7 +25,7 @@ describe('TimestampOrderbookScroller functionality', () => {
         },
     };
     const mockStore = configureStore();
-    let mount, shallow, store, playback;
+    let mount, shallow, store, playback, shallowNoChildren;
     const timeOrDateIsNotSet = false;
     const handleUpdateWithDeltas = jest.fn();
     const loadingOrderbook: boolean = false;
@@ -35,6 +35,7 @@ describe('TimestampOrderbookScroller functionality', () => {
         mount = createMount();
         shallow = createShallow({ dive: true });
         playback = false;
+        shallowNoChildren = createShallow();
     });
 
     afterEach(() => {
@@ -51,9 +52,20 @@ describe('TimestampOrderbookScroller functionality', () => {
                 listItems={ORDER_BOOK_LIST_ITEMS}
                 maxQuantity={MAX_QUANTITY}
                 loading={loadingOrderbook}
+                timestamp={bigInt(0)}
                 playback={playback}
             />,
         );
+        // const wrapper = shallow(<TimestampOrderBookScroller
+        //     timeOrDateIsNotSet={timeOrDateIsNotSet}
+        //     handleUpdateWithDeltas={handleUpdateWithDeltas}
+        //     lastSodOffset={bigInt(0)}
+        //     instrument={INSTRUMENT}
+        //     listItems={ORDER_BOOK_LIST_ITEMS}
+        //     maxQuantity={MAX_QUANTITY}
+        //     loading={loadingOrderbook}
+        //     timestamp={bigInt(0)}
+        // />);
         expect(wrapper.props().timeOrDateIsNotSet).toBeDefined();
         expect(wrapper.props().timeOrDateIsNotSet).toEqual(false);
         expect(wrapper.props().handleUpdateWithDeltas).toBeDefined();
@@ -133,6 +145,7 @@ describe('TimestampOrderbookScroller functionality', () => {
                 listItems={ORDER_BOOK_LIST_ITEMS}
                 maxQuantity={MAX_QUANTITY}
                 loading={loadingOrderbook}
+                timestamp={bigInt(0)}
                 playback={playback}
             />,
         );
@@ -160,6 +173,7 @@ describe('TimestampOrderbookScroller functionality', () => {
                 listItems={ORDER_BOOK_LIST_ITEMS}
                 maxQuantity={MAX_QUANTITY}
                 loading={loadingOrderbook}
+                timestamp={bigInt(0)}
                 playback={playback}
             />,
         );
@@ -199,6 +213,7 @@ describe('TimestampOrderbookScroller functionality', () => {
                 listItems={ORDER_BOOK_LIST_ITEMS}
                 maxQuantity={MAX_QUANTITY}
                 loading={newLoadingOrderbook}
+                timestamp={bigInt(0)}
                 playback={playback}
             />,
         );
@@ -247,6 +262,7 @@ describe('navigating by message functionality', () => {
                 listItems={ORDER_BOOK_LIST_ITEMS}
                 maxQuantity={MAX_QUANTITY}
                 loading={loadingOrderbook}
+                timestamp={bigInt(0)}
                 playback={playback}
             />,
         );

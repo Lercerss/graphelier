@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import {
-    withStyles,
     Typography,
     FormControl,
-    Card, Select, MenuItem, createStyles, WithStyles,
+    Card, Select, MenuItem, createStyles, WithStyles, withStyles
 } from '@material-ui/core';
-// import { WithStyles, createStyles } from '@material-ui/core/styles';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import bigInt from 'big-integer';
@@ -30,12 +28,18 @@ import {
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
-import { ListItems, OrderBook, TopOfBookItem } from '../models/OrderBook';
+import {
+    ListItems, OrderBook, OrderDetails, TopOfBookItem,
+} from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
 import PlaybackControl from './PlaybackControl';
 import { RootState, getStore } from '../store';
+import OrderInformation from './OrderInformation';
 
 const styles = theme => createStyles(Styles(theme));
+
+interface Props extends WithStyles<typeof styles>{
+}
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
@@ -56,11 +60,10 @@ interface State {
     graphEndTime: bigInt.BigInteger,
 }
 
-interface Props extends WithStyles<typeof styles> {
-}
-
 interface PropsFromState {
     playback: boolean,
+    orderDetails: OrderDetails,
+    showOrderInfoDrawer: boolean,
 }
 
 type AllProps = Props & PropsFromState;
@@ -332,7 +335,7 @@ class OrderBookSnapshot extends Component<AllProps, State> {
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, orderDetails, showOrderInfoDrawer } = this.props;
         const {
             listItems,
             maxQuantity,
@@ -513,17 +516,27 @@ class OrderBookSnapshot extends Component<AllProps, State> {
                                     loading={loadingOrderbook}
                                 />
                             </Card>
-                            {(lastSodOffset.neq(0)) && (
-                                <Card className={classes.messageListCard}>
-                                    <MessageList
-                                        lastSodOffset={lastSodOffset}
-                                        instrument={selectedInstrument}
-                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                                        loading={loadingOrderbook}
-                                    />
-                                </Card>
-                            )}
-                        </div>
+                                {(lastSodOffset.neq(0)) && (
+                                    <Card className={classes.messageListCard}>
+                                        <MessageList
+                                            lastSodOffset={lastSodOffset}
+                                            instrument={selectedInstrument}
+                                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                            loading={loadingOrderbook}
+                                        />
+                                    </Card>
+                                )}
+                            </div>
+                        )}
+                    { orderDetails && showOrderInfoDrawer && (
+                        <OrderInformation
+                            orderId={orderDetails.id}
+                            quantity={orderDetails.quantity}
+                            lastModified={orderDetails.last_modified}
+                            createdOn={orderDetails.created_on}
+                            price={orderDetails.price}
+                            messages={orderDetails.messages}
+                        />
                     )}
                 </Typography>
             </MuiPickersUtilsProvider>
@@ -533,10 +546,12 @@ class OrderBookSnapshot extends Component<AllProps, State> {
 
 const mapStateToProps = (state: RootState) => ({
     playback: state.general.playback,
+    showOrderInfoDrawer: state.general.showOrderInfoDrawer,
+    orderDetails: state.general.orderDetails,
 });
 
 const mapDispatchToProps = () => ({});
 
 export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(OrderBookSnapshot));
+export default withStyles(styles)(connect(mapStateToProps)(OrderBookSnapshot));

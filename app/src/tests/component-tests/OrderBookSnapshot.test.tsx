@@ -20,7 +20,7 @@ import OrderBookService from '../../services/OrderBookService';
 import { TransactionType } from '../../models/OrderBook';
 
 describe('getting and selecting an instrument functionality', () => {
-    let mount, shallow, playback;
+    let mount, shallow, props;
 
     const getInstrumentsListSpy = jest.spyOn(OrderBookService, 'getInstrumentsList')
         .mockImplementation((): Promise<any> => Promise.resolve({ data: ['SPY', 'AAPL', 'MSFT'] })
@@ -31,7 +31,11 @@ describe('getting and selecting an instrument functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
-        playback = false;
+        props = {
+            orderDetails: undefined,
+            showOrderInfoDrawer: false,
+            playback: false,
+        };
     });
 
     afterEach(() => {
@@ -40,9 +44,13 @@ describe('getting and selecting an instrument functionality', () => {
     });
 
     it('renders a OrderBookSnapshot component and simulate selecting instruments', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
         wrapper.instance().setState({
             loadingInstruments: false,
         });
@@ -55,7 +63,7 @@ describe('getting and selecting an instrument functionality', () => {
 });
 
 describe('date and time picker functionality', () => {
-    let mount, shallow, playback;
+    let mount, shallow, props;
     const getOrderBookPricesSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices')
         .mockImplementation((instrument, timestamp): Promise<any> => Promise.resolve(
             {
@@ -73,7 +81,11 @@ describe('date and time picker functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
-        playback = false;
+        props = {
+            orderDetails: undefined,
+            showOrderInfoDrawer: false,
+            playback: false,
+        };
     });
 
     afterEach(() => {
@@ -83,15 +95,23 @@ describe('date and time picker functionality', () => {
     });
 
     it('renders an OrderBookSnapshot component without crashing', () => {
-        mount(<OrderBookSnapshot
-            playback={playback}
-        />);
+        mount(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
     });
 
     it('makes database call once a date is selected', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
 
         wrapper.find(KeyboardDatePicker).simulate('change', DATE_MOMENT);
         expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(1);
@@ -99,9 +119,13 @@ describe('date and time picker functionality', () => {
     });
 
     it('makes database call when a time is selected from the graph', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
 
         wrapper.find(KeyboardDatePicker).simulate('change', DATE_MOMENT);
         expect(getOrderBookPricesSpy).toHaveBeenCalledTimes(1);
@@ -113,9 +137,13 @@ describe('date and time picker functionality', () => {
     });
 
     it('should store the proper time string when the time is selected', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
 
         wrapper.instance().handleSelectGraphDateTime(TIMESTAMP_PM.toString());
 
@@ -124,9 +152,13 @@ describe('date and time picker functionality', () => {
     });
 
     it('should store the proper date value in nanoseconds when the date is selected', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
 
         wrapper.find(KeyboardDatePicker).simulate('change', DATE_MOMENT);
 
@@ -135,9 +167,13 @@ describe('date and time picker functionality', () => {
     });
 
     it('should store the proper epoch timestamp in nanoseconds when a timestamp is selected from the graph', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
 
         wrapper.instance().handleSelectGraphDateTime(TIMESTAMP_PM.toString());
 
@@ -147,13 +183,17 @@ describe('date and time picker functionality', () => {
 });
 
 describe('updating price level by message offset functionality', () => {
-    let mount, shallow, listItems, playback;
+    let mount, shallow, listItems, props;
 
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
         listItems = { ...ORDER_BOOK_LIST_ITEMS };
-        playback = false;
+        props = {
+            orderDetails: undefined,
+            showOrderInfoDrawer: false,
+            playback: false,
+        };
     });
 
     afterEach(() => {
@@ -161,9 +201,13 @@ describe('updating price level by message offset functionality', () => {
     });
 
     it('updates list items in state given a modified price level', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
         wrapper.instance().setState(
             {
                 listItems,
@@ -186,9 +230,13 @@ describe('updating price level by message offset functionality', () => {
     });
 
     it('updates list items in state given an added price level', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
         wrapper.instance().setState(
             {
                 listItems,
@@ -214,9 +262,13 @@ describe('updating price level by message offset functionality', () => {
     });
 
     it('updates list items in state given a removed price level', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                playback={props.playback}
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+            />,
+        );
         wrapper.instance().setState(
             {
                 listItems,
@@ -235,7 +287,7 @@ describe('updating price level by message offset functionality', () => {
 });
 
 describe('graph zoom and pan data loading functionality', () => {
-    let mount, shallow, playback;
+    let mount, shallow, props;
 
     const getTopOfBookOverTimeSpy = jest.spyOn(OrderBookService, 'getTopOfBookOverTime')
         .mockImplementation((instrument, startTime, endTime, nDataPoints): Promise<any> => Promise.resolve(
@@ -247,7 +299,11 @@ describe('graph zoom and pan data loading functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
-        playback = false;
+        props = {
+            orderDetails: undefined,
+            showOrderInfoDrawer: false,
+            playback: false,
+        };
     });
 
     afterEach(() => {
@@ -257,7 +313,9 @@ describe('graph zoom and pan data loading functionality', () => {
 
     it('makes database call when there is a zoom or pan event', () => {
         const wrapper = shallow(<OrderBookSnapshot
-            playback={playback}
+            playback={props.playback}
+            orderDetails={props.orderDetails}
+            showOrderInfoDrawer={props.showOrderInfoDrawer}
         />);
 
         expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(0);

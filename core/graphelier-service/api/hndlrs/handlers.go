@@ -31,6 +31,14 @@ func (se StatusError) Status() int {
 	return se.Code
 }
 
+type ParamError struct {
+	Value string
+}
+
+func (p ParamError) Error() string {
+	return p.Value
+}
+
 // Env : A struct that represents the database configuration
 type Env struct {
 	Datastore db.Datastore

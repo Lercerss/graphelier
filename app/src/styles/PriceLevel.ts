@@ -1,4 +1,5 @@
 import { Colors } from './App';
+import { ANIMATION_TIME } from '../constants/Constants';
 
 export const Styles = {
     row: {
@@ -37,7 +38,8 @@ export const Styles = {
     },
     orderEnterActive: {
         opacity: 1,
-        transition: 'opacity 500ms ease-in, width 500ms ease-in, padding 300ms ease-in',
+        transition: `opacity ${ANIMATION_TIME}ms ease-in, width ${ANIMATION_TIME}ms ease-in,`
+        + `padding ${ANIMATION_TIME}ms ease-in`,
     },
     orderExit: {
         opacity: 1,
@@ -46,6 +48,7 @@ export const Styles = {
         opacity: 0,
         width: '0px !important',
         padding: '0px',
-        transition: 'opacity 500ms ease-in, width 500ms ease-in, padding 300ms ease-in',
+        transition: `opacity ${ANIMATION_TIME}ms ease-in, width ${ANIMATION_TIME}ms ease-in,`
+        + `padding ${ANIMATION_TIME}ms ease-in`,
     },
 };

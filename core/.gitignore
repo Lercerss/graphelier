@@ -4,7 +4,7 @@
 vendor/
 
 # containers
-db/data/
+*db/data/
 tmp/
 **/.devcontainer/
 
