@@ -2,7 +2,6 @@ import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { Select } from '@material-ui/core';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import bigInt from 'big-integer';
 import { NonConnectedOrderBookSnapshot as OrderBookSnapshot } from '../../components/OrderBookSnapshot';
 import {
     TIME_STRING,
@@ -12,7 +11,6 @@ import {
     MESSAGE_DELTAS_FROM_BACKEND_ADD,
     MESSAGE_DELTAS_FROM_BACKEND_REMOVE,
     ORDER_BOOK_FROM_BACKEND,
-    TIME_VALUE_BIG_INT,
     DATE_MOMENT,
     TIMESTAMP,
     TIMESTAMP_PM,
