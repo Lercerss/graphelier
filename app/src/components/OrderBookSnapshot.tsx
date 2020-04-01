@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
-    Typography,
-    FormControl,
-    Card, Select, MenuItem,
+    Card, FormControl, MenuItem, Select, Typography,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
 import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 
@@ -16,28 +14,35 @@ import moment from 'moment';
 import { Dispatch } from 'redux';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
+    convertNanosecondsToUTC,
+    convertNanosecondsUTCToCurrentTimezone,
     dateStringToEpoch,
     nanosecondsToString,
     splitNanosecondEpochTimestamp,
-    convertNanosecondsToUTC,
-    convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
 import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, NUM_DATA_POINTS_RATIO,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
+    NANOSECONDS_IN_SIXTEEN_HOURS,
+    NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
 import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
 import MessageList from './MessageList';
 import {
-    ListItems, OrderBook, OrderDetails, TopOfBookItem,
+    LastModificationType,
+    ListItems,
+    OrderBook,
+    OrderDetails,
+    SelectedTimestampInfo,
+    TopOfBookItem,
 } from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
 import { RootState } from '../store';
 import OrderInformation from './OrderInformation';
-import { saveOrderbookTimestamp } from '../actions/actions';
+import { saveOrderbookTimestampInfo } from '../actions/actions';
 
 const styles = theme => createStyles(Styles(theme));
 
@@ -46,6 +51,7 @@ interface Props extends WithStyles<typeof styles>{
     showOrderInfoDrawer: boolean,
     onTimestampSelected: Function,
     currentOrderbookTimestamp: string,
+    lastModificationType: LastModificationType,
 }
 
 interface State {
@@ -118,8 +124,13 @@ class OrderBookSnapshot extends Component<Props, State> {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { selectedInstrument } = this.state;
+        const { currentOrderbookTimestamp, lastModificationType } = this.props;
         if (prevState.selectedInstrument !== selectedInstrument) {
             this.handleChangeDateTime();
+        }
+        if (prevProps.currentOrderbookTimestamp !== currentOrderbookTimestamp
+            && lastModificationType === LastModificationType.ORDER_INFO) {
+            this.handleSelectGraphDateTime(currentOrderbookTimestamp);
         }
     }
 
@@ -183,7 +194,10 @@ class OrderBookSnapshot extends Component<Props, State> {
         const selectedDateString = date.format('YYYY-MM-DD');
         const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
         const selectedDateTimeNano = selectedDateNano.plus(selectedTimeNano);
-        onTimestampSelected(selectedDateTimeNano.toString());
+        const selectedTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: selectedDateTimeNano.toString(),
+        };
+        onTimestampSelected(selectedTimestampInfo);
 
         const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
         const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
@@ -209,10 +223,13 @@ class OrderBookSnapshot extends Component<Props, State> {
      * in utc nanoseconds
      */
     handleSelectGraphDateTime = (value: string) => {
-        const { onTimestampSelected, currentOrderbookTimestamp } = this.props;
-        onTimestampSelected(value);
-        // const selectedDateTimeNano = bigInt(value);
-        const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
+        const { onTimestampSelected } = this.props;
+        const selectedTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: value,
+            lastModificationType: LastModificationType.GRAPH,
+        };
+        onTimestampSelected(selectedTimestampInfo);
+        const selectedDateTimeNano = bigInt(selectedTimestampInfo.currentOrderbookTimestamp);
         const {
             timeNanoseconds,
         } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
@@ -245,13 +262,18 @@ class OrderBookSnapshot extends Component<Props, State> {
      */
     handleUpdateWithDeltas = (deltas: OrderBook) => {
         const { listItems } = this.state;
+        const { onTimestampSelected } = this.props;
         const {
             // eslint-disable-next-line camelcase
             asks, bids, timestamp, last_sod_offset,
         } = deltas;
         const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
         const { newListItems, newMaxQuantity } = processOrderBookWithDeltas(listItems, asks, bids);
-
+        const selectedTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: timestamp,
+            lastModificationType: LastModificationType.MESSAGE,
+        };
+        onTimestampSelected(selectedTimestampInfo);
         this.setState(
             {
                 lastSodOffset: bigInt(last_sod_offset),
@@ -543,11 +565,12 @@ const mapStateToProps = (state: RootState) => ({
     showOrderInfoDrawer: state.general.showOrderInfoDrawer,
     orderDetails: state.general.orderDetails,
     currentOrderbookTimestamp: state.general.currentOrderbookTimestamp,
+    lastModificationType: state.general.lastModificationType,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-    onTimestampSelected: (currentOrderBookTimestamp: string) => dispatch(
-        saveOrderbookTimestamp(currentOrderBookTimestamp),
+    onTimestampSelected: (selectedTimestampInfo: SelectedTimestampInfo) => dispatch(
+        saveOrderbookTimestampInfo(selectedTimestampInfo),
     ),
 });
 

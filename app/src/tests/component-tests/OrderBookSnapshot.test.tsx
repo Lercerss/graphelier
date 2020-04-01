@@ -2,6 +2,7 @@ import React from 'react';
 import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { Select } from '@material-ui/core';
 import { KeyboardDatePicker } from '@material-ui/pickers';
+import bigInt from 'big-integer';
 import { NonConnectedOrderBookSnapshot as OrderBookSnapshot } from '../../components/OrderBookSnapshot';
 import {
     TIME_STRING,
@@ -35,6 +36,9 @@ describe('getting and selecting an instrument functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -48,6 +52,9 @@ describe('getting and selecting an instrument functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState({
@@ -83,6 +90,9 @@ describe('date and time picker functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -97,6 +107,9 @@ describe('date and time picker functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
     });
@@ -106,6 +119,9 @@ describe('date and time picker functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -119,6 +135,9 @@ describe('date and time picker functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -136,6 +155,9 @@ describe('date and time picker functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -150,6 +172,9 @@ describe('date and time picker functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -164,13 +189,14 @@ describe('date and time picker functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
-        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP_PM.toString());
-
-        const { selectedDateTimeNano } = wrapper.state();
-        expect(selectedDateTimeNano).toEqual(DATE_VALUE_BIG_INT.plus(TIME_VALUE_BIG_INT));
+        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP.toString());
+        expect(props.currentOrderbookTimestamp).toEqual(TIMESTAMP);
     });
 });
 
@@ -184,6 +210,9 @@ describe('updating price level by message offset functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -196,6 +225,9 @@ describe('updating price level by message offset functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState(
@@ -224,6 +256,9 @@ describe('updating price level by message offset functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState(
@@ -255,6 +290,9 @@ describe('updating price level by message offset functionality', () => {
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState(
@@ -275,7 +313,7 @@ describe('updating price level by message offset functionality', () => {
 });
 
 describe('graph zoom and pan data loading functionality', () => {
-    let mount, shallow;
+    let mount, shallow, props;
 
     const getTopOfBookOverTimeSpy = jest.spyOn(OrderBookService, 'getTopOfBookOverTime')
         .mockImplementation((instrument, startTime, endTime, nDataPoints): Promise<any> => Promise.resolve(
@@ -287,6 +325,13 @@ describe('graph zoom and pan data loading functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
+        props = {
+            orderDetails: undefined,
+            showOrderInfoDrawer: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
+        };
     });
 
     afterEach(() => {
@@ -295,7 +340,15 @@ describe('graph zoom and pan data loading functionality', () => {
     });
 
     it('makes database call when there is a zoom or pan event', () => {
-        const wrapper = shallow(<OrderBookSnapshot />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
+            />,
+        );
 
         expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(0);
         wrapper.instance().handlePanAndZoom(TIMESTAMP_PM, TIMESTAMP_PM);

@@ -1,7 +1,7 @@
 import {
-    GeneralActions, SHOW_ORDER_INFO_DRAWER, SAVE_REACT_APP_NAME, SAVE_ORDERBOOK_TIMESTAMP,
+    GeneralActions, SAVE_ORDERBOOK_TIMESTAMP_INFO, SAVE_REACT_APP_NAME, SHOW_ORDER_INFO_DRAWER,
 } from './types';
-import { OrderInformationDrawer } from '../models/OrderBook';
+import { OrderInformationDrawer, SelectedTimestampInfo } from '../models/OrderBook';
 
 export const saveReactAppName = (name: string): GeneralActions => ({
     type: SAVE_REACT_APP_NAME,
@@ -13,7 +13,7 @@ export const showOrderInfoDrawer = (orderInfoDrawer: OrderInformationDrawer): Ge
     payload: orderInfoDrawer,
 });
 
-export const saveOrderbookTimestamp = (currentOrderbookTimestamp: string): GeneralActions => ({
-    type: SAVE_ORDERBOOK_TIMESTAMP,
-    payload: currentOrderbookTimestamp,
+export const saveOrderbookTimestampInfo = (selectedOrderbookTimestampInfo: SelectedTimestampInfo): GeneralActions => ({
+    type: SAVE_ORDERBOOK_TIMESTAMP_INFO,
+    payload: selectedOrderbookTimestampInfo,
 });

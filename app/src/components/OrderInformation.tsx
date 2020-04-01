@@ -12,15 +12,18 @@ import TableRow from '@material-ui/core/TableRow';
 import bigInt from 'big-integer';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
-import { Message, OrderInformationDrawer } from '../models/OrderBook';
+import {
+    LastModificationType, Message, OrderInformationDrawer, SelectedTimestampInfo,
+} from '../models/OrderBook';
 import { Styles } from '../styles/OrderInformation';
 import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
 import {
-    convertNanosecondsUTCToCurrentTimezone, getLocalTimeString,
+    convertNanosecondsUTCToCurrentTimezone,
+    getLocalTimeString,
     nanosecondsToString,
     splitNanosecondEpochTimestamp,
 } from '../utils/date-utils';
-import { saveOrderbookTimestamp, showOrderInfoDrawer } from '../actions/actions';
+import { saveOrderbookTimestampInfo, showOrderInfoDrawer } from '../actions/actions';
 
 const styles = createStyles(Styles);
 
@@ -32,7 +35,7 @@ interface Props extends WithStyles<typeof styles>{
     price: number,
     messages: Array<Message>,
     onOrderInfoClosed: Function,
-    onMessageSelectedSetTimestamp: Function,
+    onMessageTimestampSelected: Function,
 }
 
 interface State {
@@ -48,13 +51,23 @@ class OrderInformation extends Component<Props, State> {
         };
     }
 
+    /**
+     * @desc handles updating the orderbook with to show the message selected by
+     * the user from the message list in the order details drawer
+     * @param timestamp is the timestamp of the message selected from the message list
+     */
     handleOnMessageClick(timestamp) {
-        const { onOrderInfoClosed, onMessageSelectedSetTimestamp } = this.props;
+        const { onOrderInfoClosed, onMessageTimestampSelected } = this.props;
         const orderInformationDrawer: OrderInformationDrawer = {
             showOrderInfoDrawer: false,
         };
+        const selectedOrderbookTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: timestamp,
+            lastModificationType: LastModificationType.ORDER_INFO,
+        };
+
         onOrderInfoClosed(orderInformationDrawer);
-        onMessageSelectedSetTimestamp(timestamp);
+        onMessageTimestampSelected(selectedOrderbookTimestampInfo);
     }
 
     /**
@@ -219,8 +232,8 @@ const mapDispatchToProps = (dispatch : Dispatch) => ({
     onOrderInfoClosed: (orderInformationDrawer: OrderInformationDrawer) => dispatch(
         showOrderInfoDrawer(orderInformationDrawer),
     ),
-    onMessageSelectedSetTimestamp: (currentOrderbookTimestamp: string) => dispatch(
-        saveOrderbookTimestamp(currentOrderbookTimestamp),
+    onMessageTimestampSelected: (selectedTimestampInfo: SelectedTimestampInfo) => dispatch(
+        saveOrderbookTimestampInfo(selectedTimestampInfo),
     ),
 });
 
