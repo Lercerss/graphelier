@@ -1,4 +1,6 @@
-import { SET_PLAYBACK, GeneralActions, SHOW_ORDER_INFO_DRAWER, SAVE_REACT_APP_NAME } from './types';
+import {
+    SET_PLAYBACK, GeneralActions, SHOW_ORDER_INFO_DRAWER, SAVE_REACT_APP_NAME,
+} from './types';
 import { OrderInformationDrawer } from '../models/OrderBook';
 
 export const saveReactAppName = (name: string): GeneralActions => ({

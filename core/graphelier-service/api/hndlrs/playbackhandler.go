@@ -57,7 +57,11 @@ type CountIntervalLoader struct {
 	currentPage models.Paginator
 }
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+    CheckOrigin: func(r *http.Request) bool {
+        return true
+    },
+}
 
 // StreamPlayback : Initiates a websocket connection and starts streaming order book modifications for playback
 func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {

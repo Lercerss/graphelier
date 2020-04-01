@@ -43,7 +43,7 @@ describe('TimestampOrderbookScroller functionality', () => {
     });
 
     it('renders a TimestampOrderbookScroller component with expected props', () => {
-        const wrapper = mount(
+        const wrapper = shallowNoChildren(
             <NonConnectedTimestampOrderBookScroller
                 timeOrDateIsNotSet={timeOrDateIsNotSet}
                 handleUpdateWithDeltas={handleUpdateWithDeltas}
@@ -56,16 +56,6 @@ describe('TimestampOrderbookScroller functionality', () => {
                 playback={playback}
             />,
         );
-        // const wrapper = shallow(<TimestampOrderBookScroller
-        //     timeOrDateIsNotSet={timeOrDateIsNotSet}
-        //     handleUpdateWithDeltas={handleUpdateWithDeltas}
-        //     lastSodOffset={bigInt(0)}
-        //     instrument={INSTRUMENT}
-        //     listItems={ORDER_BOOK_LIST_ITEMS}
-        //     maxQuantity={MAX_QUANTITY}
-        //     loading={loadingOrderbook}
-        //     timestamp={bigInt(0)}
-        // />);
         expect(wrapper.props().timeOrDateIsNotSet).toBeDefined();
         expect(wrapper.props().timeOrDateIsNotSet).toEqual(false);
         expect(wrapper.props().handleUpdateWithDeltas).toBeDefined();

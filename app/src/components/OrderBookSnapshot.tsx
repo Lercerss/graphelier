@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {
     Typography,
     FormControl,
-    Card, Select, MenuItem, createStyles, WithStyles, withStyles
+    Card, Select, MenuItem, createStyles, WithStyles, withStyles,
 } from '@material-ui/core';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
@@ -268,27 +268,30 @@ class OrderBookSnapshot extends Component<AllProps, State> {
      */
     updateOrderBook = () => {
         const { selectedDateTimeNano, selectedInstrument } = this.state;
-        this.setState({ loadingOrderbook: true });
-        OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
-            .then(response => {
-                // eslint-disable-next-line camelcase
-                const { asks, bids, last_sod_offset } = response.data;
-                const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
+        const { playback } = this.props;
+        if (!playback) {
+            this.setState({ loadingOrderbook: true });
+            OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
+                .then(response => {
+                    // eslint-disable-next-line camelcase
+                    const { asks, bids, last_sod_offset } = response.data;
+                    const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
 
-                this.setState(
-                    {
-                        listItems,
-                        maxQuantity,
-                        lastSodOffset: bigInt(last_sod_offset),
-                    },
-                );
-            })
-            .catch(err => {
-                console.log(err);
-            })
-            .finally(() => {
-                this.setState({ loadingOrderbook: false });
-            });
+                    this.setState(
+                        {
+                            listItems,
+                            maxQuantity,
+                            lastSodOffset: bigInt(last_sod_offset),
+                        },
+                    );
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.setState({ loadingOrderbook: false });
+                });
+        }
     };
 
     /**
@@ -514,20 +517,21 @@ class OrderBookSnapshot extends Component<AllProps, State> {
                                     handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                     instrument={selectedInstrument}
                                     loading={loadingOrderbook}
+                                    timestamp={selectedDateTimeNano}
                                 />
                             </Card>
-                                {(lastSodOffset.neq(0)) && (
-                                    <Card className={classes.messageListCard}>
-                                        <MessageList
-                                            lastSodOffset={lastSodOffset}
-                                            instrument={selectedInstrument}
-                                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                                            loading={loadingOrderbook}
-                                        />
-                                    </Card>
-                                )}
-                            </div>
-                        )}
+                            {(lastSodOffset.neq(0)) && (
+                                <Card className={classes.messageListCard}>
+                                    <MessageList
+                                        lastSodOffset={lastSodOffset}
+                                        instrument={selectedInstrument}
+                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                                        loading={loadingOrderbook}
+                                    />
+                                </Card>
+                            )}
+                        </div>
+                    )}
                     { orderDetails && showOrderInfoDrawer && (
                         <OrderInformation
                             orderId={orderDetails.id}
@@ -545,12 +549,10 @@ class OrderBookSnapshot extends Component<AllProps, State> {
 }
 
 const mapStateToProps = (state: RootState) => ({
-    playback: state.general.playback,
     showOrderInfoDrawer: state.general.showOrderInfoDrawer,
     orderDetails: state.general.orderDetails,
+    playback: state.general.playback,
 });
-
-const mapDispatchToProps = () => ({});
 
 export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
 
