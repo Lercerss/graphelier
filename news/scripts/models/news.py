@@ -25,3 +25,12 @@ class Article:
 
     def __repr__(self):
         return self.__str__()
+
+class Cluster:
+    """
+    Represents a single cluster of news articles
+    """
+    def __init__(self, articles, timestamp):
+        self.articles = articles
+        self.timestamp = timestamp
+        self.size = len(articles)
