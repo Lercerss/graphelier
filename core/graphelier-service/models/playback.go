@@ -2,14 +2,15 @@ package models
 
 // Modification : Represents an event on a specific order, happening at a given offset time
 type Modification struct {
-	Type     string   `json:"type"`
-	Offset   uint64   `json:"offset"`
-	OrderID  uint64   `json:"order_id"`
-	Price    *float64 `json:"price,omitempty"`
-	Quantity *int64   `json:"quantity,omitempty"`
-	NewID    *uint64  `json:"index,omitempty"`
-	From     *float64 `json:"from,omitempty"`
-	To       *float64 `json:"to,omitempty"`
+	Type      string           `json:"type"`
+	Offset    uint64           `json:"offset"`
+	OrderID   uint64           `json:"order_id"`
+	Direction MessageDirection `json:"direction"`
+	Price     *float64         `json:"price,omitempty"`
+	Quantity  *int64           `json:"quantity,omitempty"`
+	NewID     *uint64          `json:"index,omitempty"`
+	From      *float64         `json:"from,omitempty"`
+	To        *float64         `json:"to,omitempty"`
 }
 
 // Modifications : Holds a list of Modification, starting at a given time
@@ -38,11 +39,12 @@ func NewModification(messages []*Message, currentMessage int, order *Order) *Mod
 		before := messages[currentMessage-1]
 		after := messages[currentMessage]
 		return &Modification{
-			Type:    MoveOrderType,
-			To:      &after.Price,
-			From:    &before.Price,
-			NewID:   &after.OrderID,
-			OrderID: before.OrderID,
+			Type:      MoveOrderType,
+			Direction: after.Direction,
+			To:        &after.Price,
+			From:      &before.Price,
+			NewID:     &after.OrderID,
+			OrderID:   before.OrderID,
 		}
 	}
 	if isSkippable(messages, currentMessage, order) {
@@ -50,8 +52,9 @@ func NewModification(messages []*Message, currentMessage int, order *Order) *Mod
 	}
 	message := messages[currentMessage]
 	modification := &Modification{
-		OrderID: message.OrderID,
-		Price:   &message.Price,
+		OrderID:   message.OrderID,
+		Price:     &message.Price,
+		Direction: message.Direction,
 	}
 	switch message.Type {
 	case NewOrder:
@@ -79,6 +82,7 @@ func isMoveModification(messages []*Message, currentMessage int) bool {
 	after := messages[currentMessage]
 	return after.Type == NewOrder &&
 		before.Type == Delete &&
+		before.Direction == after.Direction &&
 		before.Price != after.Price &&
 		before.ShareQuantity == after.ShareQuantity
 }
