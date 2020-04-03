@@ -94,6 +94,8 @@ def _rank_sentences(sentences, count_dict):
 
     sent_ranks = []
     for i, sentence in enumerate(sentences):
+        if len(sentence) == 0:
+            continue
         sent_tuple = (i, calculate_score(sentence))
         sent_ranks.append(sent_tuple)
     return sent_ranks
