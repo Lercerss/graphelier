@@ -1,10 +1,18 @@
 /* eslint-disable camelcase */
 
-export interface NewsItemInfo {
+export interface NewsItem {
+    _id: string,
     title: string,
-    body: string,
-    url: string,
-    image: string,
-    instrument: string,
-    published_date: string,
+    summary: string,
+    article_url: string,
+    image_url: string,
+    tickers: Array<string>,
+    timestamp: string,
+}
+
+export interface NewsCluster {
+    _id: string,
+    articles: Array<NewsItem>,
+    timestamp: string,
+    size: number
 }

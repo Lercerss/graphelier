@@ -2,7 +2,12 @@ import { Colors } from './App';
 
 export const Styles = {
     newsItemDiv: {
-        width: 300,
+        overflow: 'auto',
+        // '&::-webkit-scrollbar': {
+        //     display: 'none',
+        // },
+        minWidth: '20vw',
+        maxWidth: '20vw',
     },
     image: {
         width: '100%',
@@ -18,7 +23,6 @@ export const Styles = {
     },
     body: {
         marginTop: '2px',
-        maxHeight: '33%',
     },
     articleLink: {
         textDecoration: 'none',
@@ -35,14 +39,6 @@ export const Styles = {
         display: 'inline-flex',
         width: '100%',
         alignItems: 'center',
-        '&:hover #stockBox': {
-            opacity: 0.7,
-            transition: 'opacity 0.2s',
-        },
-        '&:hover #time': {
-            textDecoration: 'underline',
-            textDecorationColor: Colors.grey,
-        },
     },
     stockBox: {
         height: '100%',
@@ -50,6 +46,10 @@ export const Styles = {
         borderRadius: '3px',
         marginRight: '5px',
         transition: 'opacity 0.2s',
+        '&:hover': {
+            opacity: 0.7,
+            transition: 'opacity 0.2s',
+        },
     },
     stock: {
         color: Colors.white,
@@ -75,7 +75,7 @@ export const Styles = {
         color: Colors.grey,
         fontSize: 11,
     },
-    articleLinkIcon: {
-
+    marginLeft: {
+        marginLeft: '15px',
     },
 };

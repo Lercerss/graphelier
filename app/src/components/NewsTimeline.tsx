@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {
-    Button,
-    Typography,
+    Button, Card,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
@@ -16,82 +15,143 @@ import {
 } from '@merc/react-timeline';
 import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import CalendarTodayOutlinedIcon from '@material-ui/icons/CalendarTodayOutlined';
+// import InfiniteScroll from 'react-bidirectional-infinite-scroll';
 
 import moment from 'moment';
 
 import { Styles } from '../styles/NewsTimeline';
 
 import {
-    NewsItemInfo,
+    NewsCluster,
 } from '../models/NewsTimeline';
 import CustomLoader from './CustomLoader';
-import NewsItem from './NewsItem';
+import NewsArticle from './NewsItem';
 import { convertNanosecondsToUTC, dateStringToEpoch } from '../utils/date-utils';
+import MultiDirectionalScroll from './MultiDirectionalScroll';
 
 const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles> {}
 
 interface State {
-    newsItems: Array<NewsItemInfo>,
+    newsClusters: Array<NewsCluster>,
     loadingTimeline: boolean,
     datePickerValue: moment.Moment | null,
     datePickerIsOpen: boolean,
 }
 
 class NewsTimeline extends Component<Props, State> {
+    private readonly timelineDivRef: React.RefObject<HTMLElement>;
+
     constructor(props) {
         super(props);
 
+        this.timelineDivRef = React.createRef<HTMLElement>();
+
         this.state = {
-            newsItems: [
+            newsClusters: [
                 {
-                    title: 'Coronavirus Strikes Back',
-                    body: 'Lots of stock issues',
-                    url: 'https://www.latimes.com/politics/story/2020-03-09/economic-impact-coronavirus-oil-'
+                    _id: '1',
+                    size: 3,
+                    timestamp: '1/1/2020',
+                    articles: [
+                        {
+                            _id: '1',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
                     + 'prices-stock-markets',
-                    image: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/2147483647/strip/true/crop/'
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/'
                     + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
                     + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
                     + '20150310-001',
-                    instrument: 'SPY',
-                    published_date: '1/1/2020',
-                },
-                {
-                    title: 'Coronavirus Strikes Back',
-                    body: 'Lots of stock issues',
-                    url: 'https://www.latimes.com/politics/story/2020-03-09/economic-impact-coronavirus-oil-'
-                        + 'prices-stock-markets',
-                    image: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/2147483647/strip/true/crop/'
-                    + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                    + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
-                    + '20150310-001',
-                    instrument: 'SPY',
-                    published_date: '2/1/2020',
-                },
-                {
-                    title: 'Coronavirus Strikes Back',
-                    body: 'Lots of stock issues',
-                    url: 'https://www.latimes.com/politics/story/2020-03-09/economic-impact-coronavirus-oil-'
-                        + 'prices-stock-markets',
-                    image: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/2147483647/strip/true/crop/'
-                    + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                    + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
-                    + '20150310-001',
-                    instrument: 'SPY',
-                    published_date: '3/1/2020',
-                },
-                {
-                    title: 'Coronavirus Strikes Back',
-                    body: 'Lots of stock issues',
-                    url: 'https://www.latimes.com/politics/story/2020-03-09/economic-impact-coronavirus-oil-'
-                        + 'prices-stock-markets',
-                    image: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/2147483647/strip/true/crop/'
-                    + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                    + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
-                    + '20150310-001',
-                    instrument: 'SPY',
-                    published_date: '4/1/2020',
+                            tickers: ['SPY', 'AAPL'],
+                            timestamp: '1/1/2020',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1/1/2020',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1/1/2020',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            // eslint-disable-next-line max-len
+                            summary: 'Lots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1/1/2020',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1/1/2020',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1/1/2020',
+                        },
+                    ],
                 },
             ],
             loadingTimeline: false,
@@ -99,6 +159,48 @@ class NewsTimeline extends Component<Props, State> {
             datePickerIsOpen: false,
         };
     }
+
+    /**
+     * @desc handler for the native callback for a scroll in the main div
+     */
+    handleScroll = () => {
+        // const {
+        //     firstChild, lastChild, scrollTop, offsetTop, offsetHeight,
+        // } = this.timelineDivRef;
+        //
+        // console.debug(firstChild, lastChild, scrollTop, offsetTop, offsetHeight);
+        //
+        // if (firstChild) {
+        //     const topEdge = firstChild.offsetTop;
+        //     const bottomEdge = topEdge + lastChild.offsetHeight;
+        //     const scrolledUp = scrollTop + offsetTop;
+        //     const scrolledDown = scrolledUp + offsetHeight;
+        //
+        //     if (scrolledDown >= (bottomEdge - 5)) {
+        //         this.handleHitEdge('bottom');
+        //     } else if (scrolledUp <= topEdge + 5) {
+        //         this.handleHitEdge('top');
+        //     }
+        // }
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
+            console.debug('you\'re at the bottom of the page');
+        }
+    };
+
+    /**
+    * @desc Paging handler for upwards and downwards hitting of the timeline
+    * @param direction
+    */
+    handleHitEdge = (direction: string) => {
+        console.debug(direction);
+    };
+
+    handleOnScroll = (position, previousPosition) => {
+        const diffScroll = position - previousPosition;
+        const direction = diffScroll > 0 ? 'down' : 'up';
+
+        console.debug(`Scroll ${direction} to ${position}`);
+    };
 
     /**
      * @desc Handles the date change for the TextField date picker
@@ -130,7 +232,7 @@ class NewsTimeline extends Component<Props, State> {
     render() {
         const { classes } = this.props;
         const {
-            newsItems,
+            newsClusters,
             loadingTimeline,
             datePickerValue,
             datePickerIsOpen,
@@ -147,65 +249,88 @@ class NewsTimeline extends Component<Props, State> {
             },
         });
 
+        const MyCustomCard = ({ children }) => (
+            <Card
+                className={classes.timelineEvent}
+                variant={'outlined'}
+            >
+                {children}
+            </Card>
+        );
+
+        // @ts-ignore
         return (
-            <MuiPickersUtilsProvider utils={MomentUtils}>
-                <Typography
-                    component={'div'}
-                >
-                    {loadingTimeline
-                        ? (
-                            <div className={classes.loaderDiv}>
-                                <CustomLoader type={'circular'} />
+            loadingTimeline
+                ? (
+                    <div className={classes.loaderDiv}>
+                        <CustomLoader type={'circular'} />
+                    </div>
+                )
+                : (
+                    <div
+                        className={classes.contentDiv}
+                    >
+                        <div className={classes.headerDiv}>
+                            <Button
+                                onClick={() => this.setState({ datePickerIsOpen: true })}
+                                variant={'contained'}
+                                color={'secondary'}
+                                endIcon={<CalendarTodayOutlinedIcon />}
+                            >
+                                {'Pick a date'}
+                            </Button>
+                            <div className={classes.datePickerDiv}>
+                                <MuiPickersUtilsProvider utils={MomentUtils}>
+                                    <DatePicker
+                                        variant={'dialog'}
+                                        open={datePickerIsOpen}
+                                        onOpen={() => this.setState({ datePickerIsOpen: true })}
+                                        onClose={() => this.setState({ datePickerIsOpen: false })}
+                                        views={['year', 'month', 'date']}
+                                        openTo={'year'}
+                                        format={'DD/MM/YYYY'}
+                                        value={datePickerValue}
+                                        onChange={date => this.handleChangeDate(date)}
+                                        invalidDateMessage={''}
+                                        disableFuture
+                                    />
+                                </MuiPickersUtilsProvider>
                             </div>
-                        )
-                        : (
-                            <div>
-                                <div className={classes.headerDiv}>
-                                    <Button
-                                        onClick={() => this.setState({ datePickerIsOpen: true })}
-                                        variant={'contained'}
-                                        color={'secondary'}
-                                        endIcon={<CalendarTodayOutlinedIcon />}
-                                    >
-                                        {'Pick a date'}
-                                    </Button>
-                                    <div className={classes.datePickerDiv}>
-                                        <DatePicker
-                                            variant={'dialog'}
-                                            open={datePickerIsOpen}
-                                            onOpen={() => this.setState({ datePickerIsOpen: true })}
-                                            onClose={() => this.setState({ datePickerIsOpen: false })}
-                                            views={['year', 'month', 'date']}
-                                            openTo={'year'}
-                                            format={'DD/MM/YYYY'}
-                                            value={datePickerValue}
-                                            onChange={date => this.handleChangeDate(date)}
-                                            invalidDateMessage={''}
-                                            disableFuture
-                                        />
-                                    </div>
-                                </div>
-                                <Timeline
-                                    opts={opts}
-                                    theme={customTheme}
-                                >
-                                    <Events>
-                                        {newsItems.map(newsItem => (
-                                            <TextEvent
-                                                date={newsItem.published_date}
-                                                text={''}
-                                            >
-                                                <NewsItem
-                                                    newsItemInfo={newsItem}
-                                                />
-                                            </TextEvent>
-                                        ))}
-                                    </Events>
-                                </Timeline>
-                            </div>
-                        )}
-                </Typography>
-            </MuiPickersUtilsProvider>
+                        </div>
+                        <MultiDirectionalScroll
+                            // @ts-ignore
+                            ref={this.timelineDivRef}
+                            onReachBottom={() => { console.debug('bot'); }}
+                            onReachTop={() => { console.debug('top'); }}
+                        >
+                            <Timeline
+                                opts={opts}
+                                theme={customTheme}
+                            >
+                                <Events>
+                                    {newsClusters.map(newsCluster => (
+                                        <TextEvent
+                                            date={newsCluster.timestamp}
+                                            text={''}
+                                            card={MyCustomCard}
+                                        >
+                                            <div className={classes.newsCluster}>
+                                                {newsCluster.articles.map((newsItem, i) => {
+                                                    return (
+                                                        <NewsArticle
+                                                            newsItem={newsItem}
+                                                            isFirstItem={i === 0}
+                                                        />
+                                                    );
+                                                })}
+                                            </div>
+                                        </TextEvent>
+                                    ))}
+                                </Events>
+                            </Timeline>
+                        </MultiDirectionalScroll>
+                    </div>
+                )
         );
     }
 }

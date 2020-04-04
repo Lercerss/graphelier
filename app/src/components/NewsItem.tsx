@@ -10,65 +10,69 @@ import { Link } from 'react-router-dom';
 import { Styles } from '../styles/NewsItem';
 
 import {
-    NewsItemInfo,
+    NewsItem,
 } from '../models/NewsTimeline';
 
 const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
-    newsItemInfo: NewsItemInfo,
+    newsItem: NewsItem,
+    isFirstItem: boolean,
 }
 
 interface State {}
 
 class NewsTimeline extends Component<Props, State> {
     render() {
-        const { newsItemInfo, classes } = this.props;
-
-        let instrumentClassName;
-        switch (newsItemInfo.instrument) {
-        case 'AAPL':
-            instrumentClassName = classes.aapl;
-            break;
-        case 'SPY':
-            instrumentClassName = classes.spy;
-            break;
-        case 'MSFT':
-            instrumentClassName = classes.msft;
-            break;
-        default:
-            instrumentClassName = classes.other;
-        }
-
+        const { newsItem, classes, isFirstItem } = this.props;
 
         return (
             <div
-                className={classes.newsItemDiv}
+                className={classNames(classes.newsItemDiv, !isFirstItem && classes.marginLeft)}
             >
-                <Link
-                    to={`/orderbook?instrument=${newsItemInfo.instrument}&timestamp=1577897152000000000`}
-                    // 11:45:52 01/01/2020 local, in utc nanoseconds
-                    className={classes.graphLink}
-                >
-                    <div className={classes.stockTimeDiv}>
-                        <Box
-                            className={classNames(classes.stockBox, instrumentClassName)}
-                            id={'stockBox'}
-                        >
-                            <Typography className={classes.stock}>
-                                {newsItemInfo.instrument}
-                            </Typography>
-                        </Box>
-                        <Typography
-                            className={classes.time}
-                            id={'time'}
-                        >
-                            {'11:32 AM'}
-                        </Typography>
-                    </div>
-                </Link>
+                <div className={classes.stockTimeDiv}>
+                    {newsItem.tickers.map(instrument => {
+                        let instrumentClassName;
+                        switch (instrument) {
+                        case 'AAPL':
+                            instrumentClassName = classes.aapl;
+                            break;
+                        case 'SPY':
+                            instrumentClassName = classes.spy;
+                            break;
+                        case 'MSFT':
+                            instrumentClassName = classes.msft;
+                            break;
+                        default:
+                            instrumentClassName = classes.other;
+                        }
+
+                        return (
+                            <Link
+                                to={`/orderbook?instrument=${instrument}&timestamp=1577897152000000000`}
+                                // 11:45:52 01/01/2020 local, in utc nanoseconds
+                                className={classes.graphLink}
+                            >
+                                <Box
+                                    className={classNames(classes.stockBox, instrumentClassName)}
+                                    id={'stockBox'}
+                                >
+                                    <Typography className={classes.stock}>
+                                        {instrument}
+                                    </Typography>
+                                </Box>
+                            </Link>
+                        );
+                    })}
+                    <Typography
+                        className={classes.time}
+                        id={'time'}
+                    >
+                        {'11:32 AM'}
+                    </Typography>
+                </div>
                 <a
-                    href={newsItemInfo.url}
+                    href={newsItem.article_url}
                     target={'_blank'}
                     className={classes.articleLink}
                 >
@@ -80,7 +84,7 @@ class NewsTimeline extends Component<Props, State> {
                             color={'textPrimary'}
                             noWrap
                         >
-                            {newsItemInfo.title}
+                            {newsItem.title}
                         </Typography>
                         <OpenInNewIcon
                             fontSize={'small'}
@@ -88,17 +92,17 @@ class NewsTimeline extends Component<Props, State> {
                         />
                     </div>
                     <Img
-                        src={newsItemInfo.image}
+                        src={newsItem.image_url}
                         className={classes.image}
                     />
-                    <Typography
-                        variant={'body2'}
-                        color={'textSecondary'}
-                        className={classes.body}
-                    >
-                        {newsItemInfo.body}
-                    </Typography>
                 </a>
+                <Typography
+                    variant={'body2'}
+                    color={'textSecondary'}
+                    className={classes.body}
+                >
+                    {newsItem.summary}
+                </Typography>
             </div>
         );
     }

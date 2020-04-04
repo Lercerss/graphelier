@@ -128,16 +128,21 @@ class OrderBookSnapshot extends Component<Props, State> {
         const timestamp = params.get('timestamp');
         if (instrument && timestamp) {
             const selectedDateTimeNano = bigInt(timestamp);
+            console.debug('raw timestamp:', selectedDateTimeNano);
+            const convertedTimestamp = convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano);
+            console.debug('converted timestamp:', convertedTimestamp);
             const {
                 timeNanoseconds,
                 dateNanoseconds,
-            } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+            } = splitNanosecondEpochTimestamp(convertedTimestamp);
+            console.debug('converted timestamp time nanoseconds:', timeNanoseconds);
 
             const selectedTimeString = nanosecondsToString(timeNanoseconds);
+            const datePickerValue = moment(selectedDateTimeNano.divide(NANOSECONDS_IN_ONE_MILLISECOND).valueOf());
+
             const selectedDateNano = bigInt(dateNanoseconds);
             const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
             const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
-            const datePickerValue = moment(selectedDateNano.divide(NANOSECONDS_IN_ONE_MILLISECOND).valueOf());
 
             this.setState({
                 selectedInstrument: instrument,
