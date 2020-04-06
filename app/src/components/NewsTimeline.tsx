@@ -19,6 +19,7 @@ import CalendarTodayOutlinedIcon from '@material-ui/icons/CalendarTodayOutlined'
 
 import moment from 'moment';
 
+import bigInt from 'big-integer';
 import { Styles } from '../styles/NewsTimeline';
 
 import {
@@ -26,8 +27,12 @@ import {
 } from '../models/NewsTimeline';
 import CustomLoader from './CustomLoader';
 import NewsArticle from './NewsItem';
-import { convertNanosecondsToUTC, dateStringToEpoch } from '../utils/date-utils';
+import {
+    convertNanosecondsToUTC,
+    dateStringToEpoch, getDateStringFromTimestamp,
+} from '../utils/date-utils';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
+import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 
 const styles = createStyles(Styles);
 
@@ -53,7 +58,7 @@ class NewsTimeline extends Component<Props, State> {
                 {
                     _id: '1',
                     size: 3,
-                    timestamp: '1/1/2020',
+                    timestamp: '1578333979',
                     articles: [
                         {
                             _id: '1',
@@ -68,7 +73,7 @@ class NewsTimeline extends Component<Props, State> {
                     + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
                     + '20150310-001',
                             tickers: ['SPY', 'AAPL'],
-                            timestamp: '1/1/2020',
+                            timestamp: '1578333979',
                         },
                         {
                             _id: '2',
@@ -84,7 +89,7 @@ class NewsTimeline extends Component<Props, State> {
                                 + 'Fla-me-lawmakers-grill-oil-regulators-'
                                 + '20150310-001',
                             tickers: ['SPY'],
-                            timestamp: '1/1/2020',
+                            timestamp: '1578333979',
                         },
                         {
                             _id: '2',
@@ -100,7 +105,7 @@ class NewsTimeline extends Component<Props, State> {
                                 + 'Fla-me-lawmakers-grill-oil-regulators-'
                                 + '20150310-001',
                             tickers: ['SPY'],
-                            timestamp: '1/1/2020',
+                            timestamp: '1578333979',
                         },
                         {
                             _id: '2',
@@ -117,7 +122,7 @@ class NewsTimeline extends Component<Props, State> {
                                 + 'Fla-me-lawmakers-grill-oil-regulators-'
                                 + '20150310-001',
                             tickers: ['SPY'],
-                            timestamp: '1/1/2020',
+                            timestamp: '1578333979',
                         },
                         {
                             _id: '2',
@@ -133,7 +138,7 @@ class NewsTimeline extends Component<Props, State> {
                                 + 'Fla-me-lawmakers-grill-oil-regulators-'
                                 + '20150310-001',
                             tickers: ['SPY'],
-                            timestamp: '1/1/2020',
+                            timestamp: '1578333979',
                         },
                         {
                             _id: '2',
@@ -149,7 +154,7 @@ class NewsTimeline extends Component<Props, State> {
                                 + 'Fla-me-lawmakers-grill-oil-regulators-'
                                 + '20150310-001',
                             tickers: ['SPY'],
-                            timestamp: '1/1/2020',
+                            timestamp: '1578333979',
                         },
                     ],
                 },
@@ -182,9 +187,6 @@ class NewsTimeline extends Component<Props, State> {
         //         this.handleHitEdge('top');
         //     }
         // }
-        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
-            console.debug('you\'re at the bottom of the page');
-        }
     };
 
     /**
@@ -308,24 +310,29 @@ class NewsTimeline extends Component<Props, State> {
                                 theme={customTheme}
                             >
                                 <Events>
-                                    {newsClusters.map(newsCluster => (
-                                        <TextEvent
-                                            date={newsCluster.timestamp}
-                                            text={''}
-                                            card={MyCustomCard}
-                                        >
-                                            <div className={classes.newsCluster}>
-                                                {newsCluster.articles.map((newsItem, i) => {
-                                                    return (
-                                                        <NewsArticle
-                                                            newsItem={newsItem}
-                                                            isFirstItem={i === 0}
-                                                        />
-                                                    );
-                                                })}
-                                            </div>
-                                        </TextEvent>
-                                    ))}
+                                    {newsClusters.map(newsCluster => {
+                                        const nanosecondTimestamp = bigInt(newsCluster.timestamp)
+                                            .multiply(NANOSECONDS_IN_ONE_SECOND);
+                                        const dateString = getDateStringFromTimestamp(nanosecondTimestamp);
+                                        return (
+                                            <TextEvent
+                                                date={dateString}
+                                                text={''}
+                                                card={MyCustomCard}
+                                            >
+                                                <div className={classes.newsCluster}>
+                                                    {newsCluster.articles.map((newsItem, i) => {
+                                                        return (
+                                                            <NewsArticle
+                                                                newsItem={newsItem}
+                                                                isFirstItem={i === 0}
+                                                            />
+                                                        );
+                                                    })}
+                                                </div>
+                                            </TextEvent>
+                                        );
+                                    })}
                                 </Events>
                             </Timeline>
                         </MultiDirectionalScroll>

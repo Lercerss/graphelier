@@ -219,3 +219,45 @@ export const buildTimeInTheDayStringFromNanoDate = (nanoDate: NanoDate): string 
         .concat(zeroLeftPad(nanoDate.getMicroseconds(), 3))
         .concat(zeroLeftPad(nanoDate.getNanoseconds(), 3));
 };
+
+
+/**
+ * @desc Given a timestamp, recreates a string representation of format HH:mm
+ * @param timestamp
+ * @return string
+ */
+export const getHoursMinutesStringFromTimestamp = (timestamp: bigInt.BigInteger): string => {
+    const nanoDate = new NanoDate(adaptTrueNanosecondsTimeToCurrentDateTimezone(timestamp).toString());
+
+    let hours = nanoDate.getHours();
+    let period = 'AM';
+    if (hours >= 12) {
+        period = 'PM';
+        if (hours > 12) {
+            hours %= 12;
+        }
+    }
+
+    return ''
+        .concat(zeroLeftPad(hours, 2))
+        .concat(':')
+        .concat(zeroLeftPad(nanoDate.getMinutes(), 2))
+        .concat(` `)
+        .concat(period);
+};
+
+/**
+ * @desc Given a timestamp, recreates a string representation of format MM/DD/YYYY
+ * @param timestamp
+ * @return string
+ */
+export const getDateStringFromTimestamp = (timestamp: bigInt.BigInteger): string => {
+    const nanoDate = new NanoDate(adaptTrueNanosecondsTimeToCurrentDateTimezone(timestamp).toString());
+
+    return ''
+        .concat(zeroLeftPad(nanoDate.getMonth() + 1, 2))
+        .concat('/')
+        .concat(zeroLeftPad(nanoDate.getDate(), 2))
+        .concat('/')
+        .concat(nanoDate.getFullYear().toString());
+};

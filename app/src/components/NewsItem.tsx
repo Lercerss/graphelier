@@ -7,11 +7,14 @@ import Img from 'react-image';
 import { Typography, Box } from '@material-ui/core';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { Link } from 'react-router-dom';
+import bigInt from 'big-integer';
 import { Styles } from '../styles/NewsItem';
 
 import {
     NewsItem,
 } from '../models/NewsTimeline';
+import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
+import { adaptTrueNanosecondsTimeToCurrentDateTimezone, getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
 
 const styles = createStyles(Styles);
 
@@ -25,6 +28,10 @@ interface State {}
 class NewsTimeline extends Component<Props, State> {
     render() {
         const { newsItem, classes, isFirstItem } = this.props;
+
+        const nanosecondTimestamp = bigInt(newsItem.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
+        const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
+        const nanosecondTimestampForGraph = adaptTrueNanosecondsTimeToCurrentDateTimezone(nanosecondTimestamp);
 
         return (
             <div
@@ -49,8 +56,7 @@ class NewsTimeline extends Component<Props, State> {
 
                         return (
                             <Link
-                                to={`/orderbook?instrument=${instrument}&timestamp=1577897152000000000`}
-                                // 11:45:52 01/01/2020 local, in utc nanoseconds
+                                to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestampForGraph}`}
                                 className={classes.graphLink}
                             >
                                 <Box
@@ -68,7 +74,7 @@ class NewsTimeline extends Component<Props, State> {
                         className={classes.time}
                         id={'time'}
                     >
-                        {'11:32 AM'}
+                        {timePublishedString}
                     </Typography>
                 </div>
                 <a
