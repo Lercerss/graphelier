@@ -40,5 +40,8 @@ export const Styles = {
     },
     orderMessageListRow: {
         cursor: 'pointer',
+        '&:hover': {
+            backgroundColor: Colors.lightGrey,
+        },
     },
 };
