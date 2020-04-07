@@ -12,15 +12,18 @@ import TableRow from '@material-ui/core/TableRow';
 import bigInt from 'big-integer';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
-import { Message, OrderInformationDrawer } from '../models/OrderBook';
+import {
+    LastModificationType, Message, OrderInformationDrawer, SelectedTimestampInfo,
+} from '../models/OrderBook';
 import { Styles } from '../styles/OrderInformation';
 import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
 import {
-    convertNanosecondsUTCToCurrentTimezone, getLocalTimeString,
+    convertNanosecondsUTCToCurrentTimezone,
+    getLocalTimeString,
     nanosecondsToString,
     splitNanosecondEpochTimestamp,
 } from '../utils/date-utils';
-import { showOrderInfoDrawer } from '../actions/actions';
+import { saveOrderbookTimestampInfo, showOrderInfoDrawer } from '../actions/actions';
 
 const styles = createStyles(Styles);
 
@@ -32,6 +35,7 @@ interface Props extends WithStyles<typeof styles>{
     price: number,
     messages: Array<Message>,
     onOrderInfoClosed: Function,
+    onMessageTimestampSelected: Function,
 }
 
 interface State {
@@ -45,6 +49,25 @@ class OrderInformation extends Component<Props, State> {
         this.state = {
             right: true,
         };
+    }
+
+    /**
+     * @desc handles updating the orderbook with to show the message selected by
+     * the user from the message list in the order details drawer
+     * @param timestamp is the timestamp of the message selected from the message list
+     */
+    handleOnMessageClick(timestamp) {
+        const { onOrderInfoClosed, onMessageTimestampSelected } = this.props;
+        const orderInformationDrawer: OrderInformationDrawer = {
+            showOrderInfoDrawer: false,
+        };
+        const selectedOrderbookTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: timestamp,
+            lastModificationType: LastModificationType.ORDER_INFO,
+        };
+
+        onOrderInfoClosed(orderInformationDrawer);
+        onMessageTimestampSelected(selectedOrderbookTimestampInfo);
     }
 
     /**
@@ -102,6 +125,8 @@ class OrderInformation extends Component<Props, State> {
                             <TableRow
                                 key={sod_offset}
                                 id={'orderMessageListRow'}
+                                className={classes.orderMessageListRow}
+                                onClick={() => this.handleOnMessageClick(timestamp)}
                             >
                                 <TableCell>{time}</TableCell>
                                 <TableCell>{MESSAGE_TYPE_ENUM[message_type].name}</TableCell>
@@ -206,6 +231,9 @@ class OrderInformation extends Component<Props, State> {
 const mapDispatchToProps = (dispatch : Dispatch) => ({
     onOrderInfoClosed: (orderInformationDrawer: OrderInformationDrawer) => dispatch(
         showOrderInfoDrawer(orderInformationDrawer),
+    ),
+    onMessageTimestampSelected: (selectedTimestampInfo: SelectedTimestampInfo) => dispatch(
+        saveOrderbookTimestampInfo(selectedTimestampInfo),
     ),
 });
 

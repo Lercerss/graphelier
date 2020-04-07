@@ -3,6 +3,8 @@ import NanoDate from 'nano-date';
 
 export enum TransactionType { Ask, Bid }
 
+export enum LastModificationType { 'MESSAGE', 'ORDER_INFO', 'GRAPH'}
+
 export interface Order {
     id: number,
     quantity: number,
@@ -72,4 +74,9 @@ export interface OrderDetails {
 export interface OrderInformationDrawer {
     orderDetails?: OrderDetails,
     showOrderInfoDrawer: boolean,
+}
+
+export interface SelectedTimestampInfo {
+    currentOrderbookTimestamp: string,
+    lastModificationType?: LastModificationType.MESSAGE | LastModificationType.GRAPH | LastModificationType.ORDER_INFO,
 }

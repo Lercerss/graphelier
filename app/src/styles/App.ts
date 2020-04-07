@@ -9,6 +9,8 @@ export const Colors = {
     black: '#000000',
     yellow: '#ffff00',
     paleBlue: '#9be7ff',
+    grey: '#808080',
+    lightGrey: '#D3D3D3',
 };
 
 export const LightThemeColors = {
