@@ -170,3 +170,48 @@ export const processOrderBookWithDeltas = (
 export const getMessageDirection = (direction: number) => {
     return (direction === 1) ? 'Bid' : 'Ask';
 };
+
+/**
+ * @desx Checks to see if price level exists
+ * @param price {number}
+ * @param listItems {ListItem}
+ * @returns {boolean}
+ */
+export const priceLevelExists = (price: number, listItems: ListItems) => {
+    return !!listItems[price];
+};
+
+/**
+ * Checks to see if a price level exists, and creates the price level if it does not.
+ *
+ * @param price {number}
+ * @param listItems {ListItems}
+ * @param direction {TransactionType.Ask | TransactionType.Bid}
+ * @returns {ListItems}
+ */
+export const checkCreatePriceLevel = (price: number, listItems: ListItems,
+    type: TransactionType.Ask | TransactionType.Bid) => {
+    if (!priceLevelExists(price, listItems)) {
+        // eslint-disable-next-line no-param-reassign
+        listItems[price] = {
+            price,
+            orders: [],
+            type,
+            isMiddle: false,
+        };
+    }
+    return listItems;
+};
+
+/**
+ * Checks to see if the price level needs to be removed from the ListItems because there are no more orders for that
+ * level
+ * @param price {number}
+ * @param listItems {ListItems}
+ * @returns {ListItems}
+ */
+export const checkDeletePriceLevel = (price: number, listItems: ListItems) => {
+    // eslint-disable-next-line no-param-reassign
+    if (listItems[price].orders.length === 0) delete listItems[price];
+    return listItems;
+};
