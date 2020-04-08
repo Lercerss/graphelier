@@ -11,7 +11,6 @@ import {
     MESSAGE_DELTAS_FROM_BACKEND_ADD,
     MESSAGE_DELTAS_FROM_BACKEND_REMOVE,
     ORDER_BOOK_FROM_BACKEND,
-    TIME_VALUE_BIG_INT,
     DATE_MOMENT,
     TIMESTAMP,
     TIMESTAMP_PM,
@@ -34,7 +33,9 @@ describe('getting and selecting an instrument functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
-            playback: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -46,9 +47,11 @@ describe('getting and selecting an instrument functionality', () => {
     it('renders a OrderBookSnapshot component and simulate selecting instruments', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState({
@@ -84,7 +87,9 @@ describe('date and time picker functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
-            playback: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -97,9 +102,11 @@ describe('date and time picker functionality', () => {
     it('renders an OrderBookSnapshot component without crashing', () => {
         mount(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
     });
@@ -107,9 +114,11 @@ describe('date and time picker functionality', () => {
     it('makes database call once a date is selected', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -121,9 +130,11 @@ describe('date and time picker functionality', () => {
     it('makes database call when a time is selected from the graph', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -139,9 +150,11 @@ describe('date and time picker functionality', () => {
     it('should store the proper time string when the time is selected', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -154,9 +167,11 @@ describe('date and time picker functionality', () => {
     it('should store the proper date value in nanoseconds when the date is selected', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
@@ -169,16 +184,16 @@ describe('date and time picker functionality', () => {
     it('should store the proper epoch timestamp in nanoseconds when a timestamp is selected from the graph', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
 
-        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP_PM.toString());
-
-        const { selectedDateTimeNano } = wrapper.state();
-        expect(selectedDateTimeNano).toEqual(DATE_VALUE_BIG_INT.plus(TIME_VALUE_BIG_INT));
+        wrapper.instance().handleSelectGraphDateTime(TIMESTAMP.toString());
+        expect(props.currentOrderbookTimestamp).toEqual(TIMESTAMP);
     });
 });
 
@@ -192,7 +207,9 @@ describe('updating price level by message offset functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
-            playback: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -203,9 +220,11 @@ describe('updating price level by message offset functionality', () => {
     it('updates list items in state given a modified price level', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState(
@@ -232,9 +251,11 @@ describe('updating price level by message offset functionality', () => {
     it('updates list items in state given an added price level', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState(
@@ -264,9 +285,11 @@ describe('updating price level by message offset functionality', () => {
     it('updates list items in state given a removed price level', () => {
         const wrapper = shallow(
             <OrderBookSnapshot
-                playback={props.playback}
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
             />,
         );
         wrapper.instance().setState(
@@ -302,7 +325,9 @@ describe('graph zoom and pan data loading functionality', () => {
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
-            playback: false,
+            currentOrderbookTimestamp: TIMESTAMP,
+            lastModificationType: undefined,
+            onTimestampSelected: jest.fn(),
         };
     });
 
@@ -312,11 +337,15 @@ describe('graph zoom and pan data loading functionality', () => {
     });
 
     it('makes database call when there is a zoom or pan event', () => {
-        const wrapper = shallow(<OrderBookSnapshot
-            playback={props.playback}
-            orderDetails={props.orderDetails}
-            showOrderInfoDrawer={props.showOrderInfoDrawer}
-        />);
+        const wrapper = shallow(
+            <OrderBookSnapshot
+                orderDetails={props.orderDetails}
+                showOrderInfoDrawer={props.showOrderInfoDrawer}
+                currentOrderbookTimestamp={props.currentOrderbookTimestamp}
+                lastModificationType={props.lastModificationType}
+                onTimestampSelected={props.onTimestampSelected}
+            />,
+        );
 
         expect(getTopOfBookOverTimeSpy).toHaveBeenCalledTimes(0);
         wrapper.instance().handlePanAndZoom(TIMESTAMP_PM, TIMESTAMP_PM);

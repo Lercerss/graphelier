@@ -38,4 +38,10 @@ export const Styles = {
     messagesTable: {
         marginTop: -20,
     },
+    orderMessageListRow: {
+        cursor: 'pointer',
+        '&:hover': {
+            backgroundColor: Colors.lightGrey,
+        },
+    },
 };

@@ -1,12 +1,18 @@
 import {
-    GeneralActions, GeneralState, SAVE_REACT_APP_NAME, SET_PLAYBACK, SHOW_ORDER_INFO_DRAWER,
+    GeneralActions,
+    GeneralState,
+    SAVE_ORDERBOOK_TIMESTAMP_INFO,
+    SAVE_REACT_APP_NAME,
+    SHOW_ORDER_INFO_DRAWER,
 } from '../actions/types';
 
 const initialState : GeneralState = {
     appName: '',
-    playback: false,
     orderDetails: undefined,
     showOrderInfoDrawer: false,
+    currentOrderbookTimestamp: '',
+    lastModificationType: undefined,
+
 };
 
 const generalReducers = (state = initialState, action : GeneralActions) : GeneralState => {
@@ -16,10 +22,11 @@ const generalReducers = (state = initialState, action : GeneralActions) : Genera
             ...state,
             appName: action.payload,
         };
-    case SET_PLAYBACK:
+    case SAVE_ORDERBOOK_TIMESTAMP_INFO:
         return {
             ...state,
-            playback: action.payload,
+            currentOrderbookTimestamp: action.payload.currentOrderbookTimestamp,
+            lastModificationType: action.payload.lastModificationType,
         };
     case SHOW_ORDER_INFO_DRAWER:
         return {
