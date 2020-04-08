@@ -10,8 +10,6 @@ import {
     getNsSinceSod,
     getSodNanoDate,
 } from '../utils/date-utils';
-// import {connect} from 'react-redux';
-// import {RootState} from '../store';
 
 const styles = createStyles(Styles);
 
@@ -23,18 +21,13 @@ interface Props extends WithStyles<typeof styles> {
     endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
+    playback: boolean,
 }
 
 interface State {
     graphWidth: number,
     graphHeight: number,
 }
-
-// interface PropsFromState {
-//     playback: boolean,
-// }
-
-// type AllProps = Props & PropsFromState;
 
 class TopOfBookGraphWrapper extends Component<Props, State> {
     private readonly graphContainerRef: React.RefObject<HTMLDivElement>;
@@ -108,7 +101,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
 
     render() {
         const {
-            classes, onTimeSelect, selectedDateTimeNano, handlePanAndZoom, startOfDay, endOfDay,
+            classes, onTimeSelect, selectedDateTimeNano, handlePanAndZoom, startOfDay, endOfDay, playback,
         } = this.props;
         const { graphWidth, graphHeight } = this.state;
         const topOfBookPackage: TopOfBookPackage = this.prepareTobPackage();
@@ -130,6 +123,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
                          topOfBookItems={topOfBookPackage.topOfBookItems}
                          sodNanoDate={topOfBookPackage.sodNanoDate}
                          handlePanAndZoom={handlePanAndZoom}
+                         playback={playback}
                      />
                  )}
 
@@ -138,13 +132,4 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
     }
 }
 
-// const mapStateToProps = (state: RootState) => ({
-//     playback: state.general.playback,
-// });
-//
-// const mapDispatchToProps = () => ({
-//
-// });
-
-// export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(TopOfBookGraphWrapper));
 export default withStyles(styles)(TopOfBookGraphWrapper);

@@ -9,11 +9,8 @@ import {
     WithStyles,
 } from '@material-ui/core';
 import classNames from 'classnames';
-import { Dispatch } from 'redux';
-import { connect } from 'react-redux';
 import bigInt from 'big-integer';
-import { setPlayback } from '../actions/actions';
-import { RootState } from '../store';
+import { PlaybackData } from '../models/OrderBook';
 
 import { Styles } from '../styles/PlaybackControl';
 import { TIME_UNITS } from '../constants/Constants';
@@ -25,7 +22,9 @@ const WebSocket = require('isomorphic-ws');
 interface PlaybackProps extends WithStyles<typeof styles> {
     selectedInstrument: string,
     selectedDateTimeNano: bigInt.BigInteger,
-    handleTimeChange: Function,
+    handlePlaybackModifications: Function,
+    handlePlayback: Function,
+    playback: boolean,
 }
 
 interface PlaybackState {
@@ -33,17 +32,7 @@ interface PlaybackState {
     unitSpeed: number,
 }
 
-interface PropsFromState {
-    playback: boolean,
-}
-
-interface PropsFromDispatch {
-    setPlaybackAction: Function,
-}
-
-type AllProps = PlaybackProps & PropsFromState & PropsFromDispatch;
-
-class PlaybackControl extends Component<AllProps, PlaybackState> {
+class PlaybackControl extends Component<PlaybackProps, PlaybackState> {
     playbackWS;
 
     constructor(props) {
@@ -53,10 +42,6 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
             selectedUnit: 'Messages',
             unitSpeed: 10,
         };
-    }
-
-    componentDidUpdate(prevProps: Readonly<AllProps>, prevState: Readonly<PlaybackState>, snapshot?: any): void {
-        console.info(prevProps.playback);
     }
 
     componentWillUnmount(): void {
@@ -87,10 +72,10 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
      * @desc Handles adding an event for starting playback and retrieving new data at specified speed
      */
     handlePlayOrderBook = (): void => {
-        const { playback, setPlaybackAction } = this.props;
+        const { playback, handlePlayback } = this.props;
         if (!playback) {
             const pb: boolean = true;
-            setPlaybackAction(pb);
+            handlePlayback(pb);
             this.getPlaybackOrderBookData();
         }
     }
@@ -100,7 +85,7 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
      */
     getPlaybackParameter = (): string => {
         const { unitSpeed, selectedUnit } = this.state;
-        let parameter: string = '?delay2.0&';
+        let parameter: string = '?delay=10.0&';
         if (selectedUnit === 'Messages') parameter = `${parameter}rateMessages=${unitSpeed}`;
         else {
             let timeInNano: bigInt.BigInteger;
@@ -123,8 +108,8 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
             default:
                 timeInNano = bigInt(1000000000);
             }
-            const numerator = timeInNano.times(bigInt(unitSpeed)).divide(bigInt(1000000000));
-            parameter = `${parameter}rateRealTime=${numerator}`;
+            const numerator = timeInNano.divide(bigInt(1000000000)).toJSNumber() * unitSpeed;
+            parameter = `${parameter}rateRealtime=${numerator}`;
         }
         return parameter;
     }
@@ -133,9 +118,7 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
      * @desc Calls the backend service to get new data to feed OrderBook, graph
      */
     getPlaybackOrderBookData = (): void => {
-        // const { selectedDateTimeNano, handleTimeChange } = this.props;
-        const { selectedInstrument, selectedDateTimeNano } = this.props;
-        // const { selectedInstrument, selectedDateTimeNano, handleTimeChange } = this.props;
+        const { selectedInstrument, selectedDateTimeNano, handlePlaybackModifications } = this.props;
         const parameter = this.getPlaybackParameter();
 
         const endPoint = `ws://localhost:5050/playback/${selectedInstrument}/${selectedDateTimeNano}/${parameter}`;
@@ -145,10 +128,9 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
             console.log('opened playback websocket');
         };
         this.playbackWS.onmessage = m => {
-            console.log(m.data);
-            // const data = JSON.parse(m.data);
-            // handleTimeChange(data.timestamp);
-            // handleModifications(data.modifications);
+            const data: PlaybackData = JSON.parse(m.data);
+            console.log(data);
+            handlePlaybackModifications(data);
         };
         this.playbackWS.onclose = () => {
             console.log('closed playback websocket');
@@ -159,9 +141,9 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
      * @desc Handles removing the event for starting playback and retrieving new data at specified speed
      */
     handlePauseOrderBook = (): void => {
-        const { setPlaybackAction } = this.props;
+        const { handlePlayback } = this.props;
         const playback = false;
-        setPlaybackAction(playback);
+        handlePlayback(playback);
         this.clearPlayback();
     }
 
@@ -234,14 +216,4 @@ class PlaybackControl extends Component<AllProps, PlaybackState> {
     }
 }
 
-const mapDispatchToProps = (dispatch : Dispatch) => ({
-    setPlaybackAction: (playback: boolean) => dispatch(
-        setPlayback(playback),
-    ),
-});
-
-const mapStateToProps = (state: RootState) => ({
-    playback: state.general.playback,
-});
-
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(PlaybackControl));
+export default withStyles(styles)(PlaybackControl);

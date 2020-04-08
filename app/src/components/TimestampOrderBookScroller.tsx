@@ -7,7 +7,6 @@ import {
 import ChevronLeftSharpIcon from '@material-ui/icons/ChevronLeftSharp';
 import ChevronRightSharpIcon from '@material-ui/icons/ChevronRightSharp';
 import bigInt from 'big-integer';
-import { connect } from 'react-redux';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Styles } from '../styles/TimestampOrderBookScroller';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
@@ -17,7 +16,6 @@ import { getOrderBookListItemsAsArray, listItemsEquals } from '../utils/order-bo
 import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE, ANIMATION_TIME } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
 import { ListItems } from '../models/OrderBook';
-import { RootState } from '../store';
 
 const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
 
@@ -32,16 +30,10 @@ interface Props extends WithStyles<typeof styles> {
     instrument: string,
     loading: boolean,
     timestamp: bigInt.BigInteger,
-}
-
-interface PropsFromState {
     playback: boolean,
 }
 
-type AllProps = Props & PropsFromState;
-
-
-class TimestampOrderBookScroller extends Component<AllProps> {
+class TimestampOrderBookScroller extends Component<Props> {
     middleReferenceItem;
 
     componentDidMount() {
@@ -49,18 +41,22 @@ class TimestampOrderBookScroller extends Component<AllProps> {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { lastSodOffset, loading } = this.props;
+        console.log('TSOBS: should component update');
+        const { lastSodOffset, loading, playback } = this.props;
+        console.log(`next: ${nextProps.lastSodOffset}, current lastSodOffset: ${lastSodOffset}`);
         if (loading !== nextProps.loading) {
             return true;
         }
         if (lastSodOffset && nextProps.lastSodOffset) {
             return (lastSodOffset.neq(nextProps.lastSodOffset));
         }
+        if (playback !== nextProps.playback) return true;
         return true;
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { listItems, playback } = this.props;
+        console.log('TSOBS:  component did update');
 
         if (!listItemsEquals(prevProps.listItems || {}, listItems || {})) {
             if (!playback) {
@@ -247,11 +243,6 @@ class TimestampOrderBookScroller extends Component<AllProps> {
         );
     }
 }
-
-const mapStateToProps = (state: RootState, ownProps) => ({
-    playback: state.general.playback,
-});
-
 export const NonConnectedTimestampOrderBookScroller = withStyles(styles)(TimestampOrderBookScroller);
 
-export default withStyles(styles)(connect(mapStateToProps, null)(TimestampOrderBookScroller));
+export default withStyles(styles)(TimestampOrderBookScroller);

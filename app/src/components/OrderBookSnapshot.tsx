@@ -26,10 +26,13 @@ import OrderBookService from '../services/OrderBookService';
 import {
     NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS, NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
-import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
+import {
+    processOrderBookFromScratch, processOrderBookWithDeltas, checkCreatePriceLevel, checkDeletePriceLevel,
+}
+    from '../utils/order-book-utils';
 import MessageList from './MessageList';
 import {
-    ListItems, OrderBook, OrderDetails, TopOfBookItem,
+    ListItems, OrderBook, OrderDetails, TopOfBookItem, PlaybackData,
 } from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
 import PlaybackControl from './PlaybackControl';
@@ -58,10 +61,10 @@ interface State {
     graphUnavailable: boolean,
     graphStartTime: bigInt.BigInteger,
     graphEndTime: bigInt.BigInteger,
+    playback: boolean,
 }
 
 interface PropsFromState {
-    playback: boolean,
     orderDetails: OrderDetails,
     showOrderInfoDrawer: boolean,
 }
@@ -99,6 +102,7 @@ class OrderBookSnapshot extends Component<AllProps, State> {
             graphUnavailable: false,
             graphStartTime: bigInt(0),
             graphEndTime: bigInt(0),
+            playback: false,
         };
     }
 
@@ -238,6 +242,85 @@ class OrderBookSnapshot extends Component<AllProps, State> {
     };
 
     /**
+     * @desc Handles changes to orderbook from playbackModifications data
+     */
+    handlePlaybackModifications = (playbackData: PlaybackData) => {
+        const { listItems } = this.state;
+        this.handleSelectGraphDateTime(playbackData.timestamp);
+        const modificationsLength = playbackData.modifications.length;
+        let ctr: number = 0;
+        // let random: number = 0;
+        let newListItems = { ...listItems };
+        console.log(playbackData);
+        console.log(listItems);
+        while (ctr < modificationsLength) {
+            const playbackModification = playbackData.modifications[ctr];
+            const { price } = playbackModification;
+            const { from } = playbackModification;
+            const { to } = playbackModification;
+
+            switch (playbackModification.type) {
+            case 'add':
+                console.log(`Add: ${playbackModification.order_id}`);
+                if (price && playbackModification.quantity) {
+                    newListItems = checkCreatePriceLevel(price, listItems, playbackModification.direction);
+                    newListItems[price].orders.push({
+                        id: playbackModification.order_id,
+                        quantity: playbackModification.quantity,
+                    });
+                }
+                break;
+            case 'drop':
+                console.log(`drop: ${playbackModification.order_id}`);
+                if (price) {
+                    newListItems[price].orders.splice(newListItems[price].orders.findIndex(
+                        order => order.id === playbackModification.order_id,
+                    ), 1);
+                    newListItems = checkDeletePriceLevel(price, listItems);
+                }
+                break;
+            case 'update':
+                if (price && playbackModification.quantity) {
+                    const order = newListItems[price].orders
+                        .find(o => o.id === playbackModification.order_id);
+                    if (order) {
+                        order.quantity = playbackModification.quantity;
+                        console.log(`update: ${playbackModification.order_id}`);
+                    } else {
+                        console.log(`Could not update: ${playbackModification.order_id}. Not found in price level: 
+                            ${playbackModification.price}`);
+                    }
+                }
+                break;
+            case 'move':
+                console.log(`move: ${playbackModification.order_id}`);
+                if (from && to) {
+                    newListItems = checkCreatePriceLevel(to, listItems, playbackModification.direction);
+                    // pushes removed order from the 'from' price level to the 'to' price level
+                    newListItems[to].orders.push(newListItems[from].orders.splice(newListItems[from].orders.findIndex(
+                        order => order.id === playbackModification.order_id,
+                    ), 1)[0]);
+                    newListItems = checkDeletePriceLevel(from, newListItems);
+                }
+                break;
+            default:
+                console.log(`Default: wrong type -> ${playbackModification.type}`);
+                break;
+            }
+            ctr++;
+        }
+
+        this.setState({ listItems: newListItems, lastSodOffset: bigInt(playbackData.last_sod_offset) });
+    };
+
+    /**
+     * @desc handles updating state for playback feature
+     */
+    handlePlayback = (playback: boolean) => {
+        this.setState({ playback });
+    }
+
+    /**
      * @desc handles the updates with deltas once a message is moved by a certain amount
      * @param deltas
      */
@@ -267,13 +350,12 @@ class OrderBookSnapshot extends Component<AllProps, State> {
      * @desc Updates the Orderbook with new prices
      */
     updateOrderBook = () => {
-        const { selectedDateTimeNano, selectedInstrument } = this.state;
-        const { playback } = this.props;
+        const { selectedDateTimeNano, selectedInstrument, playback } = this.state;
         if (!playback) {
             this.setState({ loadingOrderbook: true });
             OrderBookService.getOrderBookPrices(selectedInstrument, selectedDateTimeNano.toString())
                 .then(response => {
-                    // eslint-disable-next-line camelcase
+                // eslint-disable-next-line camelcase
                     const { asks, bids, last_sod_offset } = response.data;
                     const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
 
@@ -354,6 +436,7 @@ class OrderBookSnapshot extends Component<AllProps, State> {
             loadingOrderbook,
             loadingGraph,
             graphUnavailable,
+            playback,
         } = this.state;
 
         let messageText;
@@ -472,7 +555,9 @@ class OrderBookSnapshot extends Component<AllProps, State> {
                         <PlaybackControl
                             selectedDateTimeNano={selectedDateTimeNano}
                             selectedInstrument={selectedInstrument}
-                            handleTimeChange={this.handleSelectGraphDateTime}
+                            handlePlaybackModifications={this.handlePlaybackModifications}
+                            handlePlayback={this.handlePlayback}
+                            playback={playback}
                         />
                     </Provider>
                     {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
@@ -505,6 +590,7 @@ class OrderBookSnapshot extends Component<AllProps, State> {
                                         startOfDay={selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS)}
                                         endOfDay={selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS)}
                                         topOfBookItems={topOfBookItems}
+                                        playback={playback}
                                     />
                                 )}
                             </Card>
@@ -518,6 +604,7 @@ class OrderBookSnapshot extends Component<AllProps, State> {
                                     instrument={selectedInstrument}
                                     loading={loadingOrderbook}
                                     timestamp={selectedDateTimeNano}
+                                    playback={playback}
                                 />
                             </Card>
                             {(lastSodOffset.neq(0)) && (
@@ -527,6 +614,7 @@ class OrderBookSnapshot extends Component<AllProps, State> {
                                         instrument={selectedInstrument}
                                         handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                         loading={loadingOrderbook}
+                                        playback={playback}
                                     />
                                 </Card>
                             )}
@@ -551,9 +639,11 @@ class OrderBookSnapshot extends Component<AllProps, State> {
 const mapStateToProps = (state: RootState) => ({
     showOrderInfoDrawer: state.general.showOrderInfoDrawer,
     orderDetails: state.general.orderDetails,
-    playback: state.general.playback,
 });
+
+const mapDispatchToProps = () => ({});
 
 export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
 
-export default withStyles(styles)(connect(mapStateToProps)(OrderBookSnapshot));
+// @ts-ignore
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(OrderBookSnapshot));

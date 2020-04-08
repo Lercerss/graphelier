@@ -7,8 +7,6 @@ import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
 import bigInt from 'big-integer';
 
-import { Dispatch } from 'redux';
-import { connect } from 'react-redux';
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE, TILDE_KEY_CODE,
@@ -24,7 +22,6 @@ import {
     convertNanosecondsUTCToCurrentTimezone,
 } from '../utils/date-utils';
 import { Message } from '../models/OrderBook';
-import { RootState } from '../store';
 
 const styles = createStyles(Styles);
 
@@ -33,6 +30,7 @@ interface Props extends WithStyles<typeof styles>{
     instrument: string,
     handleUpdateWithDeltas: Function,
     loading: boolean,
+    playback: boolean,
 }
 
 interface State {
@@ -41,19 +39,13 @@ interface State {
     lastSodOffsetBottom: bigInt.BigInteger,
 }
 
-interface PropsFromState {
-    playback: boolean,
-}
-
-type AllProps = Props & PropsFromState;
-
 const CustomTooltip = withStyles({
     tooltip: {
         fontSize: '0.75rem',
     },
 })(Tooltip);
 
-class MessageList extends Component<AllProps, State> {
+class MessageList extends Component<Props, State> {
     selectedMessageItem;
 
     constructor(props) {
@@ -72,11 +64,11 @@ class MessageList extends Component<AllProps, State> {
     }
 
     shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-        const { lastSodOffset, loading } = this.props;
+        const { lastSodOffset, loading, playback } = this.props;
         const { messages } = this.state;
 
         return (lastSodOffset.neq(nextProps.lastSodOffset) || messages !== nextState.messages
-            || loading !== nextProps.loading);
+            || loading !== nextProps.loading || playback !== nextProps.playback);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -149,26 +141,28 @@ class MessageList extends Component<AllProps, State> {
      * significantly different from the current one
      */
     fetchInitialMessages = async () => {
-        const { lastSodOffset, instrument } = this.props;
+        const { lastSodOffset, instrument, playback } = this.props;
         const nMessages = MESSAGE_LIST_DEFAULT_PAGE_SIZE * 2 + 1;
         const lowerSodOffset = lastSodOffset.minus(bigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1));
 
-        try {
-            const reverseMessagesResponse = await OrderBookService.getMessageList(
-                instrument,
-                lowerSodOffset.toString(),
-                nMessages,
-            );
+        if (!playback) {
+            try {
+                const reverseMessagesResponse = await OrderBookService.getMessageList(
+                    instrument,
+                    lowerSodOffset.toString(),
+                    nMessages,
+                );
 
-            const { messages, pageInfo } = reverseMessagesResponse.data;
+                const { messages, pageInfo } = reverseMessagesResponse.data;
 
-            this.setState({
-                messages,
-                lastSodOffsetTop: lowerSodOffset,
-                lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
-            });
-        } catch (e) {
-            console.log(e);
+                this.setState({
+                    messages,
+                    lastSodOffsetTop: lowerSodOffset,
+                    lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
+                });
+            } catch (e) {
+                console.log(e);
+            }
         }
     };
 
@@ -316,14 +310,6 @@ class MessageList extends Component<AllProps, State> {
     }
 }
 
-const mapDispatchToProps = (dispatch : Dispatch) => ({
-
-});
-
-const mapStateToProps = (state: RootState) => ({
-    playback: state.general.playback,
-});
-
 export const NonConnectedMessageList = withStyles(styles)(MessageList);
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(MessageList));
+export default withStyles(styles)(MessageList);
