@@ -16,12 +16,14 @@ type Modification struct {
 // Modifications : Holds a list of Modification, starting at a given time
 type Modifications struct {
 	Timestamp     uint64          `json:"timestamp,string"`
+	LastSodOffset uint64          `json:"last_sod_offset,string"`
 	Modifications []*Modification `json:"modifications"`
 }
 
 // Add : Appends a Modification to the current array
-func (m *Modifications) Add(modification *Modification, timestamp uint64) {
+func (m *Modifications) Add(modification *Modification, timestamp uint64, sodOffset uint64) {
 	modification.Offset = timestamp - m.Timestamp
+	m.LastSodOffset = sodOffset
 	m.Modifications = append(m.Modifications, modification)
 }
 
