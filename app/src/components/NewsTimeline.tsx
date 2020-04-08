@@ -15,7 +15,6 @@ import {
 } from '@merc/react-timeline';
 import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import CalendarTodayOutlinedIcon from '@material-ui/icons/CalendarTodayOutlined';
-// import InfiniteScroll from 'react-bidirectional-infinite-scroll';
 
 import moment from 'moment';
 
@@ -33,6 +32,7 @@ import {
 } from '../utils/date-utils';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
+import { LightThemeColors } from '../styles/App';
 
 const styles = createStyles(Styles);
 
@@ -112,6 +112,122 @@ class NewsTimeline extends Component<Props, State> {
                             title: 'Coronavirus Strikes Back',
                             // eslint-disable-next-line max-len
                             summary: 'Lots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1578333979',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1578333979',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1578333979',
+                        },
+                    ],
+                },
+                {
+                    _id: '1',
+                    size: 3,
+                    timestamp: '1578333979',
+                    articles: [
+                        {
+                            _id: '1',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/'
+                                + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-'
+                                + 'brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-'
+                                + 'grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY', 'AAPL'],
+                            timestamp: '1578333979',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1578333979',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            summary: 'Lots of stock issues',
+                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
+                                + 'impact-coronavirus-oil-'
+                                + 'prices-stock-markets',
+                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
+                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
+                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
+                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
+                                + 'Fla-me-lawmakers-grill-oil-regulators-'
+                                + '20150310-001',
+                            tickers: ['SPY'],
+                            timestamp: '1578333979',
+                        },
+                        {
+                            _id: '2',
+                            title: 'Coronavirus Strikes Back',
+                            // eslint-disable-next-line max-len
+                            summary: 'Lots of stock issuesLots of stock issuesLots of stock issuesLots of stock'
+                                + ' issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock'
+                                + ' issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock'
+                                + ' issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock '
+                                + 'issuesLots of stock issuesLots of stock issuesLots of stock issuesLots of stock ',
                             article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
                                 + 'impact-coronavirus-oil-'
                                 + 'prices-stock-markets',
@@ -240,14 +356,27 @@ class NewsTimeline extends Component<Props, State> {
             datePickerIsOpen,
         } = this.state;
 
+        let lastNewsClusterDateString = '';
+
         const opts = {
             layout: 'inline-evts',
         };
+
+        const HiddenElement = () => <span />;
 
         const customTheme = createTheme(themes.default, {
             card: {
                 width: 'fit-content',
                 height: 'fit-content',
+            },
+            date: {
+                backgroundColor: LightThemeColors.palette.primary.main,
+            },
+            marker: {
+                borderColor: LightThemeColors.palette.primary.main,
+            },
+            timelineTrack: {
+                backgroundColor: LightThemeColors.palette.primary.main,
             },
         });
 
@@ -276,8 +405,9 @@ class NewsTimeline extends Component<Props, State> {
                             <Button
                                 onClick={() => this.setState({ datePickerIsOpen: true })}
                                 variant={'contained'}
-                                color={'secondary'}
+                                color={'primary'}
                                 endIcon={<CalendarTodayOutlinedIcon />}
+                                className={classes.dateButton}
                             >
                                 {'Pick a date'}
                             </Button>
@@ -314,11 +444,14 @@ class NewsTimeline extends Component<Props, State> {
                                         const nanosecondTimestamp = bigInt(newsCluster.timestamp)
                                             .multiply(NANOSECONDS_IN_ONE_SECOND);
                                         const dateString = getDateStringFromTimestamp(nanosecondTimestamp);
+                                        const hideDateAndMarker = lastNewsClusterDateString === dateString;
+                                        lastNewsClusterDateString = dateString;
                                         return (
                                             <TextEvent
-                                                date={dateString}
+                                                date={hideDateAndMarker ? HiddenElement : dateString}
                                                 text={''}
                                                 card={MyCustomCard}
+                                                marker={hideDateAndMarker && HiddenElement}
                                             >
                                                 <div className={classes.newsCluster}>
                                                     {newsCluster.articles.map((newsItem, i) => {

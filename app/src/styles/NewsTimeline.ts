@@ -1,3 +1,4 @@
+import { Colors } from './App';
 
 export const Styles = {
     contentDiv: {
@@ -22,6 +23,9 @@ export const Styles = {
     datePickerDiv: {
         width: '0px',
         height: '0px',
+    },
+    dateButton: {
+        color: Colors.white,
     },
     calendarIcon: {
         marginLeft: '5px',

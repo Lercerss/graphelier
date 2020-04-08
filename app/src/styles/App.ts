@@ -24,7 +24,7 @@ export const LightThemeColors = {
             main: '#41aeff',
         },
         secondary: {
-            main: '#ec24b5',
+            main: Colors.lightBlue,
         },
     },
 };

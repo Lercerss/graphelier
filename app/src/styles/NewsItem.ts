@@ -3,9 +3,6 @@ import { Colors } from './App';
 export const Styles = {
     newsItemDiv: {
         overflow: 'auto',
-        // '&::-webkit-scrollbar': {
-        //     display: 'none',
-        // },
         minWidth: '20vw',
         maxWidth: '20vw',
     },
@@ -62,7 +59,6 @@ export const Styles = {
         backgroundColor: Colors.indigo,
     },
     spy: {
-        textDecoration: 'none',
         backgroundColor: Colors.orange,
     },
     msft: {
