@@ -80,7 +80,7 @@ func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {
 	case mErr == nil && tErr != nil:
 		loader = &CountIntervalLoader{Instrument: instrument, Datastore: env.Datastore, Count: rateMessages}
 	case tErr == nil && mErr != nil:
-		loader = &TimeIntervalLoader{Instrument: instrument, Datastore: env.Datastore, Interval: uint64(delay / rateRealtime)}
+		loader = &TimeIntervalLoader{Instrument: instrument, Datastore: env.Datastore, Interval: uint64(delay * rateRealtime)}
 	default:
 		return StatusError{400, ParamError{"One of rateMessages or rateRealtime must be provided"}}
 	}

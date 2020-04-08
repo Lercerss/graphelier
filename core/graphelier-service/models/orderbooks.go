@@ -316,7 +316,7 @@ func (orderbook *Orderbook) YieldModifications(messages []*Message) (modificatio
 			order = (*orders)[index]
 		}
 		if modification := NewModification(messages, currentMessage, order); modification != nil {
-			modifications.Add(modification, orderbook.Timestamp)
+			modifications.Add(modification, orderbook.Timestamp, orderbook.LastSodOffset)
 		}
 		orderbook.ApplyMessage(message)
 	}
