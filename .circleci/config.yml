@@ -110,7 +110,42 @@ jobs:
                   command: |
                       source venv/bin/activate
                       pylint scripts
-
+    build_news_service:
+        docker:
+            - image: circleci/python:3.7-buster
+        working_directory: ~/graphelier/news/service
+        steps:
+            - attach_workspace:
+                  at: ~/graphelier
+            - restore_cache:
+                  keys:
+                      - v0-news-service-{{ checksum "requirements.txt" }}
+                      - v0-news-service-
+            - run:
+                  name: Install news-service dependencies
+                  command: |
+                      python -m venv venv
+                      source venv/bin/activate
+                      pip install -r requirements.txt
+            - save_cache:
+                  key: v0-news-service-{{ checksum "requirements.txt" }}
+                  paths:
+                      - venv
+            - run:
+                  name: Test news-service
+                  command: |
+                      source venv/bin/activate
+                      mamba `find . -name "*.spec.py"` --format=documentation --enable-coverage
+                      coverage html --omit="venv/lib/*"
+            - store_artifacts:
+                  path: htmlcov
+            - store_artifacts:
+                  path: .coverage
+            - run:
+                  name: Lint news-service
+                  command: |
+                      source venv/bin/activate
+                      pylint service
     build_news_scripts:
         docker:
             - image: circleci/python:3.7-buster
@@ -164,6 +199,9 @@ workflows:
             - build_scripts:
                   requires:
                       - prepare
+            - build_news_service:
+                  requires:
+                      - prepare
             - build_news_scripts:
                   requires:
                       - prepare
@@ -214,6 +252,7 @@ workflows:
                   repo: "graphelier-news"
                   region: AWS_DEFAULT_REGION
                   tag: "${CIRCLE_SHA1}"
+                  extra-build-args: "--target prod"
                   path: ./news/service
             - aws-ecr/build-and-push-image:
                   name: build_newsdb_ecr
