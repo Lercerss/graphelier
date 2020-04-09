@@ -14,7 +14,7 @@ import {
     NewsItem,
 } from '../models/NewsTimeline';
 import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
-import { adaptTrueNanosecondsTimeToCurrentDateTimezone, getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
+import { getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
 
 const styles = createStyles(Styles);
 
@@ -31,7 +31,6 @@ class NewsTimeline extends Component<Props, State> {
 
         const nanosecondTimestamp = bigInt(newsItem.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
-        const nanosecondTimestampForGraph = adaptTrueNanosecondsTimeToCurrentDateTimezone(nanosecondTimestamp);
 
         return (
             <div
@@ -56,7 +55,7 @@ class NewsTimeline extends Component<Props, State> {
 
                         return (
                             <Link
-                                to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestampForGraph}`}
+                                to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
                                 className={classes.graphLink}
                             >
                                 <Box
