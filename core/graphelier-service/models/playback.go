@@ -8,7 +8,7 @@ type Modification struct {
 	Direction MessageDirection `json:"direction"`
 	Price     *float64         `json:"price,omitempty"`
 	Quantity  *int64           `json:"quantity,omitempty"`
-	NewID     *uint64          `json:"index,omitempty"`
+	NewID     *uint64          `json:"new_id,omitempty"`
 	From      *float64         `json:"from,omitempty"`
 	To        *float64         `json:"to,omitempty"`
 }
