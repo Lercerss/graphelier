@@ -41,22 +41,18 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        console.log('TSOBS: should component update');
-        const { lastSodOffset, loading, playback } = this.props;
-        console.log(`next: ${nextProps.lastSodOffset}, current lastSodOffset: ${lastSodOffset}`);
+        const { lastSodOffset, loading } = this.props;
         if (loading !== nextProps.loading) {
             return true;
         }
         if (lastSodOffset && nextProps.lastSodOffset) {
             return (lastSodOffset.neq(nextProps.lastSodOffset));
         }
-        if (playback !== nextProps.playback) return true;
         return true;
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { listItems, playback } = this.props;
-        console.log('TSOBS:  component did update');
 
         if (!listItemsEquals(prevProps.listItems || {}, listItems || {})) {
             if (!playback) {

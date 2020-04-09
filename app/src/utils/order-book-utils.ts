@@ -191,16 +191,16 @@ export const priceLevelExists = (price: number, listItems: ListItems) => {
  */
 export const checkCreatePriceLevel = (price: number, listItems: ListItems,
     type: TransactionType.Ask | TransactionType.Bid) => {
-    if (!priceLevelExists(price, listItems)) {
-        // eslint-disable-next-line no-param-reassign
-        listItems[price] = {
+    const updatedListItems = { ...listItems };
+    if (!priceLevelExists(price, updatedListItems)) {
+        updatedListItems[price] = {
             price,
             orders: [],
             type,
             isMiddle: false,
         };
     }
-    return listItems;
+    return updatedListItems;
 };
 
 /**
@@ -211,7 +211,30 @@ export const checkCreatePriceLevel = (price: number, listItems: ListItems,
  * @returns {ListItems}
  */
 export const checkDeletePriceLevel = (price: number, listItems: ListItems) => {
-    // eslint-disable-next-line no-param-reassign
-    if (listItems[price].orders.length === 0) delete listItems[price];
-    return listItems;
+    const updatedListItems = { ...listItems };
+    if (updatedListItems[price].orders.length === 0) delete updatedListItems[price];
+    return updatedListItems;
+};
+
+/**
+ * @desc Processes existing listItems to compute new max quantity and new middle (for playback)
+ * @param listItems {ListItems}
+ * @returns {{newMaxQuantity: number, newListItems: {ListItems}}}
+ */
+export const processOrderBookPlayback = (listItems: ListItems) => {
+    let maxQuantity = 0;
+    let currentMiddlePriceLevel = 0;
+    const updatedListItems = { ...listItems };
+    Object.keys(updatedListItems).forEach(key => {
+        const priceLevel = key;
+        if (updatedListItems[priceLevel].type === TransactionType.Bid
+            && parseFloat(priceLevel) > currentMiddlePriceLevel) currentMiddlePriceLevel = parseFloat(priceLevel);
+        const sum = updatedListItems[priceLevel].orders.reduce(
+            (totalQuantity, order) => (totalQuantity + parseInt(order.quantity)), 0,
+        );
+        if (sum > maxQuantity) maxQuantity = sum;
+        updatedListItems[priceLevel].isMiddle = false;
+    });
+    if (updatedListItems[currentMiddlePriceLevel]) updatedListItems[currentMiddlePriceLevel].isMiddle = true;
+    return { newListItems: updatedListItems, newMaxQuantity: maxQuantity };
 };

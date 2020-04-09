@@ -85,7 +85,7 @@ class PlaybackControl extends Component<PlaybackProps, PlaybackState> {
      */
     getPlaybackParameter = (): string => {
         const { unitSpeed, selectedUnit } = this.state;
-        let parameter: string = '?delay=10.0&';
+        let parameter: string = '?delay=2.5&';
         if (selectedUnit === 'Messages') parameter = `${parameter}rateMessages=${unitSpeed}`;
         else {
             let timeInNano: bigInt.BigInteger;
@@ -129,7 +129,6 @@ class PlaybackControl extends Component<PlaybackProps, PlaybackState> {
         };
         this.playbackWS.onmessage = m => {
             const data: PlaybackData = JSON.parse(m.data);
-            console.log(data);
             handlePlaybackModifications(data);
         };
         this.playbackWS.onclose = () => {

@@ -64,15 +64,15 @@ class MessageList extends Component<Props, State> {
     }
 
     shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-        const { lastSodOffset, loading, playback } = this.props;
+        const { lastSodOffset, loading } = this.props;
         const { messages } = this.state;
 
         return (lastSodOffset.neq(nextProps.lastSodOffset) || messages !== nextState.messages
-            || loading !== nextProps.loading || playback !== nextProps.playback);
+            || loading !== nextProps.loading);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { lastSodOffset } = this.props;
+        const { lastSodOffset, playback } = this.props;
         const { messages } = this.state;
 
         if (lastSodOffset.neq(prevProps.lastSodOffset)) {
@@ -87,16 +87,14 @@ class MessageList extends Component<Props, State> {
                 if (diffFromEdge < 5) {
                     this.handleHitEdge(directionOfPotentialPaging);
                 }
-            } else {
-                this.fetchInitialMessages();
-            }
-            this.handleScrollBackToSelectedMessage();
-        } else if ((messages[0] && !prevState.messages[0]) // need to check for first time messages loaded
+            } else this.fetchInitialMessages();
+            if (!playback) this.handleScrollBackToSelectedMessage();
+        } else if (((messages[0] && !prevState.messages[0]) // need to check for first time messages loaded
             // need to check for new messages from new date and time, not from continuous scrolling
             || (messages[0] && prevState.messages[0]
                 && (messages[0].timestamp !== prevState.messages[0].timestamp
                     && messages[messages.length - 1].timestamp
-                    !== prevState.messages[prevState.messages.length - 1].timestamp))) {
+                    !== prevState.messages[prevState.messages.length - 1].timestamp))) && !playback) {
             this.handleScrollBackToSelectedMessage();
         }
     }
@@ -126,14 +124,11 @@ class MessageList extends Component<Props, State> {
      * @returns {void}
      */
     private handleScrollBackToSelectedMessage = () => {
-        const { playback } = this.props;
-        if (!playback) {
-            this.selectedMessageItem && this.selectedMessageItem.current
+        this.selectedMessageItem && this.selectedMessageItem.current
             && this.selectedMessageItem.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
             });
-        }
     };
 
     /**
@@ -141,28 +136,26 @@ class MessageList extends Component<Props, State> {
      * significantly different from the current one
      */
     fetchInitialMessages = async () => {
-        const { lastSodOffset, instrument, playback } = this.props;
+        const { lastSodOffset, instrument } = this.props;
         const nMessages = MESSAGE_LIST_DEFAULT_PAGE_SIZE * 2 + 1;
         const lowerSodOffset = lastSodOffset.minus(bigInt(MESSAGE_LIST_DEFAULT_PAGE_SIZE - 1));
 
-        if (!playback) {
-            try {
-                const reverseMessagesResponse = await OrderBookService.getMessageList(
-                    instrument,
-                    lowerSodOffset.toString(),
-                    nMessages,
-                );
+        try {
+            const reverseMessagesResponse = await OrderBookService.getMessageList(
+                instrument,
+                lowerSodOffset.toString(),
+                nMessages,
+            );
 
-                const { messages, pageInfo } = reverseMessagesResponse.data;
+            const { messages, pageInfo } = reverseMessagesResponse.data;
 
-                this.setState({
-                    messages,
-                    lastSodOffsetTop: lowerSodOffset,
-                    lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
-                });
-            } catch (e) {
-                console.log(e);
-            }
+            this.setState({
+                messages,
+                lastSodOffsetTop: lowerSodOffset,
+                lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
+            });
+        } catch (e) {
+            console.log(e);
         }
     };
 

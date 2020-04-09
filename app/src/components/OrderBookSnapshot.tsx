@@ -31,6 +31,7 @@ import {
 } from '../constants/Constants';
 import {
     processOrderBookFromScratch, processOrderBookWithDeltas, checkCreatePriceLevel, checkDeletePriceLevel,
+    processOrderBookPlayback,
 }
     from '../utils/order-book-utils';
 import MessageList from './MessageList';
@@ -268,11 +269,18 @@ class OrderBookSnapshot extends Component<Props, State> {
      */
     handlePlaybackModifications = (playbackData: PlaybackData) => {
         const { listItems } = this.state;
-        this.handleSelectGraphDateTime(playbackData.timestamp);
+        const { onTimestampSelected } = this.props;
+        const selectedTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: playbackData.timestamp,
+            lastModificationType: LastModificationType.GRAPH,
+        };
+        onTimestampSelected(selectedTimestampInfo);
+        // this.handleSelectGraphDateTime(playbackData.timestamp);
         const modificationsLength = playbackData.modifications.length;
         let ctr: number = 0;
-        // let random: number = 0;
-        let newListItems = { ...listItems };
+        const data = processOrderBookPlayback(listItems);
+        let { newListItems } = data;
+        const { newMaxQuantity } = data;
         console.log(playbackData);
         console.log(listItems);
         while (ctr < modificationsLength) {
@@ -283,9 +291,9 @@ class OrderBookSnapshot extends Component<Props, State> {
 
             switch (playbackModification.type) {
             case 'add':
-                console.log(`Add: ${playbackModification.order_id}`);
+                console.log(`Add    - ID: ${playbackModification.order_id} @priceLevel: ${price}`);
                 if (price && playbackModification.quantity) {
-                    newListItems = checkCreatePriceLevel(price, listItems, playbackModification.direction);
+                    newListItems = checkCreatePriceLevel(price, newListItems, playbackModification.direction);
                     newListItems[price].orders.push({
                         id: playbackModification.order_id,
                         quantity: playbackModification.quantity,
@@ -293,12 +301,12 @@ class OrderBookSnapshot extends Component<Props, State> {
                 }
                 break;
             case 'drop':
-                console.log(`drop: ${playbackModification.order_id}`);
+                console.log(`drop   - ID: ${playbackModification.order_id} @priceLevel: ${price}`);
                 if (price) {
                     newListItems[price].orders.splice(newListItems[price].orders.findIndex(
                         order => order.id === playbackModification.order_id,
                     ), 1);
-                    newListItems = checkDeletePriceLevel(price, listItems);
+                    newListItems = checkDeletePriceLevel(price, newListItems);
                 }
                 break;
             case 'update':
@@ -307,22 +315,38 @@ class OrderBookSnapshot extends Component<Props, State> {
                         .find(o => o.id === playbackModification.order_id);
                     if (order) {
                         order.quantity = playbackModification.quantity;
-                        console.log(`update: ${playbackModification.order_id}`);
+                        console.log(`update - ID: ${playbackModification.order_id} @priceLevel: ${price} @`
+                            + `newQuantity: ${playbackModification.quantity}`);
                     } else {
-                        console.log(`Could not update: ${playbackModification.order_id}. Not found in price level: 
-                            ${playbackModification.price}`);
+                        console.log(`Could not update - ID: ${playbackModification.order_id}. Not found @priceLevel:`
+                            + ` ${playbackModification.price}`);
+                        console.log(playbackModification);
                     }
                 }
                 break;
             case 'move':
-                console.log(`move: ${playbackModification.order_id}`);
+
                 if (from && to) {
-                    newListItems = checkCreatePriceLevel(to, listItems, playbackModification.direction);
-                    // pushes removed order from the 'from' price level to the 'to' price level
-                    newListItems[to].orders.push(newListItems[from].orders.splice(newListItems[from].orders.findIndex(
+                    const orderToMove = newListItems[from].orders.splice(newListItems[from].orders.findIndex(
                         order => order.id === playbackModification.order_id,
-                    ), 1)[0]);
-                    newListItems = checkDeletePriceLevel(from, newListItems);
+                    ), 1)[0];
+                    if (orderToMove) {
+                        if (playbackModification.index) {
+                            console.log(`move   - ID: ${playbackModification.order_id} @from: ${from} @to: ${to}`);
+                            newListItems = checkCreatePriceLevel(to, newListItems, playbackModification.direction);
+                            newListItems[to].orders.push({
+                                id: playbackModification.index,
+                                quantity: orderToMove.quantity,
+                            });
+                            newListItems = checkDeletePriceLevel(from, newListItems);
+                        } else {
+                            console.log(`Could not move   - ID: ${playbackModification.order_id}. No new ID. @data: `);
+                            console.log(playbackModification);
+                        }
+                    } else {
+                        console.log(`Could not move   - ID: ${playbackModification.order_id} .Order not found @data: `);
+                        console.log(playbackModification);
+                    }
                 }
                 break;
             default:
@@ -332,7 +356,18 @@ class OrderBookSnapshot extends Component<Props, State> {
             ctr++;
         }
 
-        this.setState({ listItems: newListItems, lastSodOffset: bigInt(playbackData.last_sod_offset) });
+        const selectedDateTimeNano = bigInt(playbackData.timestamp);
+        const {
+            timeNanoseconds,
+        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+        // eslint-disable-next-line no-debugger
+        debugger;
+        this.setState({
+            listItems: newListItems,
+            lastSodOffset: bigInt(playbackData.last_sod_offset),
+            maxQuantity: newMaxQuantity,
+            selectedTimeString: nanosecondsToString(timeNanoseconds),
+        });
     };
 
     /**
