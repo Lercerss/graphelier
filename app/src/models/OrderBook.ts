@@ -89,7 +89,7 @@ export interface PlaybackModification {
     order_id: number,
     price?: number,
     quantity?: number,
-    index?: number,
+    new_id?: number,
     from?: number,
     to?: number,
 }

@@ -331,11 +331,11 @@ class OrderBookSnapshot extends Component<Props, State> {
                         order => order.id === playbackModification.order_id,
                     ), 1)[0];
                     if (orderToMove) {
-                        if (playbackModification.index) {
+                        if (playbackModification.new_id) {
                             console.log(`move   - ID: ${playbackModification.order_id} @from: ${from} @to: ${to}`);
                             newListItems = checkCreatePriceLevel(to, newListItems, playbackModification.direction);
                             newListItems[to].orders.push({
-                                id: playbackModification.index,
+                                id: playbackModification.new_id,
                                 quantity: orderToMove.quantity,
                             });
                             newListItems = checkDeletePriceLevel(from, newListItems);
