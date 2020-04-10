@@ -12,3 +12,8 @@ services:
       target: dev
     volumes:
       - ./core/graphelier-service:/go/src/graphelier/core/graphelier-service
+  graphelier-news:
+    build:
+      target: dev
+    volumes:
+      - ./news/service:/news/service
