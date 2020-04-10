@@ -45,7 +45,7 @@ type TimeIntervalLoader struct {
 	Datastore        db.Datastore
 	Interval         uint64
 	messages         chan []*models.Message
-	currentTimestamp uint64
+	CurrentTimestamp uint64
 }
 
 // CountIntervalLoader : Loads messages by regular count intervals
@@ -69,7 +69,11 @@ func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {
 	delay *= 1e9
 	params := mux.Vars(r)
 	instrument := params["instrument"]
-	startTimestamp, err := strconv.ParseUint(params["timestamp"], 10, 64)
+	sodOffset, err := strconv.ParseUint(params["sodOffset"], 10, 64)
+	if err != nil {
+		return StatusError{400, err}
+	}
+	message, err := env.Datastore.GetSingleMessage(instrument, int64(sodOffset))
 	if err != nil {
 		return StatusError{400, err}
 	}
@@ -80,13 +84,18 @@ func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {
 	case mErr == nil && tErr != nil:
 		loader = &CountIntervalLoader{Instrument: instrument, Datastore: env.Datastore, Count: rateMessages}
 	case tErr == nil && mErr != nil:
-		loader = &TimeIntervalLoader{Instrument: instrument, Datastore: env.Datastore, Interval: uint64(delay * rateRealtime)}
+		loader = &TimeIntervalLoader{
+			Instrument:       instrument,
+			Datastore:        env.Datastore,
+			Interval:         uint64(delay * rateRealtime),
+			CurrentTimestamp: message.Timestamp,
+		}
 	default:
 		return StatusError{400, ParamError{"One of rateMessages or rateRealtime must be provided"}}
 	}
 
 	session := PlaybackSession{Delay: uint64(delay), Loader: loader}
-	err = session.LoadOrderBook(env.Datastore, instrument, startTimestamp)
+	err = session.LoadOrderBook(env.Datastore, instrument, message.Timestamp, sodOffset)
 	if err != nil {
 		return StatusError{500, err}
 	}
@@ -172,14 +181,21 @@ func (pb *PlaybackSession) InitSocket(w http.ResponseWriter, r *http.Request) er
 }
 
 // LoadOrderBook : Establishes the initial state for the playback session
-func (pb *PlaybackSession) LoadOrderBook(db db.Datastore, instrument string, startTimestamp uint64) error {
+func (pb *PlaybackSession) LoadOrderBook(db db.Datastore, instrument string, startTimestamp uint64, sodOffset uint64) error {
 	orderbook, err := db.GetOrderbook(instrument, startTimestamp)
 	if err != nil {
 		return err
 	}
-	messages, err := db.GetMessagesByTimestamp(instrument, startTimestamp)
-	if err != nil {
-		return err
+	paginator := &models.Paginator{
+		SodOffset: int64(orderbook.LastSodOffset),
+		NMessages: int64(sodOffset - orderbook.LastSodOffset),
+	}
+	messages := []*models.Message{}
+	if paginator.NMessages > 0 {
+		messages, err = db.GetMessagesWithPagination(instrument, paginator)
+		if err != nil {
+			return err
+		}
 	}
 	orderbook.ApplyMessagesToOrderbook(messages)
 	log.Tracef("Loaded initial state for playback at %d\n", orderbook.Timestamp)
@@ -198,26 +214,28 @@ func (pb *PlaybackSession) Close() {
 func (loader *TimeIntervalLoader) LoadMessages() {
 	log.Debugf(
 		"Loading messages for {%d, %d}\n",
-		loader.currentTimestamp,
-		loader.currentTimestamp+loader.Interval,
+		loader.CurrentTimestamp,
+		loader.CurrentTimestamp+loader.Interval,
 	)
 	messages, err := loader.Datastore.GetMessagesByTimestampRange(
 		loader.Instrument,
-		loader.currentTimestamp,
-		loader.currentTimestamp+loader.Interval,
+		loader.CurrentTimestamp,
+		loader.CurrentTimestamp+loader.Interval,
 	)
 	if err != nil {
 		log.Errorf("Failed to retrieve messages: %s\n", err)
 		close(loader.messages)
 		return
 	}
-	loader.currentTimestamp += loader.Interval
+	loader.CurrentTimestamp += loader.Interval
 	loader.messages <- messages
 }
 
 // Init : Initializes the loader's state based on the first snapshot
 func (loader *TimeIntervalLoader) Init(orderbook *models.Orderbook, messages chan []*models.Message) {
-	loader.currentTimestamp = orderbook.Timestamp
+	if orderbook.Timestamp > loader.CurrentTimestamp {
+		loader.CurrentTimestamp = orderbook.Timestamp
+	}
 	loader.messages = messages
 }
 

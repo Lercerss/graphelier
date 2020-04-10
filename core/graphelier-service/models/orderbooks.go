@@ -320,5 +320,6 @@ func (orderbook *Orderbook) YieldModifications(messages []*Message) (modificatio
 		}
 		orderbook.ApplyMessage(message)
 	}
+	modifications.Timestamp = orderbook.Timestamp
 	return modifications
 }
