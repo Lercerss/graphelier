@@ -162,7 +162,7 @@ func TestPlaybackSession(t *testing.T) {
 
 	assert.GreaterOrEqual(t, len(socket.Output), 1)
 	result := socket.Output[0].(*models.Modifications)
-	assert.Equal(t, uint64(100), result.Timestamp)
+	assert.Equal(t, uint64(101), result.Timestamp)
 	modification := result.Modifications[0]
 	assert.Equal(t, uint64(1), modification.Offset)
 	assert.Equal(t, models.AddOrderType, modification.Type)
