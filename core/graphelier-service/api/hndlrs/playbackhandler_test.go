@@ -87,6 +87,10 @@ func TestNoRateParam(t *testing.T) {
 	mockedDB := MockDb(t)
 	defer Ctrl.Finish()
 
+	mockedDB.EXPECT().
+		GetSingleMessage("test", int64(1)).
+		Return(pbMessages[0], nil)
+
 	err := MakeRequest(
 		hndlrs.StreamPlayback, // Function under test
 		mockedDB,
@@ -94,7 +98,7 @@ func TestNoRateParam(t *testing.T) {
 		"/playback/test/1",
 		map[string]string{
 			"instrument": "test",
-			"timestamp":  "1",
+			"sodOffset":  "1",
 		},
 		nil,
 	)
@@ -149,12 +153,9 @@ func TestPlaybackSession(t *testing.T) {
 	}
 	mockedDB.EXPECT().
 		GetOrderbook("test", uint64(100)).
-		Return(&models.Orderbook{Timestamp: 100}, nil)
-	mockedDB.EXPECT().
-		GetMessagesByTimestamp("test", uint64(100)).
-		Return([]*models.Message{}, nil)
+		Return(&models.Orderbook{Timestamp: 100, LastSodOffset: 100}, nil)
 
-	err := session.LoadOrderBook(mockedDB, "test", 100)
+	err := session.LoadOrderBook(mockedDB, "test", 100, 100)
 	assert.Nil(t, err)
 
 	err = session.Start() // Function under test
