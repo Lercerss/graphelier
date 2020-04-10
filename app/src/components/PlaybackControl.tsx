@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {
     createStyles,
     FormControl,
@@ -20,8 +20,9 @@ const WebSocket = require('isomorphic-ws');
 
 
 interface PlaybackProps extends WithStyles<typeof styles> {
-    selectedInstrument: string,
     selectedDateTimeNano: bigInt.BigInteger,
+    selectedInstrument: string,
+    lastSodOffset: bigInt.BigInteger,
     handlePlaybackModifications: Function,
     handlePlayback: Function,
     playback: boolean,
@@ -32,7 +33,7 @@ interface PlaybackState {
     unitSpeed: number,
 }
 
-class PlaybackControl extends Component<PlaybackProps, PlaybackState> {
+class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     playbackWS;
 
     constructor(props) {
@@ -118,10 +119,10 @@ class PlaybackControl extends Component<PlaybackProps, PlaybackState> {
      * @desc Calls the backend service to get new data to feed OrderBook, graph
      */
     getPlaybackOrderBookData = (): void => {
-        const { selectedInstrument, selectedDateTimeNano, handlePlaybackModifications } = this.props;
+        const { selectedInstrument, lastSodOffset, handlePlaybackModifications } = this.props;
         const parameter = this.getPlaybackParameter();
 
-        const endPoint = `ws://localhost:5050/playback/${selectedInstrument}/${selectedDateTimeNano}/${parameter}`;
+        const endPoint = `ws://localhost:5050/playback/${selectedInstrument}/${lastSodOffset}/${parameter}`;
         this.playbackWS = new WebSocket(endPoint);
 
         this.playbackWS.onopen = () => {

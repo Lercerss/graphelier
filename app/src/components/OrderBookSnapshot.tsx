@@ -615,6 +615,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                     <Provider store={getStore()}>
                         <PlaybackControl
                             selectedDateTimeNano={selectedDateTimeNano}
+                            lastSodOffset={lastSodOffset}
                             selectedInstrument={selectedInstrument}
                             handlePlaybackModifications={this.handlePlaybackModifications}
                             handlePlayback={this.handlePlayback}
