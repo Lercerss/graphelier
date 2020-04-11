@@ -247,17 +247,18 @@ export const getHoursMinutesStringFromTimestamp = (timestamp: bigInt.BigInteger)
 };
 
 /**
- * @desc Given a timestamp, recreates a string representation of format MM/DD/YYYY
+ * @desc Given a timestamp, recreates a string representation of format MMM DD YYYY
  * @param timestamp
  * @return string
  */
 export const getDateStringFromTimestamp = (timestamp: bigInt.BigInteger): string => {
     const nanoDate = new NanoDate(adaptTrueNanosecondsTimeToCurrentDateTimezone(timestamp).toString());
+    const month = nanoDate.toLocaleString('default', { month: 'short' });
 
     return ''
-        .concat(zeroLeftPad(nanoDate.getMonth() + 1, 2))
-        .concat('/')
+        .concat(month)
+        .concat(' ')
         .concat(zeroLeftPad(nanoDate.getDate(), 2))
-        .concat('/')
+        .concat(' ')
         .concat(nanoDate.getFullYear().toString());
 };

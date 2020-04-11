@@ -2,21 +2,27 @@ import { Colors } from './App';
 
 export const Styles = {
     newsItemDiv: {
-        overflow: 'auto',
-        minWidth: '20vw',
-        maxWidth: '20vw',
+        width: 'fit-content',
+        maxWidth: '60vw',
+        display: 'flex',
+        flexDirection: 'column' as 'column',
+    },
+    imageAndSummaryDiv: {
+        display: 'flex-inline',
+        flexDirection: 'row' as 'row',
     },
     image: {
-        width: '100%',
+        height: '200px',
+        display: 'inline',
     },
     title: {
         display: 'inline-flex',
-        width: '100%',
-        justifyContent: 'space-between',
+        maxWidth: '80%',
         alignItems: 'flex-start',
     },
     linkIcon: {
         marginTop: '3px',
+        marginLeft: '5px',
     },
     articleLink: {
         textDecoration: 'none',
@@ -31,7 +37,6 @@ export const Styles = {
     },
     stockTimeDiv: {
         display: 'inline-flex',
-        width: '100%',
         alignItems: 'center',
         marginBottom: '5px',
     },
@@ -69,20 +74,8 @@ export const Styles = {
         color: Colors.grey,
         fontSize: 11,
     },
-    marginLeft: {
-        marginLeft: '15px',
-    },
-    buttonBase: {
-        width: '100%',
-    },
-    modal: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    paper: {
-        backgroundColor: Colors.white,
-        borderRadius: '8px',
-        padding: '10px',
+    summary: {
+        width: 'fit-content',
+        maxWidth: '60vw',
     },
 };
