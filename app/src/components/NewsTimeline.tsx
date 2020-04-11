@@ -345,13 +345,14 @@ class NewsTimeline extends Component<Props, State> {
                                         open={datePickerIsOpen}
                                         onOpen={() => this.setState({ datePickerIsOpen: true })}
                                         onClose={() => this.setState({ datePickerIsOpen: false })}
-                                        views={['year', 'month', 'date']}
-                                        openTo={'year'}
+                                        views={['month', 'date']}
+                                        openTo={'month'}
                                         format={'DD/MM/YYYY'}
                                         value={datePickerValue}
                                         onChange={date => this.handleChangeDate(date)}
                                         invalidDateMessage={''}
-                                        disableFuture
+                                        minDate={moment('2020-01-01')}
+                                        maxDate={moment('2020-02-29')}
                                     />
                                 </MuiPickersUtilsProvider>
                             </div>

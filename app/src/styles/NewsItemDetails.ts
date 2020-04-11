@@ -6,19 +6,25 @@ export const Styles = {
         maxWidth: '60vw',
         display: 'flex',
         flexDirection: 'column' as 'column',
+        height: 'fit-content',
+        maxHeight: '90',
     },
     imageAndSummaryDiv: {
         display: 'flex-inline',
         flexDirection: 'row' as 'row',
+        overflow: 'auto',
     },
     image: {
         height: '200px',
-        display: 'inline',
+        float: 'left' as 'left',
+        marginRight: '10px',
+        marginBottom: '10px',
     },
     title: {
         display: 'inline-flex',
         maxWidth: '80%',
         alignItems: 'flex-start',
+        marginBottom: '10px',
     },
     linkIcon: {
         marginTop: '3px',
@@ -38,7 +44,7 @@ export const Styles = {
     stockTimeDiv: {
         display: 'inline-flex',
         alignItems: 'center',
-        marginBottom: '5px',
+        marginBottom: '10px',
     },
     stockBox: {
         height: '100%',

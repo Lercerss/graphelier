@@ -108,6 +108,7 @@ class NewsTimeline extends Component<Props, State> {
                         variant={'body2'}
                         color={'textSecondary'}
                         className={classes.summary}
+                        align={'justify'}
                     >
                         <Img
                             src={newsItem.image_url}

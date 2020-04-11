@@ -41,7 +41,9 @@ export const Styles = {
         overflowX: 'auto' as 'auto',
     },
     timelineEvent: {
+        width: 'fit-content',
         maxWidth: '75vw',
+        height: 'fit-content',
         maxHeight: '50vh',
         padding: '10px 10px',
     },
