@@ -57,7 +57,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
      * @desc Handles changing the selected unit for the playback
      */
     private handleUnitChange = (event: React.ChangeEvent<any>): void => {
-        this.setState({ selectedUnit: event.target.value });
+        this.setState({ selectedUnit: event.target.value }, () => this.checkRealTimeRate());
     };
 
     /**
@@ -80,7 +80,9 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
         const { playback, handlePlayback } = this.props;
         const { unitSpeed } = this.state;
         if (!playback) {
-            if (unitSpeed === 0) {
+            if (Number.isNaN(unitSpeed)) {
+                this.showMessage('Please enter a number');
+            } else if (unitSpeed === 0) {
                 this.showMessage('0 is not a valid unit speed. Please select a strictly positive number');
             } else {
                 handlePlayback(true);

@@ -26,9 +26,10 @@ interface Props extends WithStyles<typeof styles> {
 
 class PriceLevel extends Component<Props> {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { orders, maxQuantity } = this.props;
+        const { orders, maxQuantity, playback } = this.props;
 
-        return !ordersEquals(orders, nextProps.orders) || maxQuantity !== nextProps.maxQuantity;
+        return !ordersEquals(orders, nextProps.orders) || maxQuantity !== nextProps.maxQuantity
+            || playback !== nextProps.playback;
     }
 
     render() {
