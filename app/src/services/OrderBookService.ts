@@ -1,4 +1,8 @@
+import bigInt from 'big-integer';
 import { httpClient } from './HttpClient';
+import { BACKEND_WS } from '../constants/Constants';
+
+const WebSocket = require('isomorphic-ws');
 
 export default class OrderBookService {
     static getOrderBookPrices = (instrument: string, timestamp: string) => {
@@ -23,5 +27,9 @@ export default class OrderBookService {
 
     static getOrderInformation = (instrument: string, orderId: number, timestamp: string) => {
         return httpClient.get(`/order/${instrument}/${orderId}/${timestamp}`);
-    }
+    };
+
+    static getPlaybackWebSocket = (instrument: string, lastSodOffset: bigInt.BigInteger, queryParameter: string) => {
+        return new WebSocket(`${BACKEND_WS}/playback/${instrument}/${lastSodOffset}/${queryParameter}`);
+    };
 }

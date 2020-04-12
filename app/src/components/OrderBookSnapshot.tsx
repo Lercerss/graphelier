@@ -10,7 +10,7 @@ import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 
 import moment from 'moment';
-import { connect, Provider } from 'react-redux';
+import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { withSnackbar, WithSnackbarProps } from 'notistack';
 import { Styles } from '../styles/OrderBookSnapshot';
@@ -47,7 +47,7 @@ import {
 } from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
 import PlaybackControl from './PlaybackControl';
-import { RootState, getStore } from '../store';
+import { RootState } from '../store';
 import OrderInformation from './OrderInformation';
 import { saveOrderbookTimestampInfo } from '../actions/actions';
 
@@ -557,6 +557,14 @@ class OrderBookSnapshot extends Component<Props, State> {
                                     </Select>
                                 )}
                             </div>
+                            <PlaybackControl
+                                selectedDateTimeNano={selectedDateTimeNano}
+                                lastSodOffset={lastSodOffset}
+                                selectedInstrument={selectedInstrument}
+                                handlePlaybackModifications={this.handlePlaybackModifications}
+                                handlePlayback={this.handlePlayback}
+                                playback={playback}
+                            />
                             <div
                                 className={classes.dateTimeSelect}
                             >
@@ -602,16 +610,6 @@ class OrderBookSnapshot extends Component<Props, State> {
                             </div>
                         </div>
                     </FormControl>
-                    <Provider store={getStore()}>
-                        <PlaybackControl
-                            selectedDateTimeNano={selectedDateTimeNano}
-                            lastSodOffset={lastSodOffset}
-                            selectedInstrument={selectedInstrument}
-                            handlePlaybackModifications={this.handlePlaybackModifications}
-                            handlePlayback={this.handlePlayback}
-                            playback={playback}
-                        />
-                    </Provider>
                     {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
                     && (
                         <div>

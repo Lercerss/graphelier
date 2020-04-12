@@ -8,11 +8,13 @@ export const Styles = theme => ({
         width: '8rem',
     },
     selectUnitSpeedInput: {
-        width: '6rem',
+        width: '7rem',
+        '& label': {
+            width: 'max-content',
+        },
     },
     centerContent: {
         display: 'flex',
-        paddingBottom: '0.5rem',
         justifyContent: 'center',
     },
     marginRight: {
@@ -28,7 +30,7 @@ export const Styles = theme => ({
         padding: '0.75rem',
         alignItems: 'center',
         display: 'flex',
-        marginTop: 'auto',
+        marginTop: '1rem',
         transitionDuration: '0.25s',
         borderRadius: '10%',
         '&:hover': {

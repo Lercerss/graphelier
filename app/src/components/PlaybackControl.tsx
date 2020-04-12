@@ -17,11 +17,11 @@ import { PlaybackData } from '../models/OrderBook';
 import { Styles } from '../styles/PlaybackControl';
 import {
     TIME_UNITS, MAXIMUM_PLAYBACK_REAL_TIME_RATE, NANOSECONDS_IN_ONE_SECOND, NANOSECONDS_IN_ONE_MICROSECOND,
-    NANOSECONDS_IN_ONE_MILLISECOND,
+    NANOSECONDS_IN_ONE_MILLISECOND, PLAYBACK_DELAY,
 } from '../constants/Constants';
+import OrderBookService from '../services/OrderBookService';
 
 const styles = theme => createStyles(Styles(theme));
-const WebSocket = require('isomorphic-ws');
 
 interface PlaybackProps extends WithStyles<typeof styles>, WithSnackbarProps {
     selectedDateTimeNano: bigInt.BigInteger,
@@ -140,12 +140,24 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
      */
     getPlaybackParameter = (): string => {
         const { unitSpeed, selectedUnit } = this.state;
-        let parameter: string = '?delay=2.5&';
-        if (selectedUnit === 'Messages') parameter = `${parameter}rateMessages=${unitSpeed}`;
-        else {
+        let parameter: string = `?delay=${PLAYBACK_DELAY}&`;
+        if (selectedUnit === 'Messages') {
+            parameter = `${parameter}rateMessages=${Math.floor(unitSpeed * PLAYBACK_DELAY)}`;
+        } else {
             parameter = `${parameter}rateRealtime=${this.getRealTimeRate()}`;
         }
         return parameter;
+    };
+
+    /**
+     * @desc gets the title for displaying the # of units next to unit type selected
+     */
+    getUnitSpeedTitle = (): string => {
+        const { selectedUnit } = this.state;
+        if (selectedUnit === 'Messages') {
+            return '# of Messages';
+        }
+        return `# of ${selectedUnit} per Second`;
     };
 
     /**
@@ -157,9 +169,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
         } = this.props;
         const parameter = this.getPlaybackParameter();
 
-        const endPoint = `ws://localhost:5050/playback/${selectedInstrument}/${lastSodOffset}/${parameter}`;
-
-        this.playbackWS = new WebSocket(endPoint);
+        this.playbackWS = OrderBookService.getPlaybackWebSocket(selectedInstrument, lastSodOffset, parameter);
         this.playbackWS.onopen = () => {
             console.log('opened playback websocket');
         };
@@ -254,7 +264,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
                     type={'number'}
                     value={unitSpeed}
                     onChange={this.handleUnitSpeedChange}
-                    label={'# of Units'}
+                    label={this.getUnitSpeedTitle()}
                     className={classes.selectUnitSpeedInput}
                     disabled={playback}
                 />
