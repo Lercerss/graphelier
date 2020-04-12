@@ -11,9 +11,9 @@ import {
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { Link } from 'react-router-dom';
 import bigInt from 'big-integer';
-import { Styles } from '../styles/NewsItemDetails';
+import { Styles } from '../styles/ArticleDetails';
 import {
-    NewsItem,
+    Article,
 } from '../models/NewsTimeline';
 import { NANOSECONDS_IN_ONE_SECOND, ORDERBOOK_INSTRUMENTS } from '../constants/Constants';
 import {
@@ -24,26 +24,26 @@ import {
 const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
-    newsItem: NewsItem,
+    article: Article,
 }
 
 interface State {}
 
-class NewsTimeline extends Component<Props, State> {
+class ArticleDetails extends Component<Props, State> {
     render() {
-        const { newsItem, classes } = this.props;
+        const { article, classes } = this.props;
 
-        const nanosecondTimestamp = bigInt(newsItem.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
+        const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
         const datePublishedString = getDateStringFromTimestamp(nanosecondTimestamp);
 
-        const instruments = newsItem.tickers.filter(ticker => {
+        const instruments = article.tickers.filter(ticker => {
             return ORDERBOOK_INSTRUMENTS.includes(ticker);
         });
 
         return (
             <div
-                className={classes.newsItemDiv}
+                className={classes.articleDiv}
             >
                 <div
                     className={classes.title}
@@ -53,10 +53,10 @@ class NewsTimeline extends Component<Props, State> {
                         color={'textPrimary'}
                         align={'left'}
                     >
-                        {newsItem.title}
+                        {article.title}
                     </Typography>
                     <a
-                        href={newsItem.article_url}
+                        href={article.article_url}
                         target={'_blank'}
                         className={classes.articleLink}
                     >
@@ -104,7 +104,7 @@ class NewsTimeline extends Component<Props, State> {
                         className={classes.time}
                         id={'time'}
                     >
-                        {`Published ${datePublishedString}, ${timePublishedString} | ${newsItem.source_name}`}
+                        {`Published ${datePublishedString}, ${timePublishedString} | ${article.source_name}`}
                     </Typography>
                 </div>
                 <div className={classes.imageAndSummaryDiv}>
@@ -115,10 +115,10 @@ class NewsTimeline extends Component<Props, State> {
                         align={'justify'}
                     >
                         <Img
-                            src={newsItem.image_url}
+                            src={article.image_url}
                             className={classes.image}
                         />
-                        {newsItem.summary}
+                        {article.summary}
                     </Typography>
                 </div>
             </div>
@@ -126,4 +126,4 @@ class NewsTimeline extends Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(NewsTimeline);
+export default withStyles(styles)(ArticleDetails);

@@ -1,8 +1,9 @@
 import { Colors } from './App';
 
 export const Styles = {
-    newsItemDiv: {
-        width: '300px',
+    articleDiv: {
+        maxWidth: '300px',
+        minWidth: '300px',
     },
     image: {
         width: '100%',

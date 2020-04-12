@@ -34,17 +34,15 @@ export const Styles = theme => ({
         height: '100%',
         overflow: 'auto',
     },
-    newsCluster: {
+    articleCluster: {
         display: 'inline-flex',
-        width: '100%',
-        height: '100%',
-        overflowX: 'auto' as 'auto',
+        maxWidth: '100%',
+        overflow: 'auto',
     },
     timelineEvent: {
         width: 'fit-content',
         maxWidth: '75vw',
         height: 'fit-content',
-        maxHeight: '50vh',
         padding: '10px 10px',
     },
     placeholderMessage: {

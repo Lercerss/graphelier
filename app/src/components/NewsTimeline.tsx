@@ -19,13 +19,14 @@ import CalendarTodayOutlinedIcon from '@material-ui/icons/CalendarTodayOutlined'
 import moment from 'moment';
 
 import bigInt from 'big-integer';
+import { debounce } from 'lodash';
 import { Styles } from '../styles/NewsTimeline';
 
 import {
-    NewsCluster,
+    ArticleCluster,
 } from '../models/NewsTimeline';
 import CustomLoader from './CustomLoader';
-import NewsArticle from './NewsItem';
+import ArticleItem from './ArticleItem';
 import {
     getDateStringFromTimestamp,
 } from '../utils/date-utils';
@@ -39,55 +40,73 @@ const styles = theme => createStyles(Styles(theme));
 interface Props extends WithStyles<typeof styles> {}
 
 interface State {
-    newsClusters: Array<NewsCluster>,
+    articleClusters: Array<ArticleCluster>,
     loadingTimeline: boolean,
     datePickerValue: moment.Moment | null,
     datePickerIsOpen: boolean,
+    newestTimestamp: string | null,
+    oldestTimestamp: string | null,
 }
 
 class NewsTimeline extends Component<Props, State> {
+    /**
+     * @desc Paging handler for upwards hitting of the timeline's top edge
+     */
+    handleHitTop = debounce(() => {
+        const { articleClusters, oldestTimestamp } = this.state;
+        if (oldestTimestamp !== null) {
+            NewsService.getArticleClusters(oldestTimestamp, '-1')
+                .then(response => {
+                    // eslint-disable-next-line camelcase
+                    const { clusters, next_timestamp } = response.data;
+                    this.setState(
+                        {
+                            articleClusters: clusters.concat(articleClusters),
+                            oldestTimestamp: next_timestamp,
+                        },
+                    );
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+    }, 200);
+
+    /**
+     * @desc Paging handler for downwards hitting of the timeline's bottom edge
+     */
+    handleHitBottom = debounce(() => {
+        const { articleClusters, newestTimestamp } = this.state;
+        if (newestTimestamp !== null) {
+            NewsService.getArticleClusters(newestTimestamp, '1')
+                .then(response => {
+                    // eslint-disable-next-line camelcase
+                    const { clusters, next_timestamp } = response.data;
+                    this.setState(
+                        {
+                            articleClusters: articleClusters.concat(clusters),
+                            newestTimestamp: next_timestamp,
+                        },
+                    );
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+    }, 200);
+
     constructor(props) {
         super(props);
 
         this.state = {
-            newsClusters: [],
+            articleClusters: [],
             loadingTimeline: false,
             datePickerValue: null,
             datePickerIsOpen: false,
+            newestTimestamp: null,
+            oldestTimestamp: null,
         };
     }
-
-    /**
-    * @desc Paging handler for upwards and downwards hitting of the timeline
-    * @param direction
-    */
-    handleHitEdge = (direction: string) => {
-        const { newsClusters } = this.state;
-        const requestDirection = direction === 'top' ? '1' : '-1';
-        const timestamp = direction === 'top'
-            ? newsClusters[0].timestamp : newsClusters[newsClusters.length - 1].timestamp;
-        NewsService.getNewsClusters(timestamp, requestDirection)
-            .then(response => {
-                console.debug(response);
-                // const { clusters } = response.data;
-                // if (direction === 'top') {
-                //     this.setState(
-                //         {
-                //             newsClusters: clusters.push(...newsClusters),
-                //         },
-                //     );
-                // } else {
-                //     this.setState(
-                //         {
-                //             newsClusters: newsClusters.push(...clusters),
-                //         },
-                //     );
-                // }
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    };
 
     /**
      * @desc Handles the date change for the TextField date picker
@@ -101,13 +120,16 @@ class NewsTimeline extends Component<Props, State> {
                 loadingTimeline: true,
             },
             () => {
-                const timestamp = date.startOf('day').unix();
-                NewsService.getNewsClusters(timestamp, '1')
+                const requestTimestamp = date.startOf('day').unix();
+                NewsService.getArticleClusters(requestTimestamp, '1')
                     .then(response => {
-                        const { clusters } = response.data;
+                        // eslint-disable-next-line camelcase
+                        const { clusters, timestamp, next_timestamp } = response.data;
                         this.setState(
                             {
-                                newsClusters: clusters,
+                                articleClusters: clusters,
+                                oldestTimestamp: timestamp,
+                                newestTimestamp: next_timestamp,
                             },
                         );
                     })
@@ -129,19 +151,19 @@ class NewsTimeline extends Component<Props, State> {
     render() {
         const { classes } = this.props;
         const {
-            newsClusters,
+            articleClusters,
             loadingTimeline,
             datePickerValue,
             datePickerIsOpen,
         } = this.state;
 
-        let lastNewsClusterDateString = '';
+        let lastArticleClusterDateString = '';
 
         const opts = {
             layout: 'inline-evts',
         };
 
-        const showPlaceholder = datePickerValue === null || loadingTimeline || newsClusters.length === 0;
+        const showPlaceholder = datePickerValue === null || loadingTimeline || articleClusters.length === 0;
 
         const PlaceholderElement = () => {
             if (loadingTimeline) {
@@ -152,7 +174,8 @@ class NewsTimeline extends Component<Props, State> {
                 );
             }
             const messageText = datePickerValue === null
-                ? 'Select a date' : 'No data to show, please select a different date';
+                ? 'Select a date to browse stock news'
+                : 'No data to show, please select a different date';
             return (
                 <Typography
                     variant={'body1'}
@@ -190,7 +213,6 @@ class NewsTimeline extends Component<Props, State> {
                 {children}
             </Card>
         );
-        console.debug(newsClusters);
         return (
             <div
                 className={classes.contentDiv}
@@ -226,20 +248,21 @@ class NewsTimeline extends Component<Props, State> {
                 </div>
                 { showPlaceholder ? <PlaceholderElement /> : (
                     <MultiDirectionalScroll
-                        onReachBottom={() => { this.handleHitEdge('-1'); }}
-                        onReachTop={() => { this.handleHitEdge('1'); }}
+                        onReachTop={() => { this.handleHitTop(); }}
+                        onReachBottom={() => { this.handleHitBottom(); }}
+                        position={30}
                     >
                         <Timeline
                             opts={opts}
                             theme={customTheme}
                         >
                             <Events>
-                                {newsClusters.map(newsCluster => {
-                                    const nanosecondTimestamp = bigInt(newsCluster.timestamp)
+                                {articleClusters.map(articleCluster => {
+                                    const nanosecondTimestamp = bigInt(articleCluster.timestamp)
                                         .multiply(NANOSECONDS_IN_ONE_SECOND);
                                     const dateString = getDateStringFromTimestamp(nanosecondTimestamp);
-                                    const hideDateAndMarker = lastNewsClusterDateString === dateString;
-                                    lastNewsClusterDateString = dateString;
+                                    const hideDateAndMarker = lastArticleClusterDateString === dateString;
+                                    lastArticleClusterDateString = dateString;
                                     return (
                                         <TextEvent
                                             date={hideDateAndMarker ? HiddenElement : dateString}
@@ -247,11 +270,11 @@ class NewsTimeline extends Component<Props, State> {
                                             card={MyCustomCard}
                                             marker={hideDateAndMarker && HiddenElement}
                                         >
-                                            <div className={classes.newsCluster}>
-                                                {newsCluster.articles.map((newsItem, i) => {
+                                            <div className={classes.articleCluster}>
+                                                {articleCluster.articles.map((article, i) => {
                                                     return (
-                                                        <NewsArticle
-                                                            newsItem={newsItem}
+                                                        <ArticleItem
+                                                            article={article}
                                                             isFirstItem={i === 0}
                                                         />
                                                     );

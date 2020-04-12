@@ -356,7 +356,6 @@ class OrderBookSnapshot extends Component<Props, State> {
      */
     updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
         const { selectedInstrument } = this.state;
-        console.debug(graphStartTime.toString(), graphEndTime.toString());
 
         OrderBookService.getTopOfBookOverTime(selectedInstrument, graphStartTime.toString(), graphEndTime.toString(),
             this.getNumDataPoints())

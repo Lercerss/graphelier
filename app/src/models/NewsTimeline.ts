@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-export interface NewsItem {
+export interface Article {
     title: string,
     summary: string,
     article_url: string,
@@ -11,8 +11,8 @@ export interface NewsItem {
     source_name: string,
 }
 
-export interface NewsCluster {
-    articles: Array<NewsItem>,
+export interface ArticleCluster {
+    articles: Array<Article>,
     timestamp: string,
     size: number
 }

@@ -1,7 +1,7 @@
 import { Colors } from './App';
 
 export const Styles = {
-    newsItemDiv: {
+    articleDiv: {
         width: 'fit-content',
         maxWidth: '60vw',
         display: 'flex',

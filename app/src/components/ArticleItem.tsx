@@ -16,19 +16,19 @@ import {
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { Link } from 'react-router-dom';
 import bigInt from 'big-integer';
-import { Styles } from '../styles/NewsItem';
+import { Styles } from '../styles/Article';
 
 import {
-    NewsItem,
+    Article,
 } from '../models/NewsTimeline';
 import { NANOSECONDS_IN_ONE_SECOND, ORDERBOOK_INSTRUMENTS } from '../constants/Constants';
 import { getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
-import NewsItemDetails from './NewsItemDetails';
+import ArticleDetails from './ArticleDetails';
 
 const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
-    newsItem: NewsItem,
+    article: Article,
     isFirstItem: boolean,
 }
 
@@ -36,7 +36,7 @@ interface State {
     modalIsOpen: boolean,
 }
 
-class NewsTimeline extends Component<Props, State> {
+class ArticleItem extends Component<Props, State> {
     constructor(props) {
         super(props);
 
@@ -55,19 +55,19 @@ class NewsTimeline extends Component<Props, State> {
     };
 
     render() {
-        const { newsItem, classes, isFirstItem } = this.props;
+        const { article, classes, isFirstItem } = this.props;
         const { modalIsOpen } = this.state;
 
-        const nanosecondTimestamp = bigInt(newsItem.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
+        const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
 
-        const instruments = newsItem.tickers.filter(ticker => {
+        const instruments = article.tickers.filter(ticker => {
             return ORDERBOOK_INSTRUMENTS.includes(ticker);
         });
 
         return (
             <div
-                className={classNames(classes.newsItemDiv, !isFirstItem && classes.marginLeft)}
+                className={classNames(classes.articleDiv, !isFirstItem && classes.marginLeft)}
             >
                 <ButtonBase
                     onClick={() => { this.setState({ modalIsOpen: true }); }}
@@ -83,10 +83,10 @@ class NewsTimeline extends Component<Props, State> {
                                 align={'left'}
                                 className={classes.headline}
                             >
-                                {newsItem.title}
+                                {article.title}
                             </Typography>
                             <a
-                                href={newsItem.article_url}
+                                href={article.article_url}
                                 target={'_blank'}
                                 className={classes.articleLink}
                             >
@@ -134,11 +134,11 @@ class NewsTimeline extends Component<Props, State> {
                                 className={classes.time}
                                 id={'time'}
                             >
-                                {`${timePublishedString} | ${newsItem.source_name}`}
+                                {`${timePublishedString} | ${article.source_name}`}
                             </Typography>
                         </div>
                         <Img
-                            src={newsItem.image_url}
+                            src={article.image_url}
                             className={classes.image}
                             loader={<CircularProgress />}
                         />
@@ -155,7 +155,7 @@ class NewsTimeline extends Component<Props, State> {
                     <Fade in={modalIsOpen}>
 
                         <div className={classes.paper}>
-                            <NewsItemDetails newsItem={newsItem} />
+                            <ArticleDetails article={article} />
                         </div>
                     </Fade>
                 </Modal>
@@ -164,4 +164,4 @@ class NewsTimeline extends Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(NewsTimeline);
+export default withStyles(styles)(ArticleItem);
