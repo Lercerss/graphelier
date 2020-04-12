@@ -16,12 +16,12 @@ import {
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { Link } from 'react-router-dom';
 import bigInt from 'big-integer';
-import { Styles } from '../styles/Article';
+import { Styles } from '../styles/ArticleItem';
 
 import {
     Article,
 } from '../models/NewsTimeline';
-import { NANOSECONDS_IN_ONE_SECOND, ORDERBOOK_INSTRUMENTS } from '../constants/Constants';
+import { INSTR_COLOR, NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import { getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
 import ArticleDetails from './ArticleDetails';
 
@@ -57,12 +57,11 @@ class ArticleItem extends Component<Props, State> {
     render() {
         const { article, classes, isFirstItem } = this.props;
         const { modalIsOpen } = this.state;
-
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
 
         const instruments = article.tickers.filter(ticker => {
-            return ORDERBOOK_INSTRUMENTS.includes(ticker);
+            return ticker in INSTR_COLOR;
         });
 
         return (
@@ -98,38 +97,22 @@ class ArticleItem extends Component<Props, State> {
                             </a>
                         </div>
                         <div className={classes.stockTimeDiv}>
-                            {instruments.map(instrument => {
-                                let instrumentClassName;
-                                switch (instrument) {
-                                case 'AAPL':
-                                    instrumentClassName = classes.aapl;
-                                    break;
-                                case 'SPY':
-                                    instrumentClassName = classes.spy;
-                                    break;
-                                case 'MSFT':
-                                    instrumentClassName = classes.msft;
-                                    break;
-                                default:
-                                    instrumentClassName = classes.other;
-                                }
-
-                                return (
-                                    <Link
-                                        to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
-                                        className={classes.graphLink}
+                            {instruments.map(instrument => (
+                                <Link
+                                    to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
+                                    className={classes.graphLink}
+                                >
+                                    <Box
+                                        className={classes.stockBox}
+                                        style={INSTR_COLOR[instrument] || INSTR_COLOR.default}
+                                        id={'stockBox'}
                                     >
-                                        <Box
-                                            className={classNames(classes.stockBox, instrumentClassName)}
-                                            id={'stockBox'}
-                                        >
-                                            <Typography className={classes.stock}>
-                                                {instrument}
-                                            </Typography>
-                                        </Box>
-                                    </Link>
-                                );
-                            })}
+                                        <Typography className={classes.stock}>
+                                            {instrument}
+                                        </Typography>
+                                    </Box>
+                                </Link>
+                            ))}
                             <Typography
                                 className={classes.time}
                                 id={'time'}

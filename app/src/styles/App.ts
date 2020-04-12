@@ -15,6 +15,9 @@ export const Colors = {
     orange: '#ef6c00',
     purple: '#9c27b0',
     grey: '#616770',
+    neutralGrey: '#98a2b0',
+    positiveGreen: '#7bcb7b',
+    negativeRed: '#fb9898',
 };
 
 export const LightThemeColors = {

@@ -1,10 +1,11 @@
 import bigInt from 'big-integer';
+import { Colors } from '../styles/App';
 
 export const ENVIRONMENT = 'DEV';
 export const APP_NAME = 'Graphelier';
 export const ORDERBOOK_SERVICE_BACKEND_PORT = 5050;
 export const NEWS_SERVICE_BACKEND_PORT = 8080;
-let host = 'localhost';
+let host = '18.218.121.174';
 if (process.env.NODE_ENV === 'production') {
     host = '18.218.121.174';
 }
@@ -32,4 +33,17 @@ export const NANOSECONDS_IN_ONE_DAY = NANOSECONDS_IN_ONE_HOUR * 24;
 export const NUM_DATA_POINTS_RATIO = 0.5;
 export const ANIMATION_TIME = 500;
 
-export const ORDERBOOK_INSTRUMENTS = ['AAPL', 'MSFT', 'SPY'];
+export const INSTR_COLOR = {
+    AAPL: {
+        backgroundColor: Colors.indigo,
+    },
+    MSFT: {
+        backgroundColor: Colors.emerald,
+    },
+    SPY: {
+        backgroundColor: Colors.orange,
+    },
+    default: {
+        backgroundColor: Colors.grey,
+    },
+};

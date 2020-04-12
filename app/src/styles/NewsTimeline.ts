@@ -27,13 +27,6 @@ export const Styles = theme => ({
     dateButton: {
         color: Colors.white,
     },
-    calendarIcon: {
-        marginLeft: '5px',
-    },
-    timelineScroller: {
-        height: '100%',
-        overflow: 'auto',
-    },
     articleCluster: {
         display: 'inline-flex',
         maxWidth: '100%',

@@ -7,7 +7,8 @@ export const Styles = {
         display: 'flex',
         flexDirection: 'column' as 'column',
         height: 'fit-content',
-        maxHeight: '90',
+        maxHeight: '90vh',
+        overflow: 'auto',
     },
     imageAndSummaryDiv: {
         display: 'flex-inline',
@@ -63,18 +64,6 @@ export const Styles = {
             textDecoration: 'none',
         },
     },
-    aapl: {
-        backgroundColor: Colors.indigo,
-    },
-    spy: {
-        backgroundColor: Colors.orange,
-    },
-    msft: {
-        backgroundColor: Colors.emerald,
-    },
-    other: {
-        backgroundColor: Colors.grey,
-    },
     time: {
         color: Colors.grey,
         fontSize: 11,
@@ -82,5 +71,8 @@ export const Styles = {
     summary: {
         width: 'fit-content',
         maxWidth: '60vw',
+    },
+    sentimentIcon: {
+        marginRight: '5px',
     },
 };

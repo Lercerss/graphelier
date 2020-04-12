@@ -57,13 +57,13 @@ export const Styles = {
             textDecoration: 'none',
         },
     },
-    aapl: {
+    AAPL: {
         backgroundColor: Colors.indigo,
     },
-    spy: {
+    SPY: {
         backgroundColor: Colors.orange,
     },
-    msft: {
+    MSFT: {
         backgroundColor: Colors.emerald,
     },
     other: {

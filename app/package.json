@@ -9,6 +9,8 @@
         "@material-ui/lab": "^4.0.0-alpha.32",
         "@material-ui/pickers": "^3.2.9",
         "@material-ui/styles": "^4.4.1",
+        "@mdi/js": "^5.0.45",
+        "@mdi/react": "^1.4.0",
         "@merc/react-timeline": "^0.1.42",
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.1",

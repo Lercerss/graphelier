@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
-import classNames from 'classnames';
 
 import Img from 'react-image';
 import {
@@ -11,15 +10,18 @@ import {
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { Link } from 'react-router-dom';
 import bigInt from 'big-integer';
+import { mdiEmoticonHappyOutline, mdiEmoticonNeutralOutline, mdiEmoticonSadOutline } from '@mdi/js';
+import Icon from '@mdi/react';
 import { Styles } from '../styles/ArticleDetails';
 import {
     Article,
 } from '../models/NewsTimeline';
-import { NANOSECONDS_IN_ONE_SECOND, ORDERBOOK_INSTRUMENTS } from '../constants/Constants';
+import { INSTR_COLOR, NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import {
     getHoursMinutesStringFromTimestamp,
     getDateStringFromTimestamp,
 } from '../utils/date-utils';
+import { Colors } from '../styles/App';
 
 const styles = createStyles(Styles);
 
@@ -38,8 +40,23 @@ class ArticleDetails extends Component<Props, State> {
         const datePublishedString = getDateStringFromTimestamp(nanosecondTimestamp);
 
         const instruments = article.tickers.filter(ticker => {
-            return ORDERBOOK_INSTRUMENTS.includes(ticker);
+            return ticker in INSTR_COLOR;
         });
+
+        const sentimentOptions = {
+            Positive: {
+                path: mdiEmoticonHappyOutline,
+                color: Colors.positiveGreen,
+            },
+            Neutral: {
+                path: mdiEmoticonNeutralOutline,
+                color: Colors.neutralGrey,
+            },
+            Negative: {
+                path: mdiEmoticonSadOutline,
+                color: Colors.negativeRed,
+            },
+        };
 
         return (
             <div
@@ -68,38 +85,28 @@ class ArticleDetails extends Component<Props, State> {
                     </a>
                 </div>
                 <div className={classes.stockTimeDiv}>
-                    {instruments.map(instrument => {
-                        let instrumentClassName;
-                        switch (instrument) {
-                        case 'AAPL':
-                            instrumentClassName = classes.aapl;
-                            break;
-                        case 'SPY':
-                            instrumentClassName = classes.spy;
-                            break;
-                        case 'MSFT':
-                            instrumentClassName = classes.msft;
-                            break;
-                        default:
-                            instrumentClassName = classes.other;
-                        }
-
-                        return (
-                            <Link
-                                to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
-                                className={classes.graphLink}
+                    {instruments.map(instrument => (
+                        <Link
+                            to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
+                            className={classes.graphLink}
+                        >
+                            <Box
+                                className={classes.stockBox}
+                                style={INSTR_COLOR[instrument] || INSTR_COLOR.default}
+                                id={'stockBox'}
                             >
-                                <Box
-                                    className={classNames(classes.stockBox, instrumentClassName)}
-                                    id={'stockBox'}
-                                >
-                                    <Typography className={classes.stock}>
-                                        {instrument}
-                                    </Typography>
-                                </Box>
-                            </Link>
-                        );
-                    })}
+                                <Typography className={classes.stock}>
+                                    {instrument}
+                                </Typography>
+                            </Box>
+                        </Link>
+                    ))}
+                    <Icon
+                        path={sentimentOptions[article.sentiment].path}
+                        color={sentimentOptions[article.sentiment].color}
+                        className={classes.sentimentIcon}
+                        size={1}
+                    />
                     <Typography
                         className={classes.time}
                         id={'time'}

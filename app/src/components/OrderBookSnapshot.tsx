@@ -147,13 +147,11 @@ class OrderBookSnapshot extends Component<Props, State> {
                 selectedTimeString,
                 loadingGraph: true,
             }, () => {
-                const { onTimestampSelected } = this.props;
-                this.updateGraphData(graphStartTime, graphEndTime);
                 const selectedTimestampInfo: SelectedTimestampInfo = {
                     currentOrderbookTimestamp: timestamp,
                     lastModificationType: LastModificationType.FORCE_REFRESH,
                 };
-                onTimestampSelected(selectedTimestampInfo);
+                this.updateGraphData(graphStartTime, graphEndTime, selectedTimestampInfo);
             });
         }
     }
@@ -354,9 +352,10 @@ class OrderBookSnapshot extends Component<Props, State> {
     /**
      * @desc Updates the graph with tob values for new start time and end time bounds
      */
-    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
+    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger,
+        selectedTimestampInfo?: SelectedTimestampInfo) => {
         const { selectedInstrument } = this.state;
-
+        const { onTimestampSelected } = this.props;
         OrderBookService.getTopOfBookOverTime(selectedInstrument, graphStartTime.toString(), graphEndTime.toString(),
             this.getNumDataPoints())
             .then(response => {
@@ -369,6 +368,10 @@ class OrderBookSnapshot extends Component<Props, State> {
                         graphEndTime,
                         topOfBookItems: result,
                         loadingGraph: false,
+                    }, () => {
+                        if (selectedTimestampInfo) {
+                            onTimestampSelected(selectedTimestampInfo);
+                        }
                     },
                 );
             })
@@ -524,7 +527,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                             </div>
                         </div>
                     </FormControl>
-                    {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                    {(selectedInstrument.length !== 0)
                         && (
                             <div>
                                 <Card className={classes.graphCard}>
