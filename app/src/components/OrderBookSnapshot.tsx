@@ -283,9 +283,7 @@ class OrderBookSnapshot extends Component<Props, State> {
         const { newMaxQuantity } = data;
         while (ctr < modificationsLength) {
             const playbackModification = playbackData.modifications[ctr];
-            const { price } = playbackModification;
-            const { from } = playbackModification;
-            const { to } = playbackModification;
+            const { price, from, to } = playbackModification;
 
             switch (playbackModification.type) {
             case 'add':

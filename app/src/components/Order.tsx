@@ -28,6 +28,7 @@ interface Props extends WithStyles<typeof styles> {
     onOrderClicked: Function,
     orderIdFromState: number,
     orderInfoDrawerShown: boolean,
+    playback: boolean,
 }
 
 class Order extends Component<Props> {
@@ -36,29 +37,31 @@ class Order extends Component<Props> {
      */
     handleOnOrderClick = () => {
         const {
-            instrument, timestamp, orderId, quantity, onOrderClicked,
+            instrument, timestamp, orderId, quantity, onOrderClicked, playback,
         } = this.props;
-        OrderBookService.getOrderInformation(instrument, orderId, timestamp.toString())
-            .then(response => {
-                const {
-                    // eslint-disable-next-line camelcase
-                    last_modified, created_on, price, messages,
-                } = response.data;
-                const orderDetails: OrderDetails = {
-                    instrument,
-                    id: orderId,
-                    quantity,
-                    price,
-                    last_modified,
-                    created_on,
-                    messages,
-                };
-                const orderInformationDrawer: OrderInformationDrawer = {
-                    orderDetails,
-                    showOrderInfoDrawer: true,
-                };
-                onOrderClicked(orderInformationDrawer);
-            });
+        if (!playback) {
+            OrderBookService.getOrderInformation(instrument, orderId, timestamp.toString())
+                .then(response => {
+                    const {
+                        // eslint-disable-next-line camelcase
+                        last_modified, created_on, price, messages,
+                    } = response.data;
+                    const orderDetails: OrderDetails = {
+                        instrument,
+                        id: orderId,
+                        quantity,
+                        price,
+                        last_modified,
+                        created_on,
+                        messages,
+                    };
+                    const orderInformationDrawer: OrderInformationDrawer = {
+                        orderDetails,
+                        showOrderInfoDrawer: true,
+                    };
+                    onOrderClicked(orderInformationDrawer);
+                });
+        }
     };
 
     render() {

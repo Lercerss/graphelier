@@ -21,6 +21,7 @@ interface Props extends WithStyles<typeof styles> {
     price: number,
     instrument: string,
     timestamp: bigInt.BigInteger,
+    playback: boolean,
 }
 
 class PriceLevel extends Component<Props> {
@@ -32,7 +33,7 @@ class PriceLevel extends Component<Props> {
 
     render() {
         const {
-            classes, type, price, orders, maxQuantity, instrument, timestamp,
+            classes, type, price, orders, maxQuantity, instrument, timestamp, playback,
         } = this.props;
         const formattedPrice = roundNumber(price, 2);
 
@@ -58,6 +59,7 @@ class PriceLevel extends Component<Props> {
                                 maxQuantity={maxQuantity}
                                 instrument={instrument}
                                 timestamp={timestamp}
+                                playback={playback}
                             />
                         </CSSTransition>
                     ))}

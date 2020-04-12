@@ -41,8 +41,11 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { lastSodOffset, loading } = this.props;
+        const { lastSodOffset, loading, playback } = this.props;
         if (loading !== nextProps.loading) {
+            return true;
+        }
+        if (playback !== nextProps.playback) {
             return true;
         }
         if (lastSodOffset && nextProps.lastSodOffset) {
@@ -81,15 +84,12 @@ class TimestampOrderBookScroller extends Component<Props> {
      * @desc handler for the event of scrolling to the top of the book entity
      */
     handleScrollToTopOfTheBook = () => {
-        const { playback } = this.props;
-        if (!playback) {
-            this.middleReferenceItem
+        this.middleReferenceItem
             && this.middleReferenceItem.current
             && this.middleReferenceItem.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
             });
-        }
     };
 
     /**
@@ -97,10 +97,7 @@ class TimestampOrderBookScroller extends Component<Props> {
      * the message's timestamp
      */
     handleGoToNextMessage = () => {
-        const { playback } = this.props;
-        if (!playback) {
-            this.handleGoToMessageByOffset(1);
-        }
+        this.handleGoToMessageByOffset(1);
     };
 
     /**
@@ -108,10 +105,7 @@ class TimestampOrderBookScroller extends Component<Props> {
      * the message's timestamp
      */
     handleGoToPreviousMessage = () => {
-        const { playback } = this.props;
-        if (!playback) {
-            this.handleGoToMessageByOffset(-1);
-        }
+        this.handleGoToMessageByOffset(-1);
     };
 
     /**
@@ -139,7 +133,7 @@ class TimestampOrderBookScroller extends Component<Props> {
 
     render() {
         const {
-            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading, instrument, timestamp,
+            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading, instrument, timestamp, playback,
         } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
 
@@ -147,6 +141,7 @@ class TimestampOrderBookScroller extends Component<Props> {
             <Box className={classes.container}>
                 <Box className={classes.header}>
                     <Button
+                        disabled={playback}
                         variant={'contained'}
                         className={classes.topOfTheBookButton}
                         color={'primary'}
@@ -171,14 +166,14 @@ class TimestampOrderBookScroller extends Component<Props> {
                             <Button
                                 id={'previousMessage'}
                                 onClick={this.handleGoToPreviousMessage}
-                                disabled={timeOrDateIsNotSet}
+                                disabled={timeOrDateIsNotSet || playback}
                             >
                                 <ChevronLeftSharpIcon htmlColor={timeOrDateIsNotSet ? '#a6a6a6' : 'white'} />
                             </Button>
                             <Button
                                 id={'nextMessage'}
                                 onClick={this.handleGoToNextMessage}
-                                disabled={timeOrDateIsNotSet}
+                                disabled={timeOrDateIsNotSet || playback}
                             >
                                 <ChevronRightSharpIcon htmlColor={timeOrDateIsNotSet ? '#a6a6a6' : 'white'} />
                             </Button>
@@ -225,6 +220,7 @@ class TimestampOrderBookScroller extends Component<Props> {
                                                     maxQuantity={quantityBoxSize}
                                                     instrument={instrument}
                                                     timestamp={timestamp}
+                                                    playback={playback}
                                                 />
                                             </Box>
                                         </CSSTransition>
