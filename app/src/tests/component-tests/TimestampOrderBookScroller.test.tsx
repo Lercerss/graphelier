@@ -216,10 +216,7 @@ describe('TimestampOrderbookScroller functionality', () => {
 });
 
 describe('navigating by message functionality', () => {
-    const initialState = { playback: false };
-    const mockStore = configureStore();
-    // eslint-disable-next-line no-unused-vars
-    let mount, shallow, store, playback;
+    let mount, shallow, playback;
     const timeOrDateIsNotSet = false;
     const handleUpdateWithDeltas = jest.fn();
     const loadingOrderbook: boolean = false;
@@ -231,7 +228,6 @@ describe('navigating by message functionality', () => {
         ));
 
     beforeEach(() => {
-        store = mockStore(initialState);
         mount = createMount();
         shallow = createShallow({ dive: true });
         playback = false;

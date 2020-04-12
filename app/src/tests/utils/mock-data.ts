@@ -253,4 +253,4 @@ export const PLAYBACKCONTROL_INFORMATION = {
             quantity: 1300,
         }],
     },
-}
+};
