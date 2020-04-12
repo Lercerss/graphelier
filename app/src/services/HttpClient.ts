@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as AxiosLogger from 'axios-logger';
 
-import { ORDERBOOK_SERVICE_BACKEND_URL, ENVIRONMENT } from '../constants/Constants';
+import { ORDERBOOK_SERVICE_BACKEND_URL, NEWS_SERVICE_BACKEND_URL, ENVIRONMENT } from '../constants/Constants';
 
 const orderbookConfig = {
     baseURL: ORDERBOOK_SERVICE_BACKEND_URL,
@@ -18,7 +18,7 @@ graphelierClient.interceptors.response.use(
 );
 
 const newsConfig = {
-    baseURL: ORDERBOOK_SERVICE_BACKEND_URL,
+    baseURL: NEWS_SERVICE_BACKEND_URL,
     timeout: 4000,
 };
 

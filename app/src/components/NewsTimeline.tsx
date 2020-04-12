@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-    Button, Card,
+    Button, Card, Typography,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
@@ -27,14 +27,14 @@ import {
 import CustomLoader from './CustomLoader';
 import NewsArticle from './NewsItem';
 import {
-    convertNanosecondsToUTC,
-    dateStringToEpoch, getDateStringFromTimestamp,
+    getDateStringFromTimestamp,
 } from '../utils/date-utils';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import { LightThemeColors } from '../styles/App';
+import NewsService from '../services/NewsService';
 
-const styles = createStyles(Styles);
+const styles = theme => createStyles(Styles(theme));
 
 interface Props extends WithStyles<typeof styles> {}
 
@@ -46,162 +46,11 @@ interface State {
 }
 
 class NewsTimeline extends Component<Props, State> {
-    private readonly timelineDivRef: React.RefObject<HTMLElement>;
-
     constructor(props) {
         super(props);
 
-        this.timelineDivRef = React.createRef<HTMLElement>();
-
         this.state = {
-            newsClusters: [
-                {
-                    size: 3,
-                    timestamp: '1578333979',
-                    articles: [
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            summary: 'Lots of stock issues',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                    + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/'
-                    + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                    + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-grill-oil-regulators-'
-                    + '20150310-001',
-                            tickers: ['SPY', 'AAPL'],
-                            timestamp: '1578333979',
-                        },
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            summary: 'Lots of stock issues',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                                + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
-                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
-                                + 'Fla-me-lawmakers-grill-oil-regulators-'
-                                + '20150310-001',
-                            tickers: ['SPY'],
-                            timestamp: '1578333979',
-                        },
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            summary: 'Lots of stock issues',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                                + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
-                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
-                                + 'Fla-me-lawmakers-grill-oil-regulators-'
-                                + '20150310-001',
-                            tickers: ['SPY'],
-                            timestamp: '1578333979',
-                        },
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            // eslint-disable-next-line max-len
-                            summary: '(Reuters) - Apple Inc on Saturday said it would shut all of its official stores and corporate offices in mainland China until Feb 9. as fears over the coronavirus outbreak mounted and the death toll more than doubled to over 250 from a week ago. "Out of an abundance of caution and based on the latest advice from leading health experts, we\'re closing all our corporate offices, stores, and contact centers in mainland China through February 9," Apple said in a statement. The company said looked forward to re-opening stores "as soon as possible". Earlier this week, Apple closed three stores in China due to concerns about the spread of the virus. It\'s joining a handful of overseas retailers, including Starbucks Corp and McDonald\'s Corp to temporarily shut storefronts as a precautionary measure. Many other companies, meanwhile, have called for employees in China to work from home and cease non-essential business travel in the first week of February. Normally, businesses in China would be preparing to return to normal operations following the end of the week-long Lunar New Year Holiday. Apple remains heavily reliant on China both for smartphone sales as well as for its supply chain and manufacturing. Many factories in Hubei province, including plants run by AB InBev and General Motors Co, have temporarily suspended production due to the virus. In a recent earnings call, Apple CEO Tim Cook said the company was working out mitigation plans to deal with possible production loss from its suppliers in Wuhan. The city where the virus outbreak originated is home to several Apple suppliers.',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                                + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/2000x1293+0+0/resize/840x543!/qualit'
-                                + 'y/90/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.'
-                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2'
-                                + 'Fla-me-lawmakers-grill-oil-regulators-'
-                                + '20150310-001',
-                            tickers: ['SPY'],
-                            timestamp: '1578333979',
-                        },
-                    ],
-                },
-                {
-                    size: 3,
-                    timestamp: '1578333979',
-                    articles: [
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            summary: 'Lots of stock issues',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                                + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/'
-                                + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-'
-                                + 'brightspot.s3.'
-                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-'
-                                + 'grill-oil-regulators-'
-                                + '20150310-001',
-                            tickers: ['SPY', 'AAPL'],
-                            timestamp: '1578333979',
-                        },
-                    ],
-                },
-                {
-                    size: 3,
-                    timestamp: '1578333979',
-                    articles: [
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            summary: 'Lots of stock issues',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                                + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/'
-                                + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-'
-                                + 'brightspot.s3.'
-                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-'
-                                + 'grill-oil-regulators-'
-                                + '20150310-001',
-                            tickers: ['SPY', 'AAPL'],
-                            timestamp: '1578333979',
-                        },
-                    ],
-                },
-                {
-                    size: 3,
-                    timestamp: '1578333979',
-                    articles: [
-                        {
-                            sentiment: '1',
-                            source_name: 'LA Times',
-                            title: 'Coronavirus Strikes Back',
-                            summary: 'Lots of stock issues',
-                            article_url: 'https://www.latimes.com/politics/story/2020-03-09/economic-'
-                                + 'impact-coronavirus-oil-'
-                                + 'prices-stock-markets',
-                            image_url: 'https://ca-times.brightspotcdn.com/dims4/default/44028c2/'
-                                + '2147483647/strip/true/crop/'
-                                + '2000x1293+0+0/resize/840x543!/quality/90/?url=https%3A%2F%2Fcalifornia-times-'
-                                + 'brightspot.s3.'
-                                + 'amazonaws.com%2Fd6%2Fbc%2F7cdd7eec921ac9be79f835a9e6cc%2Fla-me-lawmakers-'
-                                + 'grill-oil-regulators-'
-                                + '20150310-001',
-                            tickers: ['SPY', 'AAPL'],
-                            timestamp: '1578333979',
-                        },
-                    ],
-                },
-            ],
+            newsClusters: [],
             loadingTimeline: false,
             datePickerValue: null,
             datePickerIsOpen: false,
@@ -209,42 +58,35 @@ class NewsTimeline extends Component<Props, State> {
     }
 
     /**
-     * @desc handler for the native callback for a scroll in the main div
-     */
-    handleScroll = () => {
-        // const {
-        //     firstChild, lastChild, scrollTop, offsetTop, offsetHeight,
-        // } = this.timelineDivRef;
-        //
-        // console.debug(firstChild, lastChild, scrollTop, offsetTop, offsetHeight);
-        //
-        // if (firstChild) {
-        //     const topEdge = firstChild.offsetTop;
-        //     const bottomEdge = topEdge + lastChild.offsetHeight;
-        //     const scrolledUp = scrollTop + offsetTop;
-        //     const scrolledDown = scrolledUp + offsetHeight;
-        //
-        //     if (scrolledDown >= (bottomEdge - 5)) {
-        //         this.handleHitEdge('bottom');
-        //     } else if (scrolledUp <= topEdge + 5) {
-        //         this.handleHitEdge('top');
-        //     }
-        // }
-    };
-
-    /**
     * @desc Paging handler for upwards and downwards hitting of the timeline
     * @param direction
     */
     handleHitEdge = (direction: string) => {
-        console.debug(direction);
-    };
-
-    handleOnScroll = (position, previousPosition) => {
-        const diffScroll = position - previousPosition;
-        const direction = diffScroll > 0 ? 'down' : 'up';
-
-        console.debug(`Scroll ${direction} to ${position}`);
+        const { newsClusters } = this.state;
+        const requestDirection = direction === 'top' ? '1' : '-1';
+        const timestamp = direction === 'top'
+            ? newsClusters[0].timestamp : newsClusters[newsClusters.length - 1].timestamp;
+        NewsService.getNewsClusters(timestamp, requestDirection)
+            .then(response => {
+                console.debug(response);
+                // const { clusters } = response.data;
+                // if (direction === 'top') {
+                //     this.setState(
+                //         {
+                //             newsClusters: clusters.push(...newsClusters),
+                //         },
+                //     );
+                // } else {
+                //     this.setState(
+                //         {
+                //             newsClusters: newsClusters.push(...clusters),
+                //         },
+                //     );
+                // }
+            })
+            .catch(err => {
+                console.log(err);
+            });
     };
 
     /**
@@ -254,22 +96,32 @@ class NewsTimeline extends Component<Props, State> {
     handleChangeDate = (date: any) => {
         if (!moment(date).isValid()) return;
 
-        // this.setState(
-        //     {
-        //         loadingTimeline: true,
-        //     },
-        // );
-
-        const selectedDateString = date.format('YYYY-MM-DD');
-        // eslint-disable-next-line no-unused-vars
-        const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
-
-        // TODO fetch timeline items
-
         this.setState(
             {
-                datePickerValue: date,
-                // loadingTimeline: false,
+                loadingTimeline: true,
+            },
+            () => {
+                const timestamp = date.startOf('day').unix();
+                NewsService.getNewsClusters(timestamp, '1')
+                    .then(response => {
+                        const { clusters } = response.data;
+                        this.setState(
+                            {
+                                newsClusters: clusters,
+                            },
+                        );
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+                    .finally(() => {
+                        this.setState(
+                            {
+                                loadingTimeline: false,
+                                datePickerValue: date,
+                            },
+                        );
+                    });
             },
         );
     };
@@ -287,6 +139,29 @@ class NewsTimeline extends Component<Props, State> {
 
         const opts = {
             layout: 'inline-evts',
+        };
+
+        const showPlaceholder = datePickerValue === null || loadingTimeline || newsClusters.length === 0;
+
+        const PlaceholderElement = () => {
+            if (loadingTimeline) {
+                return (
+                    <div className={classes.loaderDiv}>
+                        <CustomLoader type={'circular'} />
+                    </div>
+                );
+            }
+            const messageText = datePickerValue === null
+                ? 'Select a date' : 'No data to show, please select a different date';
+            return (
+                <Typography
+                    variant={'body1'}
+                    color={'textPrimary'}
+                    className={classes.placeholderMessage}
+                >
+                    {messageText}
+                </Typography>
+            );
         };
 
         const HiddenElement = () => <span />;
@@ -315,90 +190,81 @@ class NewsTimeline extends Component<Props, State> {
                 {children}
             </Card>
         );
-
-        // @ts-ignore
+        console.debug(newsClusters);
         return (
-            loadingTimeline
-                ? (
-                    <div className={classes.loaderDiv}>
-                        <CustomLoader type={'circular'} />
-                    </div>
-                )
-                : (
-                    <div
-                        className={classes.contentDiv}
+            <div
+                className={classes.contentDiv}
+            >
+                <div className={classes.headerDiv}>
+                    <Button
+                        onClick={() => this.setState({ datePickerIsOpen: true })}
+                        variant={'contained'}
+                        color={'primary'}
+                        endIcon={<CalendarTodayOutlinedIcon />}
+                        className={classes.dateButton}
                     >
-                        <div className={classes.headerDiv}>
-                            <Button
-                                onClick={() => this.setState({ datePickerIsOpen: true })}
-                                variant={'contained'}
-                                color={'primary'}
-                                endIcon={<CalendarTodayOutlinedIcon />}
-                                className={classes.dateButton}
-                            >
-                                {'Pick a date'}
-                            </Button>
-                            <div className={classes.datePickerDiv}>
-                                <MuiPickersUtilsProvider utils={MomentUtils}>
-                                    <DatePicker
-                                        variant={'dialog'}
-                                        open={datePickerIsOpen}
-                                        onOpen={() => this.setState({ datePickerIsOpen: true })}
-                                        onClose={() => this.setState({ datePickerIsOpen: false })}
-                                        views={['month', 'date']}
-                                        openTo={'month'}
-                                        format={'DD/MM/YYYY'}
-                                        value={datePickerValue}
-                                        onChange={date => this.handleChangeDate(date)}
-                                        invalidDateMessage={''}
-                                        minDate={moment('2020-01-01')}
-                                        maxDate={moment('2020-02-29')}
-                                    />
-                                </MuiPickersUtilsProvider>
-                            </div>
-                        </div>
-                        <MultiDirectionalScroll
-                            // @ts-ignore
-                            ref={this.timelineDivRef}
-                            onReachBottom={() => { console.debug('bot'); }}
-                            onReachTop={() => { console.debug('top'); }}
-                        >
-                            <Timeline
-                                opts={opts}
-                                theme={customTheme}
-                            >
-                                <Events>
-                                    {newsClusters.map(newsCluster => {
-                                        const nanosecondTimestamp = bigInt(newsCluster.timestamp)
-                                            .multiply(NANOSECONDS_IN_ONE_SECOND);
-                                        const dateString = getDateStringFromTimestamp(nanosecondTimestamp);
-                                        const hideDateAndMarker = lastNewsClusterDateString === dateString;
-                                        lastNewsClusterDateString = dateString;
-                                        return (
-                                            <TextEvent
-                                                date={hideDateAndMarker ? HiddenElement : dateString}
-                                                text={''}
-                                                card={MyCustomCard}
-                                                marker={hideDateAndMarker && HiddenElement}
-                                            >
-                                                <div className={classes.newsCluster}>
-                                                    {newsCluster.articles.map((newsItem, i) => {
-                                                        return (
-                                                            <NewsArticle
-                                                                newsItem={newsItem}
-                                                                isFirstItem={i === 0}
-                                                            />
-                                                        );
-                                                    })}
-                                                </div>
-                                            </TextEvent>
-                                        );
-                                    })}
-                                </Events>
-                            </Timeline>
-                        </MultiDirectionalScroll>
+                        {'Date Select'}
+                    </Button>
+                    <div className={classes.datePickerDiv}>
+                        <MuiPickersUtilsProvider utils={MomentUtils}>
+                            <DatePicker
+                                variant={'dialog'}
+                                open={datePickerIsOpen}
+                                onOpen={() => this.setState({ datePickerIsOpen: true })}
+                                onClose={() => this.setState({ datePickerIsOpen: false })}
+                                views={['month', 'date']}
+                                openTo={'month'}
+                                format={'DD/MM/YYYY'}
+                                value={datePickerValue}
+                                onChange={date => this.handleChangeDate(date)}
+                                invalidDateMessage={''}
+                                minDate={moment('2020-01-01')}
+                                maxDate={moment('2020-02-29')}
+                            />
+                        </MuiPickersUtilsProvider>
                     </div>
-                )
+                </div>
+                { showPlaceholder ? <PlaceholderElement /> : (
+                    <MultiDirectionalScroll
+                        onReachBottom={() => { this.handleHitEdge('-1'); }}
+                        onReachTop={() => { this.handleHitEdge('1'); }}
+                    >
+                        <Timeline
+                            opts={opts}
+                            theme={customTheme}
+                        >
+                            <Events>
+                                {newsClusters.map(newsCluster => {
+                                    const nanosecondTimestamp = bigInt(newsCluster.timestamp)
+                                        .multiply(NANOSECONDS_IN_ONE_SECOND);
+                                    const dateString = getDateStringFromTimestamp(nanosecondTimestamp);
+                                    const hideDateAndMarker = lastNewsClusterDateString === dateString;
+                                    lastNewsClusterDateString = dateString;
+                                    return (
+                                        <TextEvent
+                                            date={hideDateAndMarker ? HiddenElement : dateString}
+                                            text={''}
+                                            card={MyCustomCard}
+                                            marker={hideDateAndMarker && HiddenElement}
+                                        >
+                                            <div className={classes.newsCluster}>
+                                                {newsCluster.articles.map((newsItem, i) => {
+                                                    return (
+                                                        <NewsArticle
+                                                            newsItem={newsItem}
+                                                            isFirstItem={i === 0}
+                                                        />
+                                                    );
+                                                })}
+                                            </div>
+                                        </TextEvent>
+                                    );
+                                })}
+                            </Events>
+                        </Timeline>
+                    </MultiDirectionalScroll>
+                )}
+            </div>
         );
     }
 }

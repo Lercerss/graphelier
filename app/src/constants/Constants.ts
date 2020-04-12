@@ -31,3 +31,5 @@ export const NANOSECONDS_IN_ONE_DAY = NANOSECONDS_IN_ONE_HOUR * 24;
 
 export const NUM_DATA_POINTS_RATIO = 0.5;
 export const ANIMATION_TIME = 500;
+
+export const ORDERBOOK_INSTRUMENTS = ['AAPL', 'MSFT', 'SPY'];

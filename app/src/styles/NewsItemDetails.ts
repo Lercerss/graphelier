@@ -22,7 +22,6 @@ export const Styles = {
     },
     title: {
         display: 'inline-flex',
-        maxWidth: '80%',
         alignItems: 'flex-start',
         marginBottom: '10px',
     },
@@ -74,7 +73,7 @@ export const Styles = {
         backgroundColor: Colors.emerald,
     },
     other: {
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.grey,
     },
     time: {
         color: Colors.grey,

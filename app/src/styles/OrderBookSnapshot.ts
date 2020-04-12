@@ -108,6 +108,9 @@ export const Styles = theme => ({
         marginBottom: theme.spacing(3),
         borderRadius: '5px',
         backgroundColor: Colors.paleBlue,
+        width: 'fit-content',
+        padding: '0px 5px',
+        margin: '0 auto',
     },
     graphCard: {
         paddingTop: '20px',

@@ -2,9 +2,7 @@ import { Colors } from './App';
 
 export const Styles = {
     newsItemDiv: {
-        overflow: 'auto',
-        minWidth: '20vw',
-        maxWidth: '20vw',
+        width: '300px',
     },
     image: {
         width: '100%',
@@ -14,6 +12,10 @@ export const Styles = {
         width: '100%',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
+        marginBottom: '5px',
+    },
+    headline: {
+        lineHeight: '1.4',
     },
     linkIcon: {
         marginTop: '3px',
@@ -34,6 +36,7 @@ export const Styles = {
         width: '100%',
         alignItems: 'center',
         marginBottom: '5px',
+        flexWrap: 'wrap' as 'wrap',
     },
     stockBox: {
         height: '100%',
@@ -63,7 +66,7 @@ export const Styles = {
         backgroundColor: Colors.emerald,
     },
     other: {
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.grey,
     },
     time: {
         color: Colors.grey,

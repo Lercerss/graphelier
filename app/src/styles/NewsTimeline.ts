@@ -1,12 +1,12 @@
 import { Colors } from './App';
 
-export const Styles = {
+export const Styles = theme => ({
     contentDiv: {
         height: '85vh',
         overflow: 'auto',
     },
     loaderDiv: {
-        marginTop: 30,
+        marginTop: '30px',
         marginLeft: '0px',
         marginRight: '10px',
         display: 'flex',
@@ -47,4 +47,14 @@ export const Styles = {
         maxHeight: '50vh',
         padding: '10px 10px',
     },
-};
+    placeholderMessage: {
+        textAlign: 'center' as const,
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(3),
+        borderRadius: '5px',
+        backgroundColor: Colors.paleBlue,
+        width: 'fit-content',
+        padding: '0px 5px',
+        margin: '0 auto',
+    },
+});

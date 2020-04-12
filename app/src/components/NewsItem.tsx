@@ -21,7 +21,7 @@ import { Styles } from '../styles/NewsItem';
 import {
     NewsItem,
 } from '../models/NewsTimeline';
-import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
+import { NANOSECONDS_IN_ONE_SECOND, ORDERBOOK_INSTRUMENTS } from '../constants/Constants';
 import { getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
 import NewsItemDetails from './NewsItemDetails';
 
@@ -61,6 +61,10 @@ class NewsTimeline extends Component<Props, State> {
         const nanosecondTimestamp = bigInt(newsItem.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
 
+        const instruments = newsItem.tickers.filter(ticker => {
+            return ORDERBOOK_INSTRUMENTS.includes(ticker);
+        });
+
         return (
             <div
                 className={classNames(classes.newsItemDiv, !isFirstItem && classes.marginLeft)}
@@ -76,7 +80,8 @@ class NewsTimeline extends Component<Props, State> {
                             <Typography
                                 variant={'subtitle1'}
                                 color={'textPrimary'}
-                                noWrap
+                                align={'left'}
+                                className={classes.headline}
                             >
                                 {newsItem.title}
                             </Typography>
@@ -93,7 +98,7 @@ class NewsTimeline extends Component<Props, State> {
                             </a>
                         </div>
                         <div className={classes.stockTimeDiv}>
-                            {newsItem.tickers.map(instrument => {
+                            {instruments.map(instrument => {
                                 let instrumentClassName;
                                 switch (instrument) {
                                 case 'AAPL':
