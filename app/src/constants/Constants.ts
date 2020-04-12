@@ -29,5 +29,6 @@ export const NANOSECONDS_IN_ONE_DAY = NANOSECONDS_IN_ONE_HOUR * 24;
 
 export const NUM_DATA_POINTS_RATIO = 0.5;
 
-export const TIME_UNITS = ['Messages', 'Minutes', 'Seconds', 'Milliseconds', 'Microseconds', 'Nanoseconds'];
+export const TIME_UNITS = ['Messages', 'Seconds', 'Milliseconds', 'Microseconds', 'Nanoseconds'];
 export const ANIMATION_TIME = 500;
+export const MAXIMUM_PLAYBACK_REAL_TIME_RATE = 5;

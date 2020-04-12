@@ -30,6 +30,7 @@
         "lodash": "^4.17.15",
         "moment": "^2.24.0",
         "nano-date": "^4.1.0",
+        "notistack": "^0.9.9",
         "react": "^16.9.0",
         "react-dom": "^16.9.0",
         "react-helmet": "^5.2.1",

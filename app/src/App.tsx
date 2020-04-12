@@ -6,6 +6,7 @@ import {
 import { Helmet } from 'react-helmet';
 
 import { Dispatch } from 'redux';
+import { SnackbarProvider } from 'notistack';
 import { Styles, LightThemeColors } from './styles/App';
 
 import { saveReactAppName } from './actions/actions';
@@ -61,7 +62,11 @@ class App extends React.Component<Props, State> {
                             <GreetingsLoader
                                 hideGreeting={this.hideGreeting}
                             />
-                        ) : <Dashboard />
+                        ) : (
+                            <SnackbarProvider>
+                                <Dashboard />
+                            </SnackbarProvider>
+                        )
                 }
             </MuiThemeProvider>
         );

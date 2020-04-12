@@ -19,7 +19,7 @@ import OrderBookService from '../../services/OrderBookService';
 import { TransactionType } from '../../models/OrderBook';
 
 describe('getting and selecting an instrument functionality', () => {
-    let mount, shallow, props;
+    let mount, shallow, props, enqueueSnackbar, closeSnackbar;
 
     const getInstrumentsListSpy = jest.spyOn(OrderBookService, 'getInstrumentsList')
         .mockImplementation((): Promise<any> => Promise.resolve({ data: ['SPY', 'AAPL', 'MSFT'] })
@@ -30,6 +30,8 @@ describe('getting and selecting an instrument functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
+        enqueueSnackbar = jest.fn();
+        closeSnackbar = jest.fn();
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
@@ -52,6 +54,8 @@ describe('getting and selecting an instrument functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
         wrapper.instance().setState({
@@ -66,7 +70,7 @@ describe('getting and selecting an instrument functionality', () => {
 });
 
 describe('date and time picker functionality', () => {
-    let mount, shallow, props;
+    let mount, shallow, props, enqueueSnackbar, closeSnackbar;
     const getOrderBookPricesSpy = jest.spyOn(OrderBookService, 'getOrderBookPrices')
         .mockImplementation((instrument, timestamp): Promise<any> => Promise.resolve(
             {
@@ -84,6 +88,8 @@ describe('date and time picker functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
+        enqueueSnackbar = jest.fn();
+        closeSnackbar = jest.fn();
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
@@ -100,13 +106,15 @@ describe('date and time picker functionality', () => {
     });
 
     it('renders an OrderBookSnapshot component without crashing', () => {
-        mount(
+        shallow(
             <OrderBookSnapshot
                 orderDetails={props.orderDetails}
                 showOrderInfoDrawer={props.showOrderInfoDrawer}
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
     });
@@ -119,6 +127,8 @@ describe('date and time picker functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
 
@@ -135,6 +145,8 @@ describe('date and time picker functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
 
@@ -155,6 +167,8 @@ describe('date and time picker functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
 
@@ -172,6 +186,8 @@ describe('date and time picker functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
 
@@ -189,6 +205,8 @@ describe('date and time picker functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
 
@@ -198,11 +216,13 @@ describe('date and time picker functionality', () => {
 });
 
 describe('updating price level by message offset functionality', () => {
-    let mount, shallow, listItems, props;
+    let mount, shallow, listItems, props, enqueueSnackbar, closeSnackbar;
 
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
+        enqueueSnackbar = jest.fn();
+        closeSnackbar = jest.fn();
         listItems = { ...ORDER_BOOK_LIST_ITEMS };
         props = {
             orderDetails: undefined,
@@ -225,6 +245,8 @@ describe('updating price level by message offset functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
         wrapper.instance().setState(
@@ -256,6 +278,8 @@ describe('updating price level by message offset functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
         wrapper.instance().setState(
@@ -290,6 +314,8 @@ describe('updating price level by message offset functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
         wrapper.instance().setState(
@@ -310,7 +336,7 @@ describe('updating price level by message offset functionality', () => {
 });
 
 describe('graph zoom and pan data loading functionality', () => {
-    let mount, shallow, props;
+    let mount, shallow, props, enqueueSnackbar, closeSnackbar;
 
     const getTopOfBookOverTimeSpy = jest.spyOn(OrderBookService, 'getTopOfBookOverTime')
         .mockImplementation((instrument, startTime, endTime, nDataPoints): Promise<any> => Promise.resolve(
@@ -322,6 +348,8 @@ describe('graph zoom and pan data loading functionality', () => {
     beforeEach(() => {
         mount = createMount();
         shallow = createShallow({ dive: true });
+        enqueueSnackbar = jest.fn();
+        closeSnackbar = jest.fn();
         props = {
             orderDetails: undefined,
             showOrderInfoDrawer: false,
@@ -344,6 +372,8 @@ describe('graph zoom and pan data loading functionality', () => {
                 currentOrderbookTimestamp={props.currentOrderbookTimestamp}
                 lastModificationType={props.lastModificationType}
                 onTimestampSelected={props.onTimestampSelected}
+                enqueueSnackbar={enqueueSnackbar}
+                closeSnackbar={closeSnackbar}
             />,
         );
 

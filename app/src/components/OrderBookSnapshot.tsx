@@ -12,6 +12,7 @@ import { debounce } from 'lodash';
 import moment from 'moment';
 import { connect, Provider } from 'react-redux';
 import { Dispatch } from 'redux';
+import { withSnackbar, WithSnackbarProps } from 'notistack';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     convertNanosecondsToUTC,
@@ -52,7 +53,7 @@ import { saveOrderbookTimestampInfo } from '../actions/actions';
 
 const styles = theme => createStyles(Styles(theme));
 
-interface Props extends WithStyles<typeof styles>{
+interface Props extends WithStyles<typeof styles>, WithSnackbarProps{
     orderDetails: OrderDetails,
     showOrderInfoDrawer: boolean,
     onTimestampSelected: Function,
@@ -269,20 +270,17 @@ class OrderBookSnapshot extends Component<Props, State> {
      */
     handlePlaybackModifications = (playbackData: PlaybackData) => {
         const { listItems } = this.state;
-        const { onTimestampSelected } = this.props;
+        const { onTimestampSelected, enqueueSnackbar } = this.props;
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: playbackData.timestamp,
             lastModificationType: LastModificationType.GRAPH,
         };
         onTimestampSelected(selectedTimestampInfo);
-        // this.handleSelectGraphDateTime(playbackData.timestamp);
         const modificationsLength = playbackData.modifications.length;
         let ctr: number = 0;
         const data = processOrderBookPlayback(listItems);
         let { newListItems } = data;
         const { newMaxQuantity } = data;
-        console.log(playbackData);
-        console.log(listItems);
         while (ctr < modificationsLength) {
             const playbackModification = playbackData.modifications[ctr];
             const { price } = playbackModification;
@@ -291,7 +289,6 @@ class OrderBookSnapshot extends Component<Props, State> {
 
             switch (playbackModification.type) {
             case 'add':
-                console.log(`Add    - ID: ${playbackModification.order_id} @priceLevel: ${price}`);
                 if (price && playbackModification.quantity) {
                     newListItems = checkCreatePriceLevel(price, newListItems, playbackModification.direction);
                     newListItems[price].orders.push({
@@ -301,7 +298,6 @@ class OrderBookSnapshot extends Component<Props, State> {
                 }
                 break;
             case 'drop':
-                console.log(`drop   - ID: ${playbackModification.order_id} @priceLevel: ${price}`);
                 if (price) {
                     newListItems[price].orders.splice(newListItems[price].orders.findIndex(
                         order => order.id === playbackModification.order_id,
@@ -315,24 +311,20 @@ class OrderBookSnapshot extends Component<Props, State> {
                         .find(o => o.id === playbackModification.order_id);
                     if (order) {
                         order.quantity = playbackModification.quantity;
-                        console.log(`update - ID: ${playbackModification.order_id} @priceLevel: ${price} @`
-                            + `newQuantity: ${playbackModification.quantity}`);
                     } else {
-                        console.log(`Could not update - ID: ${playbackModification.order_id}. Not found @priceLevel:`
-                            + ` ${playbackModification.price}`);
+                        enqueueSnackbar(`Could not update. ID: ${playbackModification.order_id}.`
+                            + `Not found @priceLevel: ${playbackModification.price}`, { variant: 'error' });
                         console.log(playbackModification);
                     }
                 }
                 break;
             case 'move':
-
                 if (from && to) {
                     const orderToMove = newListItems[from].orders.splice(newListItems[from].orders.findIndex(
                         order => order.id === playbackModification.order_id,
                     ), 1)[0];
                     if (orderToMove) {
                         if (playbackModification.new_id) {
-                            console.log(`move   - ID: ${playbackModification.order_id} @from: ${from} @to: ${to}`);
                             newListItems = checkCreatePriceLevel(to, newListItems, playbackModification.direction);
                             newListItems[to].orders.push({
                                 id: playbackModification.new_id,
@@ -340,11 +332,13 @@ class OrderBookSnapshot extends Component<Props, State> {
                             });
                             newListItems = checkDeletePriceLevel(from, newListItems);
                         } else {
-                            console.log(`Could not move   - ID: ${playbackModification.order_id}. No new ID. @data: `);
+                            enqueueSnackbar(`Could not move. ID: ${playbackModification.order_id}.`
+                             + `No new ID.`, { variant: 'error' });
                             console.log(playbackModification);
                         }
                     } else {
-                        console.log(`Could not move   - ID: ${playbackModification.order_id} .Order not found @data: `);
+                        enqueueSnackbar(`Could not move. ID: ${playbackModification.order_id}.`
+                            + `Order not found.`, { variant: 'error' });
                         console.log(playbackModification);
                     }
                 }
@@ -360,8 +354,6 @@ class OrderBookSnapshot extends Component<Props, State> {
         const {
             timeNanoseconds,
         } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
-        // eslint-disable-next-line no-debugger
-        debugger;
         this.setState({
             listItems: newListItems,
             lastSodOffset: bigInt(playbackData.last_sod_offset),
@@ -713,4 +705,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 
 export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(OrderBookSnapshot));
+export default withStyles(styles)(withSnackbar(connect(mapStateToProps, mapDispatchToProps)(OrderBookSnapshot)));

@@ -12,6 +12,7 @@ export const Styles = theme => ({
     },
     centerContent: {
         display: 'flex',
+        paddingBottom: '0.5rem',
         justifyContent: 'center',
     },
     marginRight: {
