@@ -6,6 +6,8 @@ export const Styles = theme => ({
     },
     container: {
         backgroundColor: 'transparent',
+        width: '95%',
+        margin: 'auto',
     },
     divTopBook: {
         display: 'flex',
@@ -24,7 +26,6 @@ export const Styles = theme => ({
     formControl: {
         minWidth: 350,
         display: 'flex',
-        width: '100%',
         marginBottom: 20,
         justifyContent: 'flex-end',
     },
@@ -107,6 +108,9 @@ export const Styles = theme => ({
         borderRadius: '5px',
         backgroundColor: LightThemeColors.palette.primary.main,
         color: Colors.white,
+        width: 'fit-content',
+        padding: '0px 5px',
+        margin: '0 auto',
     },
     graphCard: {
         paddingTop: '20px',

@@ -12,8 +12,10 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
+import logo from '../../assets/graphelierLogoWhite.png';
 import { mainListItems } from './listItems';
 import OrderBookSnapshot from '../OrderBookSnapshot';
+import NewsTimeline from '../NewsTimeline';
 import Home from '../Home';
 import NotFound from '../NotFound';
 import { Styles } from '../../styles/Dashboard';
@@ -77,7 +79,12 @@ class Dashboard extends Component<Props, State> {
                                     to={'/'}
                                     className={classNames('mainItemsList-removeLink')}
                                 >
-                                    Graphelier
+                                    <img
+                                        src={(logo)}
+                                        alt={'Graphelier'}
+                                        width={'200px'}
+                                    />
+
                                 </NavLink>
                             </Typography>
                         </Toolbar>
@@ -110,6 +117,12 @@ class Dashboard extends Component<Props, State> {
                                     path={'/orderbook'}
                                     render={() => (
                                         <OrderBookSnapshot />
+                                    )}
+                                />
+                                <Route
+                                    path={'/timeline'}
+                                    render={() => (
+                                        <NewsTimeline />
                                     )}
                                 />
                                 <Route component={NotFound} />
