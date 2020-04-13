@@ -42,7 +42,7 @@ export const Styles = theme => ({
         display: 'contents',
         textAlign: 'center' as const,
         '& a': {
-            padding: '1rem',
+            paddingTop: '0.4rem',
             color: 'white',
         },
         '& a:hover': {
