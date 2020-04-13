@@ -177,7 +177,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
         let parameter: string = `?delay=${PLAYBACK_DELAY}&`;
         const speed: number = Number.parseFloat(unitSpeed);
         if (selectedUnit === 'Messages') {
-            parameter = `${parameter}rateMessages=${Math.floor(speed * PLAYBACK_DELAY)}`;
+            parameter = `${parameter}rateMessages=${Math.ceil(speed * PLAYBACK_DELAY)}`;
         } else {
             parameter = `${parameter}rateRealtime=${this.getRealTimeRate()}`;
         }

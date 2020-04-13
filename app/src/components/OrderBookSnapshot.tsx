@@ -318,7 +318,6 @@ class OrderBookSnapshot extends Component<Props, State> {
         const data = processOrderBookPlayback(listItems);
         let { newListItems } = data;
         const { newMaxQuantity } = data;
-        console.log(playbackData);
         while (ctr < modificationsLength) {
             const playbackModification = playbackData.modifications[ctr];
             const { price, from, to } = playbackModification;

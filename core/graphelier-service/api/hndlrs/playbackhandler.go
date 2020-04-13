@@ -87,8 +87,14 @@ func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {
 	rateRealtime, tErr := strconv.ParseFloat(getParams.Get("rateRealtime"), 64)
 	switch {
 	case mErr == nil && tErr != nil:
+		if rateMessages == 0 {
+			return StatusError{400, ParamError{"Invalid rateMessages, must be greater than 0"}}
+		}
 		loader = &CountIntervalLoader{Instrument: instrument, Datastore: env.Datastore, Count: rateMessages}
 	case tErr == nil && mErr != nil:
+		if rateRealtime <= 0.0 {
+			return StatusError{400, ParamError{"Invalid rateRealtime, must be greater than 0"}}
+		}
 		loader = &TimeIntervalLoader{
 			Instrument:       instrument,
 			Datastore:        env.Datastore,
