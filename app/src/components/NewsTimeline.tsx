@@ -34,6 +34,7 @@ import MultiDirectionalScroll from './MultiDirectionalScroll';
 import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import { LightThemeColors } from '../styles/App';
 import NewsService from '../services/NewsService';
+import OrderBookService from '../services/OrderBookService';
 
 const styles = theme => createStyles(Styles(theme));
 
@@ -46,6 +47,7 @@ interface State {
     datePickerIsOpen: boolean,
     newestTimestamp: string | null,
     oldestTimestamp: string | null,
+    instruments: Array<string>,
 }
 
 class NewsTimeline extends Component<Props, State> {
@@ -105,7 +107,16 @@ class NewsTimeline extends Component<Props, State> {
             datePickerIsOpen: false,
             newestTimestamp: null,
             oldestTimestamp: null,
+            instruments: [],
         };
+    }
+
+    componentDidMount() {
+        OrderBookService.getInstrumentsList().then(response => {
+            this.setState({ instruments: response.data });
+        }).catch(err => {
+            console.log(err);
+        });
     }
 
     /**
@@ -155,6 +166,7 @@ class NewsTimeline extends Component<Props, State> {
             loadingTimeline,
             datePickerValue,
             datePickerIsOpen,
+            instruments,
         } = this.state;
 
         let lastArticleClusterDateString = '';
@@ -276,6 +288,7 @@ class NewsTimeline extends Component<Props, State> {
                                                         <ArticleItem
                                                             article={article}
                                                             isFirstItem={i === 0}
+                                                            instruments={instruments}
                                                         />
                                                     );
                                                 })}

@@ -12,11 +12,13 @@ import { Link } from 'react-router-dom';
 import bigInt from 'big-integer';
 import { mdiEmoticonHappyOutline, mdiEmoticonNeutralOutline, mdiEmoticonSadOutline } from '@mdi/js';
 import Icon from '@mdi/react';
+import stc from 'string-to-color';
+import classNames from 'classnames';
 import { Styles } from '../styles/ArticleDetails';
 import {
     Article,
 } from '../models/NewsTimeline';
-import { INSTR_COLOR, NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
+import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import {
     getHoursMinutesStringFromTimestamp,
     getDateStringFromTimestamp,
@@ -27,20 +29,20 @@ const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
     article: Article,
+    instruments: Array<string>,
 }
 
 interface State {}
 
 class ArticleDetails extends Component<Props, State> {
     render() {
-        const { article, classes } = this.props;
+        const { article, classes, instruments } = this.props;
 
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
         const datePublishedString = getDateStringFromTimestamp(nanosecondTimestamp);
-
-        const instruments = article.tickers.filter(ticker => {
-            return ticker in INSTR_COLOR;
+        const orderedInstruments = article.tickers.sort(a => {
+            return instruments.includes(a) ? 0 : 1;
         });
 
         const sentimentOptions = {
@@ -85,22 +87,40 @@ class ArticleDetails extends Component<Props, State> {
                     </a>
                 </div>
                 <div className={classes.stockTimeDiv}>
-                    {instruments.map(instrument => (
-                        <Link
-                            to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
-                            className={classes.graphLink}
-                        >
+                    {orderedInstruments.map(instrument => {
+                        const style = {
+                            backgroundColor: instruments.includes(instrument) ? stc(instrument) : Colors.grey,
+                        };
+                        if (instruments.includes(instrument)) {
+                            return (
+                                <Link
+                                    to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
+                                    className={classes.graphLink}
+                                >
+                                    <Box
+                                        className={classNames(classes.stockBox, classes.fadeOnHover)}
+                                        id={'stockBox'}
+                                        style={style}
+                                    >
+                                        <Typography className={classes.stock}>
+                                            {instrument}
+                                        </Typography>
+                                    </Box>
+                                </Link>
+                            );
+                        }
+                        return (
                             <Box
                                 className={classes.stockBox}
-                                style={INSTR_COLOR[instrument] || INSTR_COLOR.default}
                                 id={'stockBox'}
+                                style={style}
                             >
                                 <Typography className={classes.stock}>
                                     {instrument}
                                 </Typography>
                             </Box>
-                        </Link>
-                    ))}
+                        );
+                    })}
                     <Icon
                         path={sentimentOptions[article.sentiment].path}
                         color={sentimentOptions[article.sentiment].color}

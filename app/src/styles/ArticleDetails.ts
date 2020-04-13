@@ -52,6 +52,8 @@ export const Styles = {
         borderRadius: '3px',
         marginRight: '5px',
         transition: 'opacity 0.2s',
+    },
+    fadeOnHover: {
         '&:hover': {
             opacity: 0.7,
             transition: 'opacity 0.2s',

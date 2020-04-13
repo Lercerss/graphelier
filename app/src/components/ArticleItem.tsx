@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
 import classNames from 'classnames';
+import stc from 'string-to-color';
 
 import Img from 'react-image';
 import {
@@ -21,15 +22,17 @@ import { Styles } from '../styles/ArticleItem';
 import {
     Article,
 } from '../models/NewsTimeline';
-import { INSTR_COLOR, NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
+import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import { getHoursMinutesStringFromTimestamp } from '../utils/date-utils';
 import ArticleDetails from './ArticleDetails';
+import { Colors } from '../styles/App';
 
 const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
     article: Article,
     isFirstItem: boolean,
+    instruments: Array<string>,
 }
 
 interface State {
@@ -55,13 +58,14 @@ class ArticleItem extends Component<Props, State> {
     };
 
     render() {
-        const { article, classes, isFirstItem } = this.props;
+        const {
+            article, classes, isFirstItem, instruments,
+        } = this.props;
         const { modalIsOpen } = this.state;
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
-
-        const instruments = article.tickers.filter(ticker => {
-            return ticker in INSTR_COLOR;
+        const orderedInstruments = article.tickers.sort(a => {
+            return instruments.includes(a) ? 0 : 1;
         });
 
         return (
@@ -97,22 +101,40 @@ class ArticleItem extends Component<Props, State> {
                             </a>
                         </div>
                         <div className={classes.stockTimeDiv}>
-                            {instruments.map(instrument => (
-                                <Link
-                                    to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
-                                    className={classes.graphLink}
-                                >
+                            {orderedInstruments.map(instrument => {
+                                const style = {
+                                    backgroundColor: instruments.includes(instrument) ? stc(instrument) : Colors.grey,
+                                };
+                                if (instruments.includes(instrument)) {
+                                    return (
+                                        <Link
+                                            to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
+                                            className={classes.graphLink}
+                                        >
+                                            <Box
+                                                className={classNames(classes.stockBox, classes.fadeOnHover)}
+                                                id={'stockBox'}
+                                                style={style}
+                                            >
+                                                <Typography className={classes.stock}>
+                                                    {instrument}
+                                                </Typography>
+                                            </Box>
+                                        </Link>
+                                    );
+                                }
+                                return (
                                     <Box
                                         className={classes.stockBox}
-                                        style={INSTR_COLOR[instrument] || INSTR_COLOR.default}
                                         id={'stockBox'}
+                                        style={style}
                                     >
                                         <Typography className={classes.stock}>
                                             {instrument}
                                         </Typography>
                                     </Box>
-                                </Link>
-                            ))}
+                                );
+                            })}
                             <Typography
                                 className={classes.time}
                                 id={'time'}
@@ -138,7 +160,10 @@ class ArticleItem extends Component<Props, State> {
                     <Fade in={modalIsOpen}>
 
                         <div className={classes.paper}>
-                            <ArticleDetails article={article} />
+                            <ArticleDetails
+                                article={article}
+                                instruments={instruments}
+                            />
                         </div>
                     </Fade>
                 </Modal>

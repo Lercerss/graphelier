@@ -1,5 +1,4 @@
 import bigInt from 'big-integer';
-import { Colors } from '../styles/App';
 
 export const ENVIRONMENT = 'DEV';
 export const APP_NAME = 'Graphelier';
@@ -32,18 +31,3 @@ export const NANOSECONDS_IN_ONE_DAY = NANOSECONDS_IN_ONE_HOUR * 24;
 
 export const NUM_DATA_POINTS_RATIO = 0.5;
 export const ANIMATION_TIME = 500;
-
-export const INSTR_COLOR = {
-    AAPL: {
-        backgroundColor: Colors.indigo,
-    },
-    MSFT: {
-        backgroundColor: Colors.emerald,
-    },
-    SPY: {
-        backgroundColor: Colors.orange,
-    },
-    default: {
-        backgroundColor: Colors.grey,
-    },
-};
