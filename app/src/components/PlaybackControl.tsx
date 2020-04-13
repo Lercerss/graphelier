@@ -66,6 +66,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
             this.showMessage('Please enter a positive unit # for playback.');
         } else if (unitSpeed && selectedUnit === 'Messages' && !(Number.isInteger(unitSpeed))) {
             this.showMessage('Please enter a whole number.');
+            this.setState({ unitSpeed: Math.floor(unitSpeed) });
         } else this.setState({ unitSpeed }, () => this.checkRealTimeRate());
     };
 
