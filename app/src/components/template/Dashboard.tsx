@@ -12,7 +12,7 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
-import logo from './graphelierLogoWhite.png';
+import logo from '../../assets/graphelierLogoWhite.png';
 import { mainListItems } from './listItems';
 import OrderBookSnapshot from '../OrderBookSnapshot';
 import Home from '../Home';
