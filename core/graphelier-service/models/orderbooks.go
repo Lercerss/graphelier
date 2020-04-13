@@ -302,6 +302,7 @@ func (orderbook *Orderbook) backfillPoints(topbook []*Point, pointDistance uint6
 func (orderbook *Orderbook) YieldModifications(messages []*Message) (modifications *Modifications) {
 	modifications = &Modifications{
 		Timestamp:     orderbook.Timestamp,
+		LastSodOffset: orderbook.LastSodOffset,
 		Modifications: []*Modification{},
 	}
 	for currentMessage, message := range messages {
