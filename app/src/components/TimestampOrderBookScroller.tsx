@@ -30,8 +30,8 @@ interface Props extends WithStyles<typeof styles> {
     instrument: string,
     loading: boolean,
     timestamp: bigInt.BigInteger,
+    playback: boolean,
 }
-
 
 class TimestampOrderBookScroller extends Component<Props> {
     middleReferenceItem;
@@ -41,8 +41,11 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-        const { lastSodOffset, loading } = this.props;
+        const { lastSodOffset, loading, playback } = this.props;
         if (loading !== nextProps.loading) {
+            return true;
+        }
+        if (playback !== nextProps.playback) {
             return true;
         }
         if (lastSodOffset && nextProps.lastSodOffset) {
@@ -52,10 +55,12 @@ class TimestampOrderBookScroller extends Component<Props> {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { listItems } = this.props;
+        const { listItems, playback } = this.props;
 
         if (!listItemsEquals(prevProps.listItems || {}, listItems || {})) {
-            this.handleScrollToTopOfTheBook();
+            if (!playback) {
+                this.handleScrollToTopOfTheBook();
+            }
         }
     }
 
@@ -68,8 +73,11 @@ class TimestampOrderBookScroller extends Component<Props> {
      * @param e
      */
     onKeyUp = e => {
-        if (e.keyCode === LEFT_ARROW_KEY_CODE) this.handleGoToPreviousMessage();
-        else if (e.keyCode === RIGHT_ARROW_KEY_CODE) this.handleGoToNextMessage();
+        const { playback } = this.props;
+        if (!playback) {
+            if (e.keyCode === LEFT_ARROW_KEY_CODE) this.handleGoToPreviousMessage();
+            else if (e.keyCode === RIGHT_ARROW_KEY_CODE) this.handleGoToNextMessage();
+        }
     };
 
     /**
@@ -77,11 +85,11 @@ class TimestampOrderBookScroller extends Component<Props> {
      */
     handleScrollToTopOfTheBook = () => {
         this.middleReferenceItem
-        && this.middleReferenceItem.current
-        && this.middleReferenceItem.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-        });
+            && this.middleReferenceItem.current
+            && this.middleReferenceItem.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
     };
 
     /**
@@ -106,24 +114,26 @@ class TimestampOrderBookScroller extends Component<Props> {
      */
     handleGoToMessageByOffset = (offset: number) => {
         const {
-            lastSodOffset, handleUpdateWithDeltas, instrument,
+            lastSodOffset, handleUpdateWithDeltas, instrument, playback,
         } = this.props;
-        OrderBookService.getPriceLevelsByMessageOffset(
-            instrument,
-            lastSodOffset.toString(),
-            offset.toString(),
-        )
-            .then(response => {
-                handleUpdateWithDeltas(response.data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        if (!playback) {
+            OrderBookService.getPriceLevelsByMessageOffset(
+                instrument,
+                lastSodOffset.toString(),
+                offset.toString(),
+            )
+                .then(response => {
+                    handleUpdateWithDeltas(response.data);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
     };
 
     render() {
         const {
-            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading, instrument, timestamp,
+            listItems, maxQuantity, classes, timeOrDateIsNotSet, loading, instrument, timestamp, playback,
         } = this.props;
         const quantityBoxSize = maxQuantity + maxQuantity * (MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE);
 
@@ -131,6 +141,7 @@ class TimestampOrderBookScroller extends Component<Props> {
             <Box className={classes.container}>
                 <Box className={classes.header}>
                     <Button
+                        disabled={playback}
                         variant={'contained'}
                         className={classes.topOfTheBookButton}
                         color={'primary'}
@@ -155,14 +166,14 @@ class TimestampOrderBookScroller extends Component<Props> {
                             <Button
                                 id={'previousMessage'}
                                 onClick={this.handleGoToPreviousMessage}
-                                disabled={timeOrDateIsNotSet}
+                                disabled={timeOrDateIsNotSet || playback}
                             >
                                 <ChevronLeftSharpIcon htmlColor={timeOrDateIsNotSet ? '#a6a6a6' : 'white'} />
                             </Button>
                             <Button
                                 id={'nextMessage'}
                                 onClick={this.handleGoToNextMessage}
-                                disabled={timeOrDateIsNotSet}
+                                disabled={timeOrDateIsNotSet || playback}
                             >
                                 <ChevronRightSharpIcon htmlColor={timeOrDateIsNotSet ? '#a6a6a6' : 'white'} />
                             </Button>
@@ -209,6 +220,7 @@ class TimestampOrderBookScroller extends Component<Props> {
                                                     maxQuantity={quantityBoxSize}
                                                     instrument={instrument}
                                                     timestamp={timestamp}
+                                                    playback={playback}
                                                 />
                                             </Box>
                                         </CSSTransition>
@@ -223,5 +235,6 @@ class TimestampOrderBookScroller extends Component<Props> {
         );
     }
 }
+export const NonConnectedTimestampOrderBookScroller = withStyles(styles)(TimestampOrderBookScroller);
 
 export default withStyles(styles)(TimestampOrderBookScroller);

@@ -6,8 +6,6 @@ export const Styles = theme => ({
     },
     container: {
         backgroundColor: 'transparent',
-        width: '95%',
-        margin: 'auto',
     },
     divTopBook: {
         display: 'flex',
@@ -26,6 +24,7 @@ export const Styles = theme => ({
     formControl: {
         minWidth: 350,
         display: 'flex',
+        width: '100%',
         marginBottom: 20,
         justifyContent: 'flex-end',
     },
@@ -46,7 +45,7 @@ export const Styles = theme => ({
     inlineFlexEnd: {
         display: 'flex',
         marginTop: 15,
-        alignItems: 'center' as const,
+        alignItems: 'center',
     },
     transparentBackground: {
         backgroundColor: 'transparent',
@@ -64,7 +63,7 @@ export const Styles = theme => ({
         display: 'flex',
     },
     expandRow: {
-        alignItems: 'center' as const,
+        alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: '10px',
     },
@@ -79,7 +78,7 @@ export const Styles = theme => ({
         color: 'black',
     },
     selectInstrumentInput: {
-        width: '10vh',
+        width: '5rem',
     },
     graph: {
         width: '100%',
@@ -91,26 +90,23 @@ export const Styles = theme => ({
     inline: {
         display: 'flex',
         marginTop: 15,
-        alignItems: 'center' as const,
+        alignItems: 'center',
     },
     inputSelect: {
         display: 'flex',
-        alignItems: 'center' as const,
+        alignItems: 'center',
     },
     dateTimeSelect: {
-        flexDirection: 'column' as const,
-        alignItems: 'flex-start' as const,
+        flexDirection: 'column',
+        alignItems: 'flex-start',
     },
     selectMessage: {
-        textAlign: 'center' as const,
+        textAlign: 'center',
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(3),
         borderRadius: '5px',
         backgroundColor: LightThemeColors.palette.primary.main,
         color: Colors.white,
-        width: 'fit-content',
-        padding: '0px 5px',
-        margin: '0 auto',
     },
     graphCard: {
         paddingTop: '20px',
@@ -118,12 +114,12 @@ export const Styles = theme => ({
     },
     graphLoader: {
         display: 'flex',
-        alignItems: 'center' as const,
+        alignItems: 'center',
         justifyContent: 'center',
         paddingBottom: '20px',
     },
     noDataMessage: {
-        textAlign: 'center' as const,
+        textAlign: 'center',
         width: '100%',
         height: '100%',
         marginBottom: '20px',

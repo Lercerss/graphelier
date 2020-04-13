@@ -235,3 +235,22 @@ export const MESSAGE_INFORMATION = {
         },
     ],
 };
+
+export const PLAYBACKCONTROL_INFORMATION = {
+    selectedDateTimeNano: bigInt('1340285400000000000'),
+    lastSodOffset: bigInt('1340285400000000000'),
+    selectedInstrument: 'SPY',
+    playback: false,
+    data: {
+        timestamp: '1340285400005941504',
+        last_sod_offset: '1340251200000000001',
+        modifications: [{
+            type: 'add',
+            offset: 34200005941504,
+            order_id: 16114355,
+            direction: 1,
+            price: 135.5,
+            quantity: 1300,
+        }],
+    },
+};

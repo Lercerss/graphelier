@@ -30,6 +30,7 @@ interface Props extends WithStyles<typeof styles>{
     instrument: string,
     handleUpdateWithDeltas: Function,
     loading: boolean,
+    playback: boolean,
 }
 
 interface State {
@@ -71,7 +72,7 @@ class MessageList extends Component<Props, State> {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const { lastSodOffset } = this.props;
+        const { lastSodOffset, playback } = this.props;
         const { messages } = this.state;
 
         if (lastSodOffset.neq(prevProps.lastSodOffset)) {
@@ -86,16 +87,14 @@ class MessageList extends Component<Props, State> {
                 if (diffFromEdge < 5) {
                     this.handleHitEdge(directionOfPotentialPaging);
                 }
-            } else {
-                this.fetchInitialMessages();
-            }
-            this.handleScrollBackToSelectedMessage();
-        } else if ((messages[0] && !prevState.messages[0]) // need to check for first time messages loaded
+            } else this.fetchInitialMessages();
+            if (!playback) this.handleScrollBackToSelectedMessage();
+        } else if (((messages[0] && !prevState.messages[0]) // need to check for first time messages loaded
             // need to check for new messages from new date and time, not from continuous scrolling
             || (messages[0] && prevState.messages[0]
                 && (messages[0].timestamp !== prevState.messages[0].timestamp
                     && messages[messages.length - 1].timestamp
-                    !== prevState.messages[prevState.messages.length - 1].timestamp))) {
+                    !== prevState.messages[prevState.messages.length - 1].timestamp))) && !playback) {
             this.handleScrollBackToSelectedMessage();
         }
     }
@@ -126,10 +125,10 @@ class MessageList extends Component<Props, State> {
      */
     private handleScrollBackToSelectedMessage = () => {
         this.selectedMessageItem && this.selectedMessageItem.current
-        && this.selectedMessageItem.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-        });
+            && this.selectedMessageItem.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
     };
 
     /**
@@ -174,52 +173,58 @@ class MessageList extends Component<Props, State> {
      */
     handleHitEdge(direction) {
         const { lastSodOffsetTop, lastSodOffsetBottom } = this.state;
-        const { instrument } = this.props;
+        const { instrument, playback } = this.props;
         // eslint-disable-next-line react/destructuring-assignment
         const existingMessages = this.state.messages;
 
-        if (direction === 'top') {
-            const nMessages = -MESSAGE_LIST_DEFAULT_PAGE_SIZE;
-            OrderBookService.getMessageList(instrument, lastSodOffsetTop.toString(), nMessages)
-                .then(response => {
-                    const { pageInfo, messages } = response.data;
-                    this.setState({
-                        messages: messages ? messages.concat(existingMessages) : existingMessages,
-                        lastSodOffsetTop: bigInt(pageInfo.sod_offset),
+        if (!playback) {
+            if (direction === 'top') {
+                const nMessages = -MESSAGE_LIST_DEFAULT_PAGE_SIZE;
+                OrderBookService.getMessageList(instrument, lastSodOffsetTop.toString(), nMessages)
+                    .then(response => {
+                        const { pageInfo, messages } = response.data;
+                        this.setState({
+                            messages: messages ? messages.concat(existingMessages) : existingMessages,
+                            lastSodOffsetTop: bigInt(pageInfo.sod_offset),
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err);
                     });
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        } else if (direction === 'bottom') {
-            OrderBookService.getMessageList(instrument, lastSodOffsetBottom.toString())
-                .then(response => {
-                    const { pageInfo, messages } = response.data;
-                    this.setState({
-                        messages: messages ? existingMessages.concat(messages) : existingMessages,
-                        lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
+            } else if (direction === 'bottom') {
+                OrderBookService.getMessageList(instrument, lastSodOffsetBottom.toString())
+                    .then(response => {
+                        const { pageInfo, messages } = response.data;
+                        this.setState({
+                            messages: messages ? existingMessages.concat(messages) : existingMessages,
+                            lastSodOffsetBottom: bigInt(pageInfo.sod_offset),
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err);
                     });
+            }
+        }
+    }
+
+    handleOnMessageClick(sodOffset) {
+        const {
+            handleUpdateWithDeltas, lastSodOffset, instrument, playback,
+        } = this.props;
+        const currentSodOffset = bigInt(sodOffset).minus(lastSodOffset);
+        if (!playback) {
+            OrderBookService.getPriceLevelsByMessageOffset(
+                instrument,
+                lastSodOffset.toString(),
+                currentSodOffset.toString(),
+            )
+                .then(response => {
+                    handleUpdateWithDeltas(response.data);
                 })
                 .catch(err => {
                     console.log(err);
                 });
         }
-    }
-
-    handleOnMessageClick(sodOffset) {
-        const { handleUpdateWithDeltas, lastSodOffset, instrument } = this.props;
-        const currentSodOffset = bigInt(sodOffset).minus(lastSodOffset);
-        OrderBookService.getPriceLevelsByMessageOffset(
-            instrument,
-            lastSodOffset.toString(),
-            currentSodOffset.toString(),
-        )
-            .then(response => {
-                handleUpdateWithDeltas(response.data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
     }
 
     /**
@@ -297,5 +302,7 @@ class MessageList extends Component<Props, State> {
         );
     }
 }
+
+export const NonConnectedMessageList = withStyles(styles)(MessageList);
 
 export default withStyles(styles)(MessageList);

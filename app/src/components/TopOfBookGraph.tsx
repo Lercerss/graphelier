@@ -37,6 +37,7 @@ interface Props {
     topOfBookItems: Array<TopOfBookItem>,
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
     sodNanoDate: NanoDate,
+    playback: boolean,
 }
 
 class TopOfBookGraph extends Component<Props> {

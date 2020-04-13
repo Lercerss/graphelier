@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import {
-    Card, FormControl, MenuItem, Select, Typography,
+    Typography,
+    FormControl,
+    Card, Select, MenuItem, createStyles, WithStyles, withStyles,
 } from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
-import { createStyles, WithStyles } from '@material-ui/styles';
 import MomentUtils from '@date-io/moment';
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 
 import moment from 'moment';
+import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
+import { withSnackbar, WithSnackbarProps } from 'notistack';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
     convertNanosecondsToUTC,
@@ -29,9 +30,14 @@ import {
     NANOSECONDS_IN_SIXTEEN_HOURS,
     NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
-import { processOrderBookFromScratch, processOrderBookWithDeltas } from '../utils/order-book-utils';
+import {
+    processOrderBookFromScratch, processOrderBookWithDeltas, checkCreatePriceLevel, checkDeletePriceLevel,
+    processOrderBookPlayback,
+}
+    from '../utils/order-book-utils';
 import MessageList from './MessageList';
 import {
+    PlaybackData,
     LastModificationType,
     ListItems,
     OrderBook,
@@ -40,13 +46,14 @@ import {
     TopOfBookItem,
 } from '../models/OrderBook';
 import CustomLoader from './CustomLoader';
+import PlaybackControl from './PlaybackControl';
 import { RootState } from '../store';
 import OrderInformation from './OrderInformation';
 import { saveOrderbookTimestampInfo } from '../actions/actions';
 
 const styles = theme => createStyles(Styles(theme));
 
-interface Props extends WithStyles<typeof styles>{
+interface Props extends WithStyles<typeof styles>, WithSnackbarProps{
     orderDetails: OrderDetails,
     showOrderInfoDrawer: boolean,
     onTimestampSelected: Function,
@@ -70,6 +77,7 @@ interface State {
     graphUnavailable: boolean,
     graphStartTime: bigInt.BigInteger,
     graphEndTime: bigInt.BigInteger,
+    playback: boolean,
 }
 
 class OrderBookSnapshot extends Component<Props, State> {
@@ -102,6 +110,7 @@ class OrderBookSnapshot extends Component<Props, State> {
             graphUnavailable: false,
             graphStartTime: bigInt(0),
             graphEndTime: bigInt(0),
+            playback: false,
         };
     }
 
@@ -258,24 +267,27 @@ class OrderBookSnapshot extends Component<Props, State> {
      */
     handleSelectGraphDateTime = (value: string) => {
         const { onTimestampSelected } = this.props;
+        const { playback } = this.state;
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: value,
             lastModificationType: LastModificationType.GRAPH,
         };
-        onTimestampSelected(selectedTimestampInfo);
-        const selectedDateTimeNano = bigInt(selectedTimestampInfo.currentOrderbookTimestamp);
-        const {
-            timeNanoseconds,
-        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+        if (!playback) {
+            onTimestampSelected(selectedTimestampInfo);
+            const selectedDateTimeNano = bigInt(selectedTimestampInfo.currentOrderbookTimestamp);
+            const {
+                timeNanoseconds,
+            } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
 
-        const selectedTimeString = nanosecondsToString(timeNanoseconds);
+            const selectedTimeString = nanosecondsToString(timeNanoseconds);
 
-        this.setState(
-            {
-                selectedTimeString,
-            },
-            () => this.handleChangeDateTime(),
-        );
+            this.setState(
+                {
+                    selectedTimeString,
+                },
+                () => this.handleChangeDateTime(),
+            );
+        }
     };
 
     /**
@@ -289,6 +301,110 @@ class OrderBookSnapshot extends Component<Props, State> {
             this.updateOrderBook();
         }
     };
+
+    /**
+     * @desc Handles changes to orderbook from playbackModifications data
+     */
+    handlePlaybackModifications = (playbackData: PlaybackData) => {
+        const { listItems, lastSodOffset } = this.state;
+        const { onTimestampSelected, enqueueSnackbar } = this.props;
+        const selectedTimestampInfo: SelectedTimestampInfo = {
+            currentOrderbookTimestamp: playbackData.timestamp,
+            lastModificationType: LastModificationType.GRAPH,
+        };
+        onTimestampSelected(selectedTimestampInfo);
+        const modificationsLength = playbackData.modifications.length;
+        let ctr: number = 0;
+        const data = processOrderBookPlayback(listItems);
+        let { newListItems } = data;
+        const { newMaxQuantity } = data;
+        console.log(playbackData);
+        while (ctr < modificationsLength) {
+            const playbackModification = playbackData.modifications[ctr];
+            const { price, from, to } = playbackModification;
+
+            switch (playbackModification.type) {
+            case 'add':
+                if (price && playbackModification.quantity) {
+                    newListItems = checkCreatePriceLevel(price, newListItems, playbackModification.direction);
+                    newListItems[price].orders.push({
+                        id: playbackModification.order_id,
+                        quantity: playbackModification.quantity,
+                    });
+                }
+                break;
+            case 'drop':
+                if (price) {
+                    newListItems[price].orders.splice(newListItems[price].orders.findIndex(
+                        order => order.id === playbackModification.order_id,
+                    ), 1);
+                    newListItems = checkDeletePriceLevel(price, newListItems);
+                }
+                break;
+            case 'update':
+                if (price && playbackModification.quantity) {
+                    const order = newListItems[price].orders
+                        .find(o => o.id === playbackModification.order_id);
+                    if (order) {
+                        order.quantity = playbackModification.quantity;
+                    } else {
+                        enqueueSnackbar(`Could not update. ID: ${playbackModification.order_id}.`
+                            + `Not found @priceLevel: ${playbackModification.price}`, { variant: 'error' });
+                        console.log(playbackModification);
+                    }
+                }
+                break;
+            case 'move':
+                if (from && to) {
+                    const orderToMove = newListItems[from].orders.splice(newListItems[from].orders.findIndex(
+                        order => order.id === playbackModification.order_id,
+                    ), 1)[0];
+                    if (orderToMove) {
+                        if (playbackModification.new_id) {
+                            newListItems = checkCreatePriceLevel(to, newListItems, playbackModification.direction);
+                            newListItems[to].orders.push({
+                                id: playbackModification.new_id,
+                                quantity: orderToMove.quantity,
+                            });
+                            newListItems = checkDeletePriceLevel(from, newListItems);
+                        } else {
+                            enqueueSnackbar(`Could not move. ID: ${playbackModification.order_id}.`
+                             + `No new ID.`, { variant: 'error' });
+                            console.log(playbackModification);
+                        }
+                    } else {
+                        enqueueSnackbar(`Could not move. ID: ${playbackModification.order_id}.`
+                            + `Order not found.`, { variant: 'error' });
+                        console.log(playbackModification);
+                    }
+                }
+                break;
+            default:
+                console.log(`Default: wrong type -> ${playbackModification.type}`);
+                break;
+            }
+            ctr++;
+        }
+
+        const selectedDateTimeNano = bigInt(playbackData.timestamp);
+        const {
+            timeNanoseconds,
+        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+        const sodOffset = playbackData.last_sod_offset === '0' ? lastSodOffset : bigInt(playbackData.last_sod_offset);
+        this.setState({
+            listItems: newListItems,
+            lastSodOffset: sodOffset,
+            maxQuantity: newMaxQuantity,
+            selectedTimeString: nanosecondsToString(timeNanoseconds),
+        });
+    };
+
+    /**
+     * @desc handles updating state for playback feature
+     */
+    handlePlayback = (playback: boolean) => {
+        this.setState({ playback });
+    }
 
     /**
      * @desc handles the updates with deltas once a message is moved by a certain amount
@@ -415,12 +531,15 @@ class OrderBookSnapshot extends Component<Props, State> {
             loadingOrderbook,
             loadingGraph,
             graphUnavailable,
+            playback,
         } = this.state;
         const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
         let messageText;
         if (selectedDateTimeNano.equals(0)) {
             if (selectedInstrument.length === 0) messageText = 'Select an instrument';
-            else { messageText = 'Select a date'; }
+            else {
+                messageText = 'Select a date';
+            }
         }
 
         return (
@@ -430,15 +549,15 @@ class OrderBookSnapshot extends Component<Props, State> {
                     className={classes.container}
                 >
                     {(selectedDateTimeNano.equals(0) || selectedInstrument.length === 0)
-                && (
-                    <Typography
-                        variant={'body1'}
-                        color={'textPrimary'}
-                        className={classes.selectMessage}
-                    >
-                        {messageText}
-                    </Typography>
-                )}
+                    && (
+                        <Typography
+                            variant={'body1'}
+                            color={'textPrimary'}
+                            className={classes.selectMessage}
+                        >
+                            {messageText}
+                        </Typography>
+                    )}
                     <FormControl className={classes.formControl}>
 
                         <div
@@ -452,7 +571,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                 >
                                     {'Instrument'}
                                 </Typography>
-                                { loadingInstruments ? (
+                                {loadingInstruments ? (
                                     <div className={classes.inlineFlex}>
                                         <CustomLoader
                                             size={'1rem'}
@@ -465,6 +584,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                         value={selectedInstrument}
                                         onChange={this.handleInstrumentChange}
                                         className={classes.selectInstrumentInput}
+                                        disabled={playback}
                                     >
                                         {
                                             instruments.map(value => {
@@ -482,6 +602,14 @@ class OrderBookSnapshot extends Component<Props, State> {
                                     </Select>
                                 )}
                             </div>
+                            <PlaybackControl
+                                selectedDateTimeNano={selectedDateTimeNano}
+                                lastSodOffset={lastSodOffset}
+                                selectedInstrument={selectedInstrument}
+                                handlePlaybackModifications={this.handlePlaybackModifications}
+                                handlePlayback={this.handlePlayback}
+                                playback={playback}
+                            />
                             <div
                                 className={classes.dateTimeSelect}
                             >
@@ -502,7 +630,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                         format={'MM/DD/YYYY'}
                                         views={['year', 'month', 'date']}
                                         openTo={'year'}
-                                        disabled={selectedInstrument.length === 0}
+                                        disabled={selectedInstrument.length === 0 || playback}
                                         invalidDateMessage={'invalid date'}
                                         disableFuture
                                         autoOk
@@ -527,7 +655,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                             </div>
                         </div>
                     </FormControl>
-                    {(selectedInstrument.length !== 0)
+                    {selectedInstrument.length !== 0
                         && (
                             <div>
                                 <Card className={classes.graphCard}>
@@ -557,6 +685,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                             startOfDay={selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS)}
                                             endOfDay={selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS)}
                                             topOfBookItems={topOfBookItems}
+                                            playback={playback}
                                         />
                                     )}
                                 </Card>
@@ -570,6 +699,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                         instrument={selectedInstrument}
                                         loading={loadingOrderbook}
                                         timestamp={selectedDateTimeNano}
+                                        playback={playback}
                                     />
                                 </Card>
                                 {(lastSodOffset.neq(0)) && (
@@ -579,6 +709,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                             instrument={selectedInstrument}
                                             handleUpdateWithDeltas={this.handleUpdateWithDeltas}
                                             loading={loadingOrderbook}
+                                            playback={playback}
                                         />
                                     </Card>
                                 )}
@@ -615,4 +746,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 
 export const NonConnectedOrderBookSnapshot = withStyles(styles)(OrderBookSnapshot);
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(OrderBookSnapshot));
+export default withStyles(styles)(withSnackbar(connect(mapStateToProps, mapDispatchToProps)(OrderBookSnapshot)));

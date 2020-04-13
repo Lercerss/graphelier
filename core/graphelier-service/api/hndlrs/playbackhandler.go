@@ -37,6 +37,7 @@ type PlaybackSession struct {
 type MessageLoader interface {
 	LoadMessages()
 	Init(*models.Orderbook, chan []*models.Message)
+	Timestamp(*models.Orderbook) uint64
 }
 
 // TimeIntervalLoader : Loads messages by time intervals
@@ -57,7 +58,11 @@ type CountIntervalLoader struct {
 	currentPage models.Paginator
 }
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 // StreamPlayback : Initiates a websocket connection and starts streaming order book modifications for playback
 func StreamPlayback(env *Env, w http.ResponseWriter, r *http.Request) error {
@@ -133,10 +138,12 @@ func (pb *PlaybackSession) handleStreaming() error {
 			log.Debugln("Stopping playback session")
 			break
 		}
-		go pb.Loader.LoadMessages()
 		log.Tracef("Got %d messages\n", len(messages))
 		modifications := pb.Orderbook.YieldModifications(messages)
+		modifications.Timestamp = pb.Loader.Timestamp(pb.Orderbook)
 		log.Tracef("Generated %d modifications\n", len(modifications.Modifications))
+
+		go pb.Loader.LoadMessages()
 
 		err := pb.Socket.WriteJSON(modifications)
 		if err != nil {
@@ -239,6 +246,14 @@ func (loader *TimeIntervalLoader) Init(orderbook *models.Orderbook, messages cha
 	loader.messages = messages
 }
 
+// Timestamp : Max between orderbook and loader timestamp, as there might not be any messages for the current time increment
+func (loader *TimeIntervalLoader) Timestamp(orderbook *models.Orderbook) uint64 {
+	if loader.CurrentTimestamp > orderbook.Timestamp {
+		return loader.CurrentTimestamp
+	}
+	return orderbook.Timestamp
+}
+
 // LoadMessages : Reads the next batch of messages from the datastore, by number of messages
 func (loader *CountIntervalLoader) LoadMessages() {
 	log.Debugf(
@@ -263,4 +278,9 @@ func (loader *CountIntervalLoader) LoadMessages() {
 func (loader *CountIntervalLoader) Init(orderbook *models.Orderbook, messages chan []*models.Message) {
 	loader.currentPage = models.Paginator{NMessages: int64(loader.Count), SodOffset: int64(orderbook.LastSodOffset)}
 	loader.messages = messages
+}
+
+// Timestamp : No specific timestamp logic for CountIntervalLoader
+func (loader *CountIntervalLoader) Timestamp(orderbook *models.Orderbook) uint64 {
+	return orderbook.Timestamp
 }

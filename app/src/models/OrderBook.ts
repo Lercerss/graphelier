@@ -77,6 +77,23 @@ export interface OrderInformationDrawer {
     showOrderInfoDrawer: boolean,
 }
 
+export interface PlaybackData {
+    timestamp: string,
+    last_sod_offset: string,
+    modifications: Array<PlaybackModification>,
+}
+
+export interface PlaybackModification {
+    type: string,
+    direction: TransactionType.Ask | TransactionType.Bid,
+    offset: number,
+    order_id: number,
+    price?: number,
+    quantity?: number,
+    new_id?: number,
+    from?: number,
+    to?: number,
+}
 export interface SelectedTimestampInfo {
     currentOrderbookTimestamp: string,
     lastModificationType?: LastModificationType.MESSAGE | LastModificationType.GRAPH |

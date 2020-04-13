@@ -141,6 +141,10 @@ func (loader *MockLoader) LoadMessages() {
 	loader.messages <- pbMessages
 }
 
+func (loader *MockLoader) Timestamp(orderbook *models.Orderbook) uint64 {
+	return orderbook.Timestamp
+}
+
 func TestPlaybackSession(t *testing.T) {
 	mockedDB := MockDb(t)
 	defer Ctrl.Finish()

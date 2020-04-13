@@ -21,13 +21,13 @@ interface Props extends WithStyles<typeof styles> {
     endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
+    playback: boolean,
 }
 
 interface State {
     graphWidth: number,
     graphHeight: number,
 }
-
 
 class TopOfBookGraphWrapper extends Component<Props, State> {
     private readonly graphContainerRef: React.RefObject<HTMLDivElement>;
@@ -101,7 +101,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
 
     render() {
         const {
-            classes, onTimeSelect, selectedDateTimeNano, handlePanAndZoom, startOfDay, endOfDay,
+            classes, onTimeSelect, selectedDateTimeNano, handlePanAndZoom, startOfDay, endOfDay, playback,
         } = this.props;
         const { graphWidth, graphHeight } = this.state;
         const topOfBookPackage: TopOfBookPackage = this.prepareTobPackage();
@@ -123,6 +123,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
                          topOfBookItems={topOfBookPackage.topOfBookItems}
                          sodNanoDate={topOfBookPackage.sodNanoDate}
                          handlePanAndZoom={handlePanAndZoom}
+                         playback={playback}
                      />
                  )}
 
