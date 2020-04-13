@@ -9,7 +9,7 @@ import OrderBookService from '../../services/OrderBookService';
 describe('Playback control functionality', () => {
     // eslint-disable-next-line no-unused-vars
     let mount, shallow, selectedDateTimeNano, lastSodOffset, selectedInstrument, handlePlaybackModifications,
-        handlePlayback, playback, enqueueSnackbar, closeSnackbar;
+        handlePlayback, playback, enqueueSnackbar, closeSnackbar, disableTransitionsAction;
 
     beforeEach(() => {
         mount = createMount();
@@ -22,6 +22,7 @@ describe('Playback control functionality', () => {
         playback = PLAYBACKCONTROL_INFORMATION.playback;
         enqueueSnackbar = jest.fn();
         closeSnackbar = jest.fn();
+        disableTransitionsAction = jest.fn();
     });
 
     afterEach(() => {
@@ -39,6 +40,7 @@ describe('Playback control functionality', () => {
                 playback={playback}
                 enqueueSnackbar={enqueueSnackbar}
                 closeSnackbar={closeSnackbar}
+                disableTransitionsAction={disableTransitionsAction}
             />,
         );
 
@@ -60,15 +62,16 @@ describe('Playback control functionality', () => {
                 playback={playback}
                 enqueueSnackbar={enqueueSnackbar}
                 closeSnackbar={closeSnackbar}
+                disableTransitionsAction={disableTransitionsAction}
             />,
         );
 
         const handleUnitSpeedChangeSpy = jest.spyOn(wrapper.instance(), 'handleUnitSpeedChange');
         wrapper.instance().forceUpdate(); // see https://github.com/enzymejs/enzyme/issues/
-        expect(wrapper.state().unitSpeed).toBe(1);
-        wrapper.find(TextField).simulate('change', { target: { value: 5 } });
+        expect(wrapper.state().unitSpeed).toBe('1');
+        wrapper.find(TextField).simulate('change', { target: { value: '5' } });
         expect(handleUnitSpeedChangeSpy).toHaveBeenCalledTimes(1);
-        expect(wrapper.state().unitSpeed).toBe(5);
+        expect(wrapper.state().unitSpeed).toBe('5');
     });
     it('renders a Playback control component and starts playback and pauses', () => {
         const wrapper = shallow(
@@ -81,6 +84,7 @@ describe('Playback control functionality', () => {
                 playback={playback}
                 enqueueSnackbar={enqueueSnackbar}
                 closeSnackbar={closeSnackbar}
+                disableTransitionsAction={disableTransitionsAction}
             />,
         );
         const mockClearPlayback = jest.spyOn(OrderBookService, 'clearPlayback');

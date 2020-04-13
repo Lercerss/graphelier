@@ -216,6 +216,8 @@ export const checkDeletePriceLevel = (price: number, listItems: ListItems) => {
     return updatedListItems;
 };
 
+const _ = require('lodash');
+
 /**
  * @desc Processes existing listItems to compute new max quantity and new middle (for playback)
  * @param listItems {ListItems}
@@ -224,7 +226,7 @@ export const checkDeletePriceLevel = (price: number, listItems: ListItems) => {
 export const processOrderBookPlayback = (listItems: ListItems) => {
     let maxQuantity = 0;
     let currentMiddlePriceLevel = 0;
-    const updatedListItems = { ...listItems };
+    const updatedListItems = _.cloneDeep(listItems);
     Object.keys(updatedListItems).forEach(key => {
         const priceLevel = key;
         if (updatedListItems[priceLevel].type === TransactionType.Bid

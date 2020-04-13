@@ -272,7 +272,7 @@ class OrderBookSnapshot extends Component<Props, State> {
      * @desc Handles changes to orderbook from playbackModifications data
      */
     handlePlaybackModifications = (playbackData: PlaybackData) => {
-        const { listItems } = this.state;
+        const { listItems, lastSodOffset } = this.state;
         const { onTimestampSelected, enqueueSnackbar } = this.props;
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: playbackData.timestamp,
@@ -284,6 +284,7 @@ class OrderBookSnapshot extends Component<Props, State> {
         const data = processOrderBookPlayback(listItems);
         let { newListItems } = data;
         const { newMaxQuantity } = data;
+        console.log(playbackData);
         while (ctr < modificationsLength) {
             const playbackModification = playbackData.modifications[ctr];
             const { price, from, to } = playbackModification;
@@ -355,9 +356,10 @@ class OrderBookSnapshot extends Component<Props, State> {
         const {
             timeNanoseconds,
         } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+        const sodOffset = playbackData.last_sod_offset === '0' ? lastSodOffset : bigInt(playbackData.last_sod_offset);
         this.setState({
             listItems: newListItems,
-            lastSodOffset: bigInt(playbackData.last_sod_offset),
+            lastSodOffset: sodOffset,
             maxQuantity: newMaxQuantity,
             selectedTimeString: nanosecondsToString(timeNanoseconds),
         });

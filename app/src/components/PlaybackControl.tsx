@@ -12,12 +12,22 @@ import classNames from 'classnames';
 import bigInt from 'big-integer';
 import { withSnackbar, WithSnackbarProps } from 'notistack';
 
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { Styles } from '../styles/PlaybackControl';
 import {
-    TIME_UNITS, MAXIMUM_PLAYBACK_REAL_TIME_RATE, NANOSECONDS_IN_ONE_SECOND, NANOSECONDS_IN_ONE_MICROSECOND,
-    NANOSECONDS_IN_ONE_MILLISECOND, PLAYBACK_DELAY,
+    TIME_UNITS,
+    MAXIMUM_PLAYBACK_REAL_TIME_RATE,
+    NANOSECONDS_IN_ONE_SECOND,
+    NANOSECONDS_IN_ONE_MICROSECOND,
+    NANOSECONDS_IN_ONE_MILLISECOND,
+    PLAYBACK_DELAY,
+    MAXIMUM_DISABLE_TRANSITIONS_FOR_REAL_TIME_RATE,
+    MAXIMUM_DISABLE_TRANSITIONS_FOR_MESSAGES,
 } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
+import { RootState } from '../store';
+import { setDisableTransitions } from '../actions/actions';
 
 const styles = theme => createStyles(Styles(theme));
 
@@ -28,11 +38,12 @@ interface PlaybackProps extends WithStyles<typeof styles>, WithSnackbarProps {
     handlePlaybackModifications: Function,
     handlePlayback: Function,
     playback: boolean,
+    disableTransitionsAction: Function,
 }
 
 interface PlaybackState {
     selectedUnit: string,
-    unitSpeed: number,
+    unitSpeed: string,
 }
 
 class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
@@ -41,7 +52,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
 
         this.state = {
             selectedUnit: 'Messages',
-            unitSpeed: 1,
+            unitSpeed: '1',
         };
     }
 
@@ -61,13 +72,16 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
      */
     private handleUnitSpeedChange = (event: React.ChangeEvent<any>): void => {
         const { selectedUnit } = this.state;
-        const unitSpeed: number = Number.parseFloat(event.target.value);
-        if (unitSpeed && unitSpeed < 0) {
+        const { value } = event.target;
+        let speed: number = 0;
+        if (value === 'NaN') speed = Number.NaN;
+        else speed = Number.parseFloat(value);
+        if (speed && speed < 0) {
             this.showMessage('Please enter a positive unit # for playback.');
-        } else if (unitSpeed && selectedUnit === 'Messages' && !(Number.isInteger(unitSpeed))) {
+        } else if (speed && selectedUnit === 'Messages' && !(Number.isInteger(speed))) {
             this.showMessage('Please enter a whole number.');
-            this.setState({ unitSpeed: Math.floor(unitSpeed) });
-        } else this.setState({ unitSpeed }, () => this.checkRealTimeRate());
+            this.setState({ unitSpeed: Math.floor(speed).toString() });
+        } else this.setState({ unitSpeed: value }, () => this.checkRealTimeRate());
     };
 
     /**
@@ -79,13 +93,15 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
         } = this.props;
         const { unitSpeed } = this.state;
         if (!playback) {
-            if (Number.isNaN(unitSpeed)) {
+            const speed: number = Number.parseFloat(unitSpeed);
+            if (Number.isNaN(speed)) {
                 this.showMessage('Please enter a number');
-            } else if (unitSpeed === 0) {
+            } else if (speed === 0) {
                 this.showMessage('0 is not a valid unit speed. Please select a strictly positive number');
             } else {
                 handlePlayback(true);
                 const parameter = this.getPlaybackParameter();
+                this.checkDisableTransitions();
                 OrderBookService.getPlaybackWebSocket(selectedInstrument, lastSodOffset, parameter,
                     handlePlaybackModifications);
             }
@@ -99,7 +115,8 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     checkRealTimeRate = (): boolean => {
         let valid: boolean = true;
         const realTimeRate = this.getRealTimeRate();
-        if (realTimeRate > MAXIMUM_PLAYBACK_REAL_TIME_RATE) {
+        const maxPlaybackRTR: number = Number.parseFloat(MAXIMUM_PLAYBACK_REAL_TIME_RATE);
+        if (realTimeRate > maxPlaybackRTR) {
             this.showMessage(`Please select a lower real time rate for playback. Maximum ratio is 5. `
              + `You entered: ${realTimeRate}`);
             this.setState({ unitSpeed: MAXIMUM_PLAYBACK_REAL_TIME_RATE });
@@ -109,11 +126,27 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     };
 
     /**
+     * Checks current factor for speed in order to determine if transitions should be disabled or not
+     */
+    checkDisableTransitions = (): void => {
+        const { selectedUnit, unitSpeed } = this.state;
+        const { disableTransitionsAction } = this.props;
+        const speed: number = Number.parseFloat(unitSpeed);
+        if (selectedUnit === 'Messages' && speed >= MAXIMUM_DISABLE_TRANSITIONS_FOR_MESSAGES) {
+            disableTransitionsAction(true);
+        } else if (selectedUnit !== 'Messages'
+            && this.getRealTimeRate() >= MAXIMUM_DISABLE_TRANSITIONS_FOR_REAL_TIME_RATE) {
+            disableTransitionsAction(true);
+        }
+    };
+
+    /**
      * @desc Gets the real time rate for playback, 0 if Messages is selected as unit
      * @returns {number}
      */
     getRealTimeRate = (): number => {
         const { unitSpeed, selectedUnit } = this.state;
+        const speed: number = Number.parseFloat(unitSpeed);
         if (selectedUnit === 'Messages') return 0;
 
         let timeInNano: number;
@@ -133,7 +166,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
         default:
             timeInNano = NANOSECONDS_IN_ONE_SECOND;
         }
-        return (timeInNano / NANOSECONDS_IN_ONE_SECOND) * unitSpeed;
+        return (timeInNano / NANOSECONDS_IN_ONE_SECOND) * speed;
     };
 
     /**
@@ -142,8 +175,9 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     getPlaybackParameter = (): string => {
         const { unitSpeed, selectedUnit } = this.state;
         let parameter: string = `?delay=${PLAYBACK_DELAY}&`;
+        const speed: number = Number.parseFloat(unitSpeed);
         if (selectedUnit === 'Messages') {
-            parameter = `${parameter}rateMessages=${Math.floor(unitSpeed * PLAYBACK_DELAY)}`;
+            parameter = `${parameter}rateMessages=${Math.floor(speed * PLAYBACK_DELAY)}`;
         } else {
             parameter = `${parameter}rateRealtime=${this.getRealTimeRate()}`;
         }
@@ -165,8 +199,9 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
      * @desc Handles removing the event for starting playback and retrieving new data at specified speed
      */
     handlePauseOrderBook = (): void => {
-        const { handlePlayback } = this.props;
+        const { handlePlayback, disableTransitionsAction } = this.props;
         handlePlayback(false);
+        disableTransitionsAction(false);
         OrderBookService.clearPlayback();
     };
 
@@ -246,4 +281,13 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
 
 export const NonConnectedPlaybackControl = withStyles(styles)(PlaybackControl);
 
-export default withStyles(styles)(withSnackbar(PlaybackControl));
+const mapStateToProps = (state: RootState) => ({
+});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+    disableTransitionsAction: (disableTransitions: boolean) => dispatch(
+        setDisableTransitions(disableTransitions),
+    ),
+});
+
+export default withStyles(styles)(withSnackbar(connect(mapStateToProps, mapDispatchToProps)(PlaybackControl)));

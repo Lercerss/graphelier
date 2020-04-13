@@ -32,5 +32,7 @@ export const NUM_DATA_POINTS_RATIO = 0.5;
 
 export const TIME_UNITS = ['Messages', 'Seconds', 'Milliseconds', 'Microseconds', 'Nanoseconds'];
 export const ANIMATION_TIME = 500;
-export const MAXIMUM_PLAYBACK_REAL_TIME_RATE = 5;
+export const MAXIMUM_PLAYBACK_REAL_TIME_RATE = '5';
+export const MAXIMUM_DISABLE_TRANSITIONS_FOR_REAL_TIME_RATE = 1;
+export const MAXIMUM_DISABLE_TRANSITIONS_FOR_MESSAGES = 100;
 export const PLAYBACK_DELAY = 1;
