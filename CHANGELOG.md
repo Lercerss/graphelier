@@ -14,3 +14,8 @@
 - Application is now hosted at http://18.218.121.174/
 - Replaced the datetime slider with a graph
 - Visual improvement
+
+## Release 3
+
+- Added a timeline of news article relating to financial instruments
+- Messages can now be automatically played back at a variable fraction of real time speed
