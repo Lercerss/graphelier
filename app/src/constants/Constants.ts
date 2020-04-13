@@ -2,12 +2,14 @@ import bigInt from 'big-integer';
 
 export const ENVIRONMENT = 'DEV';
 export const APP_NAME = 'Graphelier';
-export const BACKEND_PORT = 5050;
+export const ORDERBOOK_SERVICE_BACKEND_PORT = 5050;
+export const NEWS_SERVICE_BACKEND_PORT = 8080;
 let host = 'localhost';
 if (process.env.NODE_ENV === 'production') {
     host = '18.218.121.174';
 }
-export const BACKEND_URL = `http://${host}:${BACKEND_PORT}`;
+export const ORDERBOOK_SERVICE_BACKEND_URL = `http://${host}:${ORDERBOOK_SERVICE_BACKEND_PORT}`;
+export const NEWS_SERVICE_BACKEND_URL = `http://${host}:${NEWS_SERVICE_BACKEND_PORT}`;
 
 export const LEFT_ARROW_KEY_CODE = 37;
 export const RIGHT_ARROW_KEY_CODE = 39;

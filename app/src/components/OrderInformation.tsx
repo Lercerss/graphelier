@@ -63,7 +63,7 @@ class OrderInformation extends Component<Props, State> {
         };
         const selectedOrderbookTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: timestamp,
-            lastModificationType: LastModificationType.ORDER_INFO,
+            lastModificationType: LastModificationType.FORCE_REFRESH,
         };
 
         onOrderInfoClosed(orderInformationDrawer);

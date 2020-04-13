@@ -25,7 +25,7 @@ import TopOfBookGraphWrapper from './TopOfBookGraphWrapper';
 
 import OrderBookService from '../services/OrderBookService';
 import {
-    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS,
+    NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_ONE_MILLISECOND,
     NANOSECONDS_IN_SIXTEEN_HOURS,
     NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
@@ -120,6 +120,40 @@ class OrderBookSnapshot extends Component<Props, State> {
         });
 
         window.addEventListener('resize', this.handleResize);
+
+        const { search } = window.location;
+        const params = new URLSearchParams(search);
+        const instrument = params.get('instrument');
+        const timestamp = params.get('timestamp');
+        if (instrument && timestamp) {
+            const selectedDateTimeNano = bigInt(timestamp);
+
+            const convertedTimestamp = convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano);
+            const {
+                dateNanoseconds,
+                timeNanoseconds,
+            } = splitNanosecondEpochTimestamp(convertedTimestamp);
+            const datePickerValue = moment(selectedDateTimeNano.divide(NANOSECONDS_IN_ONE_MILLISECOND).valueOf());
+            const selectedDateNano = bigInt(dateNanoseconds);
+            const graphStartTime = convertNanosecondsToUTC(selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS));
+            const graphEndTime = convertNanosecondsToUTC(selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS));
+
+            const selectedTimeString = nanosecondsToString(timeNanoseconds.valueOf());
+
+            this.setState({
+                selectedInstrument: instrument,
+                selectedDateNano: bigInt(dateNanoseconds),
+                datePickerValue,
+                selectedTimeString,
+                loadingGraph: true,
+            }, () => {
+                const selectedTimestampInfo: SelectedTimestampInfo = {
+                    currentOrderbookTimestamp: timestamp,
+                    lastModificationType: LastModificationType.FORCE_REFRESH,
+                };
+                this.updateGraphData(graphStartTime, graphEndTime, selectedTimestampInfo);
+            });
+        }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -129,7 +163,7 @@ class OrderBookSnapshot extends Component<Props, State> {
             this.handleChangeDateTime();
         }
         if (prevProps.currentOrderbookTimestamp !== currentOrderbookTimestamp
-            && lastModificationType === LastModificationType.ORDER_INFO) {
+            && lastModificationType === LastModificationType.FORCE_REFRESH) {
             this.handleSelectGraphDateTime(currentOrderbookTimestamp);
         }
     }
@@ -318,9 +352,10 @@ class OrderBookSnapshot extends Component<Props, State> {
     /**
      * @desc Updates the graph with tob values for new start time and end time bounds
      */
-    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
+    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger,
+        selectedTimestampInfo?: SelectedTimestampInfo) => {
         const { selectedInstrument } = this.state;
-
+        const { onTimestampSelected } = this.props;
         OrderBookService.getTopOfBookOverTime(selectedInstrument, graphStartTime.toString(), graphEndTime.toString(),
             this.getNumDataPoints())
             .then(response => {
@@ -333,6 +368,10 @@ class OrderBookSnapshot extends Component<Props, State> {
                         graphEndTime,
                         topOfBookItems: result,
                         loadingGraph: false,
+                    }, () => {
+                        if (selectedTimestampInfo) {
+                            onTimestampSelected(selectedTimestampInfo);
+                        }
                     },
                 );
             })
@@ -459,12 +498,12 @@ class OrderBookSnapshot extends Component<Props, State> {
                                     <KeyboardDatePicker
                                         value={datePickerValue}
                                         onChange={date => this.handleChangeDate(date)}
-                                        placeholder={'DD/MM/YYYY'}
-                                        format={'DD/MM/YYYY'}
+                                        placeholder={'MM/DD/YYYY'}
+                                        format={'MM/DD/YYYY'}
                                         views={['year', 'month', 'date']}
                                         openTo={'year'}
                                         disabled={selectedInstrument.length === 0}
-                                        invalidDateMessage={''}
+                                        invalidDateMessage={'invalid date'}
                                         disableFuture
                                         autoOk
                                     />
@@ -488,7 +527,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                             </div>
                         </div>
                     </FormControl>
-                    {(selectedDateTimeNano.neq(0) && selectedInstrument.length !== 0)
+                    {(selectedInstrument.length !== 0)
                         && (
                             <div>
                                 <Card className={classes.graphCard}>

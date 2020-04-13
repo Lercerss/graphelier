@@ -15,6 +15,7 @@ import { createStyles, WithStyles } from '@material-ui/styles';
 import logo from '../../assets/graphelierLogoWhite.png';
 import { mainListItems } from './listItems';
 import OrderBookSnapshot from '../OrderBookSnapshot';
+import NewsTimeline from '../NewsTimeline';
 import Home from '../Home';
 import NotFound from '../NotFound';
 import { Styles } from '../../styles/Dashboard';
@@ -116,6 +117,12 @@ class Dashboard extends Component<Props, State> {
                                     path={'/orderbook'}
                                     render={() => (
                                         <OrderBookSnapshot />
+                                    )}
+                                />
+                                <Route
+                                    path={'/timeline'}
+                                    render={() => (
+                                        <NewsTimeline />
                                     )}
                                 />
                                 <Route component={NotFound} />
