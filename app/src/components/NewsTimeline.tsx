@@ -288,7 +288,7 @@ class NewsTimeline extends Component<Props, State> {
                                                         <ArticleItem
                                                             article={article}
                                                             isFirstItem={i === 0}
-                                                            instruments={instruments}
+                                                            orderbookInstruments={instruments}
                                                         />
                                                     );
                                                 })}

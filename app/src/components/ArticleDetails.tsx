@@ -29,14 +29,17 @@ const styles = createStyles(Styles);
 
 interface Props extends WithStyles<typeof styles>{
     article: Article,
-    instruments: Array<string>,
+    orderbookInstruments: Array<string>,
+    articleInstruments: Array<string>,
 }
 
 interface State {}
 
 class ArticleDetails extends Component<Props, State> {
     render() {
-        const { article, classes, instruments } = this.props;
+        const {
+            article, classes, orderbookInstruments, articleInstruments,
+        } = this.props;
 
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
@@ -85,11 +88,11 @@ class ArticleDetails extends Component<Props, State> {
                     </a>
                 </div>
                 <div className={classes.stockTimeDiv}>
-                    {instruments.map(instrument => {
+                    {articleInstruments.map(instrument => {
                         const style = {
-                            backgroundColor: instruments.includes(instrument) ? stc(instrument) : Colors.grey,
+                            backgroundColor: orderbookInstruments.includes(instrument) ? stc(instrument) : Colors.grey,
                         };
-                        if (instruments.includes(instrument)) {
+                        if (orderbookInstruments.includes(instrument)) {
                             return (
                                 <Link
                                     to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}

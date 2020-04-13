@@ -32,19 +32,29 @@ const styles = createStyles(Styles);
 interface Props extends WithStyles<typeof styles>{
     article: Article,
     isFirstItem: boolean,
-    instruments: Array<string>,
+    orderbookInstruments: Array<string>,
 }
 
 interface State {
     modalIsOpen: boolean,
+    orderedArticleInstruments: Array<string>,
 }
 
 class ArticleItem extends Component<Props, State> {
     constructor(props) {
         super(props);
 
+        const { article, orderbookInstruments } = this.props;
+        const orderedArticleInstruments = article.tickers.sort((a, b) => {
+            if (orderbookInstruments.includes(a)) {
+                return -1;
+            }
+            return 1;
+        });
+
         this.state = {
             modalIsOpen: false,
+            orderedArticleInstruments,
         };
     }
 
@@ -59,17 +69,11 @@ class ArticleItem extends Component<Props, State> {
 
     render() {
         const {
-            article, classes, isFirstItem, instruments,
+            article, classes, isFirstItem, orderbookInstruments,
         } = this.props;
-        const { modalIsOpen } = this.state;
+        const { modalIsOpen, orderedArticleInstruments } = this.state;
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
-        const orderedInstruments = article.tickers.sort((a, b) => {
-            if (instruments.includes(a)) {
-                return -1;
-            }
-            return 1;
-        });
 
         return (
             <div
@@ -104,11 +108,12 @@ class ArticleItem extends Component<Props, State> {
                             </a>
                         </div>
                         <div className={classes.stockTimeDiv}>
-                            {orderedInstruments.map(instrument => {
+                            {orderedArticleInstruments.map(instrument => {
                                 const style = {
-                                    backgroundColor: instruments.includes(instrument) ? stc(instrument) : Colors.grey,
+                                    backgroundColor: orderbookInstruments.includes(instrument)
+                                        ? stc(instrument) : Colors.grey,
                                 };
-                                if (instruments.includes(instrument)) {
+                                if (orderbookInstruments.includes(instrument)) {
                                     return (
                                         <Link
                                             to={`/orderbook?instrument=${instrument}&timestamp=${nanosecondTimestamp}`}
@@ -165,7 +170,8 @@ class ArticleItem extends Component<Props, State> {
                         <div className={classes.paper}>
                             <ArticleDetails
                                 article={article}
-                                instruments={orderedInstruments}
+                                articleInstruments={orderedArticleInstruments}
+                                orderbookInstruments={orderbookInstruments}
                             />
                         </div>
                     </Fade>
