@@ -24,9 +24,10 @@ export const Styles = theme => ({
     formControl: {
         minWidth: 350,
         display: 'flex',
-        width: '100%',
+        width: '95%',
         marginBottom: 20,
         justifyContent: 'flex-end',
+        margin: 'auto',
     },
     pleaseSelectMessage: {
         display: 'inline',
