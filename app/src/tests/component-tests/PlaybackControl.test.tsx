@@ -4,6 +4,7 @@ import { createMount, createShallow } from '@material-ui/core/test-utils';
 import { Select, TextField } from '@material-ui/core';
 import { NonConnectedPlaybackControl as PlaybackControl } from '../../components/PlaybackControl';
 import { PLAYBACKCONTROL_INFORMATION } from '../utils/mock-data';
+import OrderBookService from '../../services/OrderBookService';
 
 describe('Playback control functionality', () => {
     // eslint-disable-next-line no-unused-vars
@@ -82,35 +83,28 @@ describe('Playback control functionality', () => {
                 closeSnackbar={closeSnackbar}
             />,
         );
-        const mockGetPlaybackOrderBookData = jest.spyOn(wrapper.instance(), 'getPlaybackOrderBookData')
-            .mockImplementation((): void => {
-                wrapper.setProps({
-                    selectedDateTimeNano: bigInt(PLAYBACKCONTROL_INFORMATION.data.timestamp),
-                    lastSodOffset: PLAYBACKCONTROL_INFORMATION.data.last_sod_offset,
-                });
-            });
-        const mockClearPlayback = jest.spyOn(wrapper.instance(), 'clearPlayback')
-            .mockImplementation(() => {});
-        const mockHandlePlayOrderBook = jest.spyOn(wrapper.instance(), 'handlePlayOrderBook')
+        const mockClearPlayback = jest.spyOn(OrderBookService, 'clearPlayback');
+        const mockHandlePlayOrderBook = jest.spyOn(OrderBookService, 'getPlaybackWebSocket')
             .mockImplementation(() => {
                 wrapper.setProps({
                     playback: true,
+                    selectedDateTimeNano: bigInt(PLAYBACKCONTROL_INFORMATION.data.timestamp),
+                    lastSodOffset: PLAYBACKCONTROL_INFORMATION.data.last_sod_offset,
                 });
-                wrapper.instance().getPlaybackOrderBookData.call();
             });
         const mockHandlePauseOrderBook = jest.spyOn(wrapper.instance(), 'handlePauseOrderBook')
             .mockImplementation(() => {
                 wrapper.setProps({
                     playback: false,
                 });
-                wrapper.instance().clearPlayback.call();
+                OrderBookService.clearPlayback();
             });
         expect(wrapper.instance().props.playback).toBe(false);
         wrapper.find('#playButton').simulate('clickCapture');
         wrapper.instance().forceUpdate();
         expect(wrapper.instance().props.playback).toBe(true);
         expect(mockHandlePlayOrderBook).toHaveBeenCalledTimes(1);
-        expect(mockGetPlaybackOrderBookData).toHaveBeenCalledTimes(1);
+        expect(mockHandlePlayOrderBook).toHaveBeenCalledTimes(1);
         wrapper.find('#pauseButton').simulate('clickCapture');
         wrapper.instance().forceUpdate();
         expect(wrapper.instance().props.playback).toBe(false);

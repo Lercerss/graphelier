@@ -233,24 +233,27 @@ class OrderBookSnapshot extends Component<Props, State> {
      */
     handleSelectGraphDateTime = (value: string) => {
         const { onTimestampSelected } = this.props;
+        const { playback } = this.state;
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: value,
             lastModificationType: LastModificationType.GRAPH,
         };
-        onTimestampSelected(selectedTimestampInfo);
-        const selectedDateTimeNano = bigInt(selectedTimestampInfo.currentOrderbookTimestamp);
-        const {
-            timeNanoseconds,
-        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
+        if (!playback) {
+            onTimestampSelected(selectedTimestampInfo);
+            const selectedDateTimeNano = bigInt(selectedTimestampInfo.currentOrderbookTimestamp);
+            const {
+                timeNanoseconds,
+            } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
 
-        const selectedTimeString = nanosecondsToString(timeNanoseconds);
+            const selectedTimeString = nanosecondsToString(timeNanoseconds);
 
-        this.setState(
-            {
-                selectedTimeString,
-            },
-            () => this.handleChangeDateTime(),
-        );
+            this.setState(
+                {
+                    selectedTimeString,
+                },
+                () => this.handleChangeDateTime(),
+            );
+        }
     };
 
     /**
@@ -540,6 +543,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                         value={selectedInstrument}
                                         onChange={this.handleInstrumentChange}
                                         className={classes.selectInstrumentInput}
+                                        disabled={playback}
                                     >
                                         {
                                             instruments.map(value => {
@@ -585,7 +589,7 @@ class OrderBookSnapshot extends Component<Props, State> {
                                         format={'DD/MM/YYYY'}
                                         views={['year', 'month', 'date']}
                                         openTo={'year'}
-                                        disabled={selectedInstrument.length === 0}
+                                        disabled={selectedInstrument.length === 0 || playback}
                                         invalidDateMessage={''}
                                         disableFuture
                                         autoOk

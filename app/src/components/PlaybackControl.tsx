@@ -12,8 +12,6 @@ import classNames from 'classnames';
 import bigInt from 'big-integer';
 import { withSnackbar, WithSnackbarProps } from 'notistack';
 
-import { PlaybackData } from '../models/OrderBook';
-
 import { Styles } from '../styles/PlaybackControl';
 import {
     TIME_UNITS, MAXIMUM_PLAYBACK_REAL_TIME_RATE, NANOSECONDS_IN_ONE_SECOND, NANOSECONDS_IN_ONE_MICROSECOND,
@@ -38,8 +36,6 @@ interface PlaybackState {
 }
 
 class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
-    playbackWS;
-
     constructor(props) {
         super(props);
 
@@ -50,7 +46,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     }
 
     componentWillUnmount(): void {
-        this.clearPlayback();
+        OrderBookService.clearPlayback();
     }
 
     /**
@@ -77,7 +73,9 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
      * @desc Handles adding an event for starting playback and retrieving new data at specified speed
      */
     handlePlayOrderBook = (): void => {
-        const { playback, handlePlayback } = this.props;
+        const {
+            playback, handlePlayback, selectedInstrument, lastSodOffset, handlePlaybackModifications,
+        } = this.props;
         const { unitSpeed } = this.state;
         if (!playback) {
             if (Number.isNaN(unitSpeed)) {
@@ -86,7 +84,9 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
                 this.showMessage('0 is not a valid unit speed. Please select a strictly positive number');
             } else {
                 handlePlayback(true);
-                this.getPlaybackOrderBookData();
+                const parameter = this.getPlaybackParameter();
+                OrderBookService.getPlaybackWebSocket(selectedInstrument, lastSodOffset, parameter,
+                    handlePlaybackModifications);
             }
         }
     };
@@ -161,35 +161,12 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     };
 
     /**
-     * @desc Calls the backend service to get new data to feed OrderBook, graph
-     */
-    getPlaybackOrderBookData = (): void => {
-        const {
-            selectedInstrument, lastSodOffset, handlePlaybackModifications,
-        } = this.props;
-        const parameter = this.getPlaybackParameter();
-
-        this.playbackWS = OrderBookService.getPlaybackWebSocket(selectedInstrument, lastSodOffset, parameter);
-        this.playbackWS.onopen = () => {
-            console.log('opened playback websocket');
-        };
-        this.playbackWS.onmessage = m => {
-            const data: PlaybackData = JSON.parse(m.data);
-            handlePlaybackModifications(data);
-        };
-        this.playbackWS.onclose = () => {
-            console.log('closed playback websocket');
-        };
-    };
-
-    /**
      * @desc Handles removing the event for starting playback and retrieving new data at specified speed
      */
     handlePauseOrderBook = (): void => {
         const { handlePlayback } = this.props;
-        const playback = false;
-        handlePlayback(playback);
-        this.clearPlayback();
+        handlePlayback(false);
+        OrderBookService.clearPlayback();
     };
 
     /**
@@ -199,13 +176,6 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
     showMessage = (text: string): void => {
         const { enqueueSnackbar } = this.props;
         enqueueSnackbar(text, { variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'left' } });
-    };
-
-    /**
-     * @desc Stops the websocket from processing more information.
-     */
-    clearPlayback = (): void => {
-        if (this.playbackWS) this.playbackWS.close();
     };
 
     render() {
