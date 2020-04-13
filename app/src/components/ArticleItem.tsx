@@ -64,8 +64,11 @@ class ArticleItem extends Component<Props, State> {
         const { modalIsOpen } = this.state;
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
-        const orderedInstruments = article.tickers.sort(a => {
-            return instruments.includes(a) ? 0 : 1;
+        const orderedInstruments = article.tickers.sort((a, b) => {
+            if (instruments.includes(a)) {
+                return -1;
+            }
+            return 1;
         });
 
         return (
@@ -162,7 +165,7 @@ class ArticleItem extends Component<Props, State> {
                         <div className={classes.paper}>
                             <ArticleDetails
                                 article={article}
-                                instruments={instruments}
+                                instruments={orderedInstruments}
                             />
                         </div>
                     </Fade>

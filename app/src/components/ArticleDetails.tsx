@@ -41,9 +41,7 @@ class ArticleDetails extends Component<Props, State> {
         const nanosecondTimestamp = bigInt(article.timestamp).multiply(NANOSECONDS_IN_ONE_SECOND);
         const timePublishedString = getHoursMinutesStringFromTimestamp(nanosecondTimestamp);
         const datePublishedString = getDateStringFromTimestamp(nanosecondTimestamp);
-        const orderedInstruments = article.tickers.sort(a => {
-            return instruments.includes(a) ? 0 : 1;
-        });
+
 
         const sentimentOptions = {
             Positive: {
@@ -87,7 +85,7 @@ class ArticleDetails extends Component<Props, State> {
                     </a>
                 </div>
                 <div className={classes.stockTimeDiv}>
-                    {orderedInstruments.map(instrument => {
+                    {instruments.map(instrument => {
                         const style = {
                             backgroundColor: instruments.includes(instrument) ? stc(instrument) : Colors.grey,
                         };
