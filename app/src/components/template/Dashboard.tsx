@@ -78,7 +78,6 @@ class Dashboard extends Component<Props, State> {
                                     to={'/'}
                                     className={classNames('mainItemsList-removeLink')}
                                 >
-                                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
                                     <img
                                         src={(logo)}
                                         alt={'Graphelier'}
