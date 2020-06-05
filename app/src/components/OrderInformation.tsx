@@ -9,7 +9,6 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import bigInt from 'big-integer';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import {
@@ -17,12 +16,7 @@ import {
 } from '../models/OrderBook';
 import { Styles } from '../styles/OrderInformation';
 import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
-import {
-    convertNanosecondsUTCToCurrentTimezone,
-    getLocalTimeString,
-    nanosecondsToString,
-    splitNanosecondEpochTimestamp,
-} from '../utils/date-utils';
+import { getLocalTimeString } from '../utils/date-utils';
 import { saveOrderbookTimestampInfo, showOrderInfoDrawer } from '../actions/actions';
 
 const styles = createStyles(Styles);
@@ -115,12 +109,7 @@ class OrderInformation extends Component<Props, State> {
                         const {
                             timestamp, message_type, share_qty, sod_offset,
                         } = message;
-
-                        const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
-                        const time = nanosecondsToString(
-                            convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf(),
-                        );
-
+                        const time: string = getLocalTimeString(timestamp);
                         return (
                             <TableRow
                                 key={sod_offset}
@@ -148,6 +137,7 @@ class OrderInformation extends Component<Props, State> {
         const {
             orderId, quantity, lastModified, createdOn, price, classes,
         } = this.props;
+
         return (
             <div
                 role={'presentation'}

@@ -1,3 +1,4 @@
+import bigInt from 'big-integer';
 import {
     GeneralActions,
     GeneralState,
@@ -5,7 +6,13 @@ import {
     SAVE_REACT_APP_NAME,
     SET_DISABLE_TRANSITIONS,
     SHOW_ORDER_INFO_DRAWER,
+    SET_PLAYBACK,
+    SAVE_INSTRUMENTS,
 } from '../actions/types';
+import {
+    splitNanosecondEpochTimestamp,
+    getLocalTimeString,
+} from '../utils/date-utils';
 
 const initialState : GeneralState = {
     appName: '',
@@ -13,8 +20,11 @@ const initialState : GeneralState = {
     showOrderInfoDrawer: false,
     currentOrderbookTimestamp: '',
     lastModificationType: undefined,
+    timeString: '00:00:00.000000000',
+    selectedDateNano: bigInt(0),
     disableTransitions: false,
-
+    playback: false,
+    instruments: [],
 };
 
 const generalReducers = (state = initialState, action : GeneralActions) : GeneralState => {
@@ -24,12 +34,18 @@ const generalReducers = (state = initialState, action : GeneralActions) : Genera
             ...state,
             appName: action.payload,
         };
-    case SAVE_ORDERBOOK_TIMESTAMP_INFO:
+    case SAVE_ORDERBOOK_TIMESTAMP_INFO: {
+        const timestamp: string = action.payload.currentOrderbookTimestamp;
+        const timestampNum: bigInt.BigInteger = bigInt(timestamp);
+        const { dateNanoseconds } = splitNanosecondEpochTimestamp(timestampNum);
         return {
             ...state,
-            currentOrderbookTimestamp: action.payload.currentOrderbookTimestamp,
+            currentOrderbookTimestamp: timestamp,
             lastModificationType: action.payload.lastModificationType,
+            timeString: getLocalTimeString(timestamp),
+            selectedDateNano: dateNanoseconds,
         };
+    }
     case SHOW_ORDER_INFO_DRAWER:
         return {
             ...state,
@@ -40,6 +56,16 @@ const generalReducers = (state = initialState, action : GeneralActions) : Genera
         return {
             ...state,
             disableTransitions: action.payload,
+        };
+    case SET_PLAYBACK:
+        return {
+            ...state,
+            playback: action.payload,
+        };
+    case SAVE_INSTRUMENTS:
+        return {
+            ...state,
+            instruments: action.payload,
         };
     default: return state;
     }

@@ -6,7 +6,7 @@ import TopOfBookGraph from './TopOfBookGraph';
 import { TopOfBookItem, TopOfBookPackage } from '../models/OrderBook';
 import { Styles } from '../styles/TopOfBookGraphWrapper';
 import {
-    adaptTrueNanosecondsTimeToCurrentDateTimezone,
+    applyDSTOffset,
     getNsSinceSod,
     getSodNanoDate,
 } from '../utils/date-utils';
@@ -16,12 +16,8 @@ const styles = createStyles(Styles);
 interface Props extends WithStyles<typeof styles> {
     className: string,
     onTimeSelect: (any) => void,
-    selectedDateTimeNano: bigInt.BigInteger,
-    startOfDay: bigInt.BigInteger,
-    endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
-    playback: boolean,
 }
 
 interface State {
@@ -34,7 +30,6 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
 
     constructor(props) {
         super(props);
-
         this.state = {
             graphHeight: 0,
             graphWidth: 0,
@@ -64,9 +59,8 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
     private prepareTobPackage = (): TopOfBookPackage => {
         const { topOfBookItems } = this.props;
         let sodNanoDate: NanoDate = new NanoDate();
-
         const adaptedTopOfBookItems = topOfBookItems.map((topOfBookItem: TopOfBookItem) => {
-            const bigIntegerTimestamp: bigInt.BigInteger = adaptTrueNanosecondsTimeToCurrentDateTimezone(
+            const bigIntegerTimestamp: bigInt.BigInteger = applyDSTOffset(
                 bigInt(topOfBookItem.timestamp),
             );
             const exact: NanoDate = new NanoDate(bigIntegerTimestamp.toString());
@@ -101,7 +95,7 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
 
     render() {
         const {
-            classes, onTimeSelect, selectedDateTimeNano, handlePanAndZoom, startOfDay, endOfDay, playback,
+            classes, onTimeSelect, handlePanAndZoom,
         } = this.props;
         const { graphWidth, graphHeight } = this.state;
         const topOfBookPackage: TopOfBookPackage = this.prepareTobPackage();
@@ -117,13 +111,9 @@ class TopOfBookGraphWrapper extends Component<Props, State> {
                          height={graphHeight}
                          width={graphWidth}
                          onTimeSelect={onTimeSelect}
-                         selectedDateTimeNano={selectedDateTimeNano}
-                         startOfDay={startOfDay}
-                         endOfDay={endOfDay}
                          topOfBookItems={topOfBookPackage.topOfBookItems}
                          sodNanoDate={topOfBookPackage.sodNanoDate}
                          handlePanAndZoom={handlePanAndZoom}
-                         playback={playback}
                      />
                  )}
 

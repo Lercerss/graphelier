@@ -19,25 +19,30 @@ import {
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
 import NanoDate from 'nano-date';
+import { connect } from 'react-redux';
 import {
-    adaptCurrentDateTimezoneToTrueNanoseconds, adaptTrueNanosecondsTimeToCurrentDateTimezone,
     buildTimeInTheDayStringFromNanoDate,
-    getNanoDateFromNsSinceSod, getNsSinceSod,
+    getNanoDateFromNsSinceSod,
+    getNsSinceSod,
+    convertNanosecondsToUTC,
+    applyDSTOffset,
+    removeDSTOffsetFromNanoDate,
 } from '../utils/date-utils';
 import { Colors } from '../styles/App';
 import { TopOfBookItem } from '../models/OrderBook';
+
+import { RootState } from '../store';
+import { NANOSECONDS_IN_NINE_AND_A_HALF_HOURS, NANOSECONDS_IN_SIXTEEN_HOURS } from '../constants/Constants';
 
 interface Props {
     height: number,
     width: number,
     onTimeSelect: (any) => void,
-    selectedDateTimeNano: bigInt.BigInteger,
-    startOfDay: bigInt.BigInteger,
-    endOfDay: bigInt.BigInteger,
     topOfBookItems: Array<TopOfBookItem>,
     handlePanAndZoom: (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => void,
     sodNanoDate: NanoDate,
-    playback: boolean,
+    currentOrderbookTimestamp: string,
+    selectedDateNano: bigInt.BigInteger,
 }
 
 class TopOfBookGraph extends Component<Props> {
@@ -48,20 +53,17 @@ class TopOfBookGraph extends Component<Props> {
      * @description Asynchronous behaviour for user interaction (pan and zoom) with the graph
      */
     handleEvents = debounce((type, moreProps) => {
-        const { sodNanoDate } = this.props;
+        const { sodNanoDate, selectedDateNano, handlePanAndZoom } = this.props;
         if (type === 'panend' || type === 'zoom') {
-            const { handlePanAndZoom, startOfDay, endOfDay } = this.props;
+            const startOfDay = convertNanosecondsToUTC(selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS));
+            const endOfDay = convertNanosecondsToUTC(selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS));
             const graphDomain: Array<number> = moreProps.xScale.domain();
             const leftBoundNano: NanoDate = getNanoDateFromNsSinceSod(graphDomain[0], sodNanoDate);
             const rightBoundNano: NanoDate = getNanoDateFromNsSinceSod(graphDomain[1], sodNanoDate);
-            const graphNanoDateDomain: Array<NanoDate> = [leftBoundNano, rightBoundNano];
-
-            let graphStartTime: bigInt.BigInteger = adaptCurrentDateTimezoneToTrueNanoseconds(graphNanoDateDomain[0]);
-            let graphEndTime: bigInt.BigInteger = adaptCurrentDateTimezoneToTrueNanoseconds(graphNanoDateDomain[1]);
-
+            let graphStartTime: bigInt.BigInteger = removeDSTOffsetFromNanoDate(leftBoundNano);
+            let graphEndTime: bigInt.BigInteger = removeDSTOffsetFromNanoDate(rightBoundNano);
             graphStartTime = graphStartTime.lesser(startOfDay) ? startOfDay : graphStartTime;
             graphEndTime = graphEndTime.greater(endOfDay) ? endOfDay : graphEndTime;
-
             handlePanAndZoom(graphStartTime, graphEndTime);
         }
     }, 100);
@@ -76,15 +78,15 @@ class TopOfBookGraph extends Component<Props> {
 
     render() {
         const {
-            width, height, onTimeSelect, topOfBookItems, sodNanoDate, selectedDateTimeNano,
+            width, height, onTimeSelect, topOfBookItems, sodNanoDate, currentOrderbookTimestamp,
         } = this.props;
-
+        const selectedDateTimeNano: bigInt.BigInteger = applyDSTOffset(bigInt(currentOrderbookTimestamp));
         const xAccessor = (tobItem: TopOfBookItem) => tobItem.nsSinceStartOfDay;
         const xScale = scaleLinear()
             .domain([topOfBookItems[0].nsSinceStartOfDay, topOfBookItems[topOfBookItems.length - 1].nsSinceStartOfDay])
             .range([0, topOfBookItems.length - 1]);
         const nanoDateForSelection: NanoDate = new NanoDate(
-            adaptTrueNanosecondsTimeToCurrentDateTimezone(selectedDateTimeNano).toString(),
+            selectedDateTimeNano.toString(),
         );
         const nanoSinceSodForSelection: number = getNsSinceSod(nanoDateForSelection);
 
@@ -118,7 +120,6 @@ class TopOfBookGraph extends Component<Props> {
                             const recreatedNanoDate: NanoDate = getNanoDateFromNsSinceSod(
                                 nsSinceStartOfDay, sodNanoDate,
                             );
-
                             return buildTimeInTheDayStringFromNanoDate(recreatedNanoDate);
                         }}
                     />
@@ -179,4 +180,9 @@ class TopOfBookGraph extends Component<Props> {
     }
 }
 
-export default TopOfBookGraph;
+const mapStateToProps = (state: RootState) => ({
+    currentOrderbookTimestamp: state.general.currentOrderbookTimestamp,
+    selectedDateNano: state.general.selectedDateNano,
+});
+
+export default connect(mapStateToProps)(TopOfBookGraph);

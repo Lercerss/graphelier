@@ -1,6 +1,8 @@
+import _ from 'lodash';
 import {
     Ask, Bid, ListItems, Order, TransactionType,
 } from '../models/OrderBook';
+
 
 /**
  * @desc creates data structure for orderbook with asks on top and bids on bottom
@@ -15,29 +17,24 @@ export const processOrderBookFromScratch = (asks: Array<Ask>, bids: Array<Bid>) 
 
     for (let i = asks.length - 1; i >= 0; i--) {
         let sum = 0;
-
         listItems[asks[i].price] = {
             ...asks[i],
             type: TransactionType.Ask,
             isMiddle: false,
         };
-
-        asks[i].orders.map(order => {
+        asks[i].orders.forEach(order => {
             sum += order.quantity;
             if (sum > maxQuantity) { maxQuantity = sum; }
         });
     }
-
-    bids.map(bid => {
+    bids.forEach(bid => {
         let sum = 0;
-
         listItems[bid.price] = {
             ...bid,
             type: TransactionType.Bid,
             isMiddle: firstBid++ === 0,
         };
-
-        bid.orders.map(order => {
+        bid.orders.forEach(order => {
             sum += order.quantity;
             if (sum > maxQuantity) { maxQuantity = sum; }
         });
@@ -80,23 +77,7 @@ export const listItemsEquals = (listItemsObject1: ListItems, listItemsObject2: L
     const listItems1 = getOrderBookListItemsAsArray(listItemsObject1);
     const listItems2 = getOrderBookListItemsAsArray(listItemsObject2);
 
-    if (listItems1.length !== listItems2.length) return false;
-
-    return listItems1.every(listItem => {
-        if (listItem) {
-            const siblingListItem = listItemsObject2[listItem.price];
-            const { orders } = listItem;
-            if (!siblingListItem) return false;
-            const siblingOrders = siblingListItem.orders;
-
-            return (
-                siblingListItem
-                && listItem.type === siblingListItem.type
-                && ordersEquals(siblingOrders, orders)
-            );
-        }
-        return false;
-    });
+    return _.isEqual(listItems1, listItems2);
 };
 
 /**
@@ -215,8 +196,6 @@ export const checkDeletePriceLevel = (price: number, listItems: ListItems) => {
     if (updatedListItems[price].orders.length === 0) delete updatedListItems[price];
     return updatedListItems;
 };
-
-const _ = require('lodash');
 
 /**
  * @desc Processes existing listItems to compute new max quantity and new middle (for playback)

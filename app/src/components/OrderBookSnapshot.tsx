@@ -15,10 +15,7 @@ import { Dispatch } from 'redux';
 import { withSnackbar, WithSnackbarProps } from 'notistack';
 import { Styles } from '../styles/OrderBookSnapshot';
 import {
-    convertNanosecondsToUTC,
-    convertNanosecondsUTCToCurrentTimezone,
     dateStringToEpoch,
-    nanosecondsToString,
     splitNanosecondEpochTimestamp,
 } from '../utils/date-utils';
 import TimestampOrderBookScroller from './TimestampOrderBookScroller';
@@ -31,7 +28,10 @@ import {
     NUM_DATA_POINTS_RATIO,
 } from '../constants/Constants';
 import {
-    processOrderBookFromScratch, processOrderBookWithDeltas, checkCreatePriceLevel, checkDeletePriceLevel,
+    processOrderBookFromScratch,
+    processOrderBookWithDeltas,
+    checkCreatePriceLevel,
+    checkDeletePriceLevel,
     processOrderBookPlayback,
 }
     from '../utils/order-book-utils';
@@ -49,35 +49,34 @@ import CustomLoader from './CustomLoader';
 import PlaybackControl from './PlaybackControl';
 import { RootState } from '../store';
 import OrderInformation from './OrderInformation';
-import { saveOrderbookTimestampInfo } from '../actions/actions';
+import { saveOrderbookTimestampInfo, setPlayback } from '../actions/actions';
 
 const styles = theme => createStyles(Styles(theme));
 
-interface Props extends WithStyles<typeof styles>, WithSnackbarProps{
+interface Props extends WithStyles<typeof styles>, WithSnackbarProps {
     orderDetails: OrderDetails,
     showOrderInfoDrawer: boolean,
     onTimestampSelected: Function,
     currentOrderbookTimestamp: string,
     lastModificationType: LastModificationType,
+    timeString: string,
+    selectedDateNano: bigInt.BigInteger,
+    onPlayback: Function,
+    playback: boolean,
+    instruments: Array<string>,
 }
 
 interface State {
     lastSodOffset: bigInt.BigInteger,
-    selectedDateNano: bigInt.BigInteger,
-    selectedTimeString: string,
     datePickerValue: moment.Moment | null,
     selectedInstrument: string,
-    instruments: Array<string>,
     listItems: ListItems,
     maxQuantity: number,
     topOfBookItems: Array<TopOfBookItem>,
-    loadingInstruments: boolean,
     loadingOrderbook: boolean,
     loadingGraph: boolean,
     graphUnavailable: boolean,
-    graphStartTime: bigInt.BigInteger,
-    graphEndTime: bigInt.BigInteger,
-    playback: boolean,
+    clickedGraph: boolean,
 }
 
 class OrderBookSnapshot extends Component<Props, State> {
@@ -85,95 +84,44 @@ class OrderBookSnapshot extends Component<Props, State> {
      * @desc Handles window resizing and requests a new number of data points appropriate for the new window width
      */
     handleResize = debounce(() => {
-        const { selectedDateNano, graphStartTime, graphEndTime } = this.state;
+        const { selectedDateNano } = this.props;
         if (selectedDateNano.neq(0)) {
-            this.updateGraphData(graphStartTime, graphEndTime);
+            const start: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const end: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+            this.updateGraphData(start, end);
         }
     }, 100);
 
     constructor(props) {
         super(props);
-
         this.state = {
             lastSodOffset: bigInt(0),
-            selectedDateNano: bigInt(0),
-            selectedTimeString: '00:00:00.000000000',
             datePickerValue: null,
             selectedInstrument: '',
-            instruments: [],
             listItems: {},
             maxQuantity: -1,
             topOfBookItems: [],
-            loadingInstruments: true,
             loadingOrderbook: false,
             loadingGraph: false,
             graphUnavailable: false,
-            graphStartTime: bigInt(0),
-            graphEndTime: bigInt(0),
-            playback: false,
+            clickedGraph: false,
         };
     }
 
     componentDidMount() {
-        OrderBookService.getInstrumentsList().then(response => {
-            const { instruments } = this.state;
-            const newInstruments = instruments.slice();
-            response.data.map(value => {
-                newInstruments.push(value);
-            });
-            this.setState({ instruments: newInstruments });
-        }).catch(err => {
-            console.log(err);
-        }).finally(() => {
-            this.setState({ loadingInstruments: false });
-        });
-
         window.addEventListener('resize', this.handleResize);
-
-        const { search } = window.location;
-        const params = new URLSearchParams(search);
-        const instrument = params.get('instrument');
-        const timestamp = params.get('timestamp');
-        if (instrument && timestamp) {
-            const selectedDateTimeNano = bigInt(timestamp);
-
-            const convertedTimestamp = convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano);
-            const {
-                dateNanoseconds,
-                timeNanoseconds,
-            } = splitNanosecondEpochTimestamp(convertedTimestamp);
-            const datePickerValue = moment(selectedDateTimeNano.divide(NANOSECONDS_IN_ONE_MILLISECOND).valueOf());
-            const selectedDateNano = bigInt(dateNanoseconds);
-            const graphStartTime = convertNanosecondsToUTC(selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS));
-            const graphEndTime = convertNanosecondsToUTC(selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS));
-
-            const selectedTimeString = nanosecondsToString(timeNanoseconds.valueOf());
-
-            this.setState({
-                selectedInstrument: instrument,
-                selectedDateNano: bigInt(dateNanoseconds),
-                datePickerValue,
-                selectedTimeString,
-                loadingGraph: true,
-            }, () => {
-                const selectedTimestampInfo: SelectedTimestampInfo = {
-                    currentOrderbookTimestamp: timestamp,
-                    lastModificationType: LastModificationType.FORCE_REFRESH,
-                };
-                this.updateGraphData(graphStartTime, graphEndTime, selectedTimestampInfo);
-            });
-        }
+        this.handleFromNews();
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { selectedInstrument } = this.state;
         const { currentOrderbookTimestamp, lastModificationType } = this.props;
-        if (prevState.selectedInstrument !== selectedInstrument) {
-            this.handleChangeDateTime();
-        }
-        if (prevProps.currentOrderbookTimestamp !== currentOrderbookTimestamp
-            && lastModificationType === LastModificationType.FORCE_REFRESH) {
-            this.handleSelectGraphDateTime(currentOrderbookTimestamp);
+        if (prevState.selectedInstrument !== selectedInstrument
+            || prevProps.currentOrderbookTimestamp !== currentOrderbookTimestamp) {
+            if (lastModificationType === LastModificationType.GRAPH
+                || lastModificationType === LastModificationType.FORCE_REFRESH) {
+                this.handleNewTimestamp();
+            }
         }
     }
 
@@ -182,30 +130,21 @@ class OrderBookSnapshot extends Component<Props, State> {
     }
 
     /**
-     * @desc Handles the change in instrument
+     * @desc Handles the change in instrument, keeps the selected time from the previous instrument
      * @param event menu item that triggered change
      */
     handleInstrumentChange = (event: React.ChangeEvent<any>) => {
-        this.setState(
-            {
-                selectedInstrument: event.target.value,
-            },
-            () => {
-                const { selectedDateNano } = this.state;
-                if (selectedDateNano.neq(0)) {
-                    const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-                    const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
-                    this.setState(
-                        {
-                            graphStartTime,
-                            graphEndTime,
-                        }, () => {
-                            this.updateGraphData(graphStartTime, graphEndTime);
-                        },
-                    );
-                }
-            },
-        );
+        this.setState({
+            selectedInstrument: event.target.value,
+        }, () => {
+            const { selectedDateNano } = this.props;
+            if (selectedDateNano.neq(0)) {
+                const graphStartTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+                const graphEndTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+                this.updateGraphData(graphStartTime, graphEndTime);
+                this.handleNewTimestamp();
+            }
+        });
     };
 
     /**
@@ -217,47 +156,36 @@ class OrderBookSnapshot extends Component<Props, State> {
     };
 
     /**
-     * @desc Handles the date change for the TextField date picker
+     * @desc Handles the date change for the TextField date picker MM/DD/YYYY
      * @param date The selected date
      */
     handleChangeDate = (date: any) => {
         if (!moment(date).isValid()) return;
 
-        this.setState(
-            {
-                loadingGraph: true,
-                graphUnavailable: false,
-            },
-        );
+        this.setState({
+            loadingGraph: true,
+            graphUnavailable: false,
+        }, () => {
+            const { onTimestampSelected } = this.props;
+            const selectedTimeNano: bigInt.BigInteger = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
+            const selectedDateString: string = date.format('YYYY-MM-DD');
+            const selectedDateNano: bigInt.BigInteger = dateStringToEpoch(`${selectedDateString} 00:00:00`);
+            const selectedDateTimeNano: bigInt.BigInteger = selectedDateNano.plus(selectedTimeNano);
+            const selectedTimestampInfo: SelectedTimestampInfo = {
+                currentOrderbookTimestamp: selectedDateTimeNano.toString(),
+                lastModificationType: LastModificationType.FORCE_REFRESH,
+            };
+            const graphStartTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const graphEndTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
 
-        const { onTimestampSelected } = this.props;
-
-        const selectedTimeNano = NANOSECONDS_IN_NINE_AND_A_HALF_HOURS;
-        const selectedTimeString = nanosecondsToString(selectedTimeNano.valueOf());
-        const selectedDateString = date.format('YYYY-MM-DD');
-        const selectedDateNano = convertNanosecondsToUTC(dateStringToEpoch(`${selectedDateString} 00:00:00`));
-        const selectedDateTimeNano = selectedDateNano.plus(selectedTimeNano);
-        const selectedTimestampInfo: SelectedTimestampInfo = {
-            currentOrderbookTimestamp: selectedDateTimeNano.toString(),
-        };
-        onTimestampSelected(selectedTimestampInfo);
-
-        const graphStartTime = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
-        const graphEndTime = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
-
-        this.setState(
-            {
+            this.setState({
                 datePickerValue: date,
-                selectedTimeString,
-                selectedDateNano,
-                graphStartTime,
-                graphEndTime,
-            },
-            () => {
-                this.handleChangeDateTime();
+                clickedGraph: false,
+            }, () => {
+                onTimestampSelected(selectedTimestampInfo);
                 this.updateGraphData(graphStartTime, graphEndTime);
-            },
-        );
+            });
+        });
     };
 
     /**
@@ -266,39 +194,50 @@ class OrderBookSnapshot extends Component<Props, State> {
      * in utc nanoseconds
      */
     handleSelectGraphDateTime = (value: string) => {
-        const { onTimestampSelected } = this.props;
-        const { playback } = this.state;
+        const { onTimestampSelected, playback } = this.props;
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: value,
             lastModificationType: LastModificationType.GRAPH,
         };
         if (!playback) {
             onTimestampSelected(selectedTimestampInfo);
-            const selectedDateTimeNano = bigInt(selectedTimestampInfo.currentOrderbookTimestamp);
-            const {
-                timeNanoseconds,
-            } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
-
-            const selectedTimeString = nanosecondsToString(timeNanoseconds);
-
-            this.setState(
-                {
-                    selectedTimeString,
-                },
-                () => this.handleChangeDateTime(),
-            );
+            this.setState({
+                clickedGraph: true,
+            });
         }
     };
 
     /**
-     *  @desc Updates the selectedDateTimeNano state variable when the user selects a timestamp
-     *  for viewing the orderbook
+     *  @desc When current timestamp changes, requests for new orderbook prices for top of the book
+     *  @pre assumes redux's `currentOrderBookTimestamp` was updated
      */
-    handleChangeDateTime = () => {
+    handleNewTimestamp = () => {
         const { currentOrderbookTimestamp } = this.props;
         const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
         if (selectedDateTimeNano.neq(0)) {
-            this.updateOrderBook();
+            const { selectedInstrument } = this.state;
+            this.setState({
+                loadingOrderbook: true,
+            }, () => {
+                OrderBookService.getOrderBookPrices(selectedInstrument, currentOrderbookTimestamp)
+                    .then(response => {
+                        // eslint-disable-next-line camelcase
+                        const { asks, bids, last_sod_offset } = response.data;
+                        const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
+                        this.setState({
+                            listItems,
+                            maxQuantity,
+                            lastSodOffset: bigInt(last_sod_offset),
+                        }, () => {
+                            this.setState({
+                                loadingOrderbook: false,
+                            });
+                        });
+                    })
+                    .catch(err => {
+                        console.warn(err);
+                    });
+            });
         }
     };
 
@@ -310,7 +249,7 @@ class OrderBookSnapshot extends Component<Props, State> {
         const { onTimestampSelected, enqueueSnackbar } = this.props;
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: playbackData.timestamp,
-            lastModificationType: LastModificationType.GRAPH,
+            lastModificationType: LastModificationType.PLAYBACK,
         };
         onTimestampSelected(selectedTimestampInfo);
         const modificationsLength = playbackData.modifications.length;
@@ -385,16 +324,11 @@ class OrderBookSnapshot extends Component<Props, State> {
             ctr++;
         }
 
-        const selectedDateTimeNano = bigInt(playbackData.timestamp);
-        const {
-            timeNanoseconds,
-        } = splitNanosecondEpochTimestamp(convertNanosecondsUTCToCurrentTimezone(selectedDateTimeNano));
         const sodOffset = playbackData.last_sod_offset === '0' ? lastSodOffset : bigInt(playbackData.last_sod_offset);
         this.setState({
             listItems: newListItems,
             lastSodOffset: sodOffset,
             maxQuantity: newMaxQuantity,
-            selectedTimeString: nanosecondsToString(timeNanoseconds),
         });
     };
 
@@ -402,7 +336,8 @@ class OrderBookSnapshot extends Component<Props, State> {
      * @desc handles updating state for playback feature
      */
     handlePlayback = (playback: boolean) => {
-        this.setState({ playback });
+        const { onPlayback } = this.props;
+        onPlayback(playback);
     }
 
     /**
@@ -416,59 +351,28 @@ class OrderBookSnapshot extends Component<Props, State> {
             // eslint-disable-next-line camelcase
             asks, bids, timestamp, last_sod_offset,
         } = deltas;
-        const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
         const { newListItems, newMaxQuantity } = processOrderBookWithDeltas(listItems, asks, bids);
         const selectedTimestampInfo: SelectedTimestampInfo = {
             currentOrderbookTimestamp: timestamp,
             lastModificationType: LastModificationType.MESSAGE,
         };
         onTimestampSelected(selectedTimestampInfo);
-        this.setState(
-            {
-                lastSodOffset: bigInt(last_sod_offset),
-                selectedTimeString: nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(
-                    bigInt(timeNanoseconds),
-                ).valueOf()),
-                listItems: newListItems,
-                maxQuantity: newMaxQuantity,
-            },
-        );
+        this.setState({
+            lastSodOffset: bigInt(last_sod_offset),
+            listItems: newListItems,
+            maxQuantity: newMaxQuantity,
+        });
     };
 
     /**
-     * @desc Updates the Orderbook with new prices
+     * @desc Updates the graph with top of book values (best bids/asks curves)
+     *  for new start time and end time bounds
      */
-    updateOrderBook = () => {
-        const { selectedInstrument } = this.state;
-        const { currentOrderbookTimestamp } = this.props;
-        this.setState({ loadingOrderbook: true });
-        OrderBookService.getOrderBookPrices(selectedInstrument, currentOrderbookTimestamp)
-            .then(response => {
-                // eslint-disable-next-line camelcase
-                const { asks, bids, last_sod_offset } = response.data;
-                const { listItems, maxQuantity } = processOrderBookFromScratch(asks, bids);
-
-                this.setState(
-                    {
-                        listItems,
-                        maxQuantity,
-                        lastSodOffset: bigInt(last_sod_offset),
-                    },
-                );
-            })
-            .catch(err => {
-                console.log(err);
-            })
-            .finally(() => {
-                this.setState({ loadingOrderbook: false });
-            });
-    };
-
-    /**
-     * @desc Updates the graph with tob values for new start time and end time bounds
-     */
-    updateGraphData = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger,
-        selectedTimestampInfo?: SelectedTimestampInfo) => {
+    updateGraphData = (
+        graphStartTime: bigInt.BigInteger,
+        graphEndTime: bigInt.BigInteger,
+        selectedTimestampInfo?: SelectedTimestampInfo,
+    ) => {
         const { selectedInstrument } = this.state;
         const { onTimestampSelected } = this.props;
         OrderBookService.getTopOfBookOverTime(selectedInstrument, graphStartTime.toString(), graphEndTime.toString(),
@@ -476,61 +380,254 @@ class OrderBookSnapshot extends Component<Props, State> {
             .then(response => {
                 // eslint-disable-next-line camelcase
                 const result = response.data;
-
-                this.setState(
-                    {
-                        graphStartTime,
-                        graphEndTime,
-                        topOfBookItems: result,
-                        loadingGraph: false,
-                    }, () => {
-                        if (selectedTimestampInfo) {
-                            onTimestampSelected(selectedTimestampInfo);
-                        }
-                    },
-                );
+                this.setState({
+                    topOfBookItems: result || [],
+                    loadingGraph: false,
+                }, () => {
+                    if (selectedTimestampInfo) {
+                        onTimestampSelected(selectedTimestampInfo);
+                    }
+                });
             })
             .catch(err => {
-                console.log(err);
-
-                this.setState(
-                    {
-                        topOfBookItems: [],
-                        loadingGraph: false,
-                        graphUnavailable: true,
-                    },
-                );
+                console.warn(err);
+                this.setState({
+                    topOfBookItems: [],
+                    loadingGraph: false,
+                    graphUnavailable: true,
+                });
             });
     };
 
     /**
-     * @desc handles updating the graph when zooming or panning the graph
-     * @param graphStartTime the new start time on the graph
-     * @param graphEndTime the new end time on the graph
+     * @desc handles updating the graph on a navigation from news
+     * @pre url query params must have:
+     *  - instrument
+     *  - timestamp
      */
-    handlePanAndZoom = (graphStartTime: bigInt.BigInteger, graphEndTime: bigInt.BigInteger) => {
-        this.updateGraphData(graphStartTime, graphEndTime);
-    };
+    handleFromNews = () => {
+        const { search } = window.location;
+        const params = new URLSearchParams(search);
+        const instrument = params.get('instrument');
+        const timestamp = params.get('timestamp');
 
-    render() {
-        const {
-            classes, orderDetails, showOrderInfoDrawer, currentOrderbookTimestamp,
-        } = this.props;
+        if (instrument && timestamp) {
+            const selectedDateTimeNano = bigInt(timestamp);
+            const datePickerValue = moment(selectedDateTimeNano.divide(NANOSECONDS_IN_ONE_MILLISECOND).valueOf());
+            const {
+                dateNanoseconds,
+            } = splitNanosecondEpochTimestamp(selectedDateTimeNano);
+            const selectedDateNano: bigInt.BigInteger = bigInt(dateNanoseconds);
+            const graphStartTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
+            const graphEndTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
+
+            this.setState({
+                selectedInstrument: instrument,
+                datePickerValue,
+                loadingGraph: true,
+                clickedGraph: true,
+            }, () => {
+                const selectedTimestampInfo: SelectedTimestampInfo = {
+                    currentOrderbookTimestamp: timestamp,
+                    lastModificationType: LastModificationType.FORCE_REFRESH,
+                };
+                this.updateGraphData(graphStartTime, graphEndTime, selectedTimestampInfo);
+            });
+        }
+    }
+
+    /*  RENDERS  */
+
+    /**
+     * @desc Renders dropdown for selecting an instrument
+     */
+    renderInstrumentPicker = () => {
+        const { classes, instruments, playback } = this.props;
+        const { selectedInstrument } = this.state;
+        return (
+            <div>
+                <Typography
+                    variant={'body1'}
+                    className={classes.inputLabel}
+                    color={'textSecondary'}
+                >
+                    {'Instrument'}
+                </Typography>
+                {instruments.length === 0 ? (
+                    <div className={classes.inlineFlex}>
+                        <CustomLoader
+                            size={'1rem'}
+                            type={'circular'}
+                        />
+                    </div>
+                ) : (
+                    <Select
+                        id={'instrumentSelector'}
+                        value={selectedInstrument}
+                        onChange={this.handleInstrumentChange}
+                        className={classes.selectInstrumentInput}
+                        disabled={playback}
+                    >
+                        {
+                            instruments.map(value => {
+                                return (
+                                    <MenuItem
+                                        key={`menuitem-${value}`}
+                                        value={value}
+                                    >
+                                        {value}
+                                    </MenuItem>
+                                );
+                            })
+                        }
+                    </Select>
+                )}
+            </div>
+        );
+    }
+
+    /**
+     * @desc Renders date time picker on top right of the component
+     */
+    renderDateTimePicker = () => {
+        const { classes, playback, timeString } = this.props;
+        const { datePickerValue, selectedInstrument } = this.state;
+        return (
+            <div
+                className={classes.dateTimeSelect}
+            >
+                <div
+                    className={classes.inputSelect}
+                >
+                    <Typography
+                        variant={'body1'}
+                        className={classes.inputLabel}
+                        color={'textSecondary'}
+                    >
+                        {'Date'}
+                    </Typography>
+                    <KeyboardDatePicker
+                        value={datePickerValue}
+                        onChange={date => this.handleChangeDate(date)}
+                        placeholder={'MM/DD/YYYY'}
+                        format={'MM/DD/YYYY'}
+                        views={['year', 'month', 'date']}
+                        openTo={'year'}
+                        disabled={selectedInstrument.length === 0 || playback}
+                        invalidDateMessage={'invalid date'}
+                        disableFuture
+                        autoOk
+                    />
+                </div>
+                <div className={classes.inlineFlexEnd}>
+                    <Typography
+                        variant={'body1'}
+                        className={classes.inputLabel}
+                        color={'textSecondary'}
+                    >
+                        {'Time'}
+                    </Typography>
+                    <Typography
+                        variant={'body1'}
+                        className={classes.timestampDisplay}
+                        color={selectedInstrument.length !== 0 ? 'textPrimary' : 'textSecondary'}
+                    >
+                        {timeString}
+                    </Typography>
+                </div>
+            </div>
+        );
+    }
+
+    /**
+     * @desc Renders the graph portion of the component
+     */
+    renderGraph = () => {
+        const { classes } = this.props;
+        const { graphUnavailable, loadingGraph, topOfBookItems } = this.state;
+        return (
+            <Card className={classes.graphCard}>
+                {graphUnavailable && (
+                    <Typography
+                        className={classes.noDataMessage}
+                        variant={'body1'}
+                        color={'textPrimary'}
+                    >
+                        {'Could not retrieve graph for this day.'}
+                    </Typography>
+                )}
+                {loadingGraph && (
+                    <div className={classes.graphLoader}>
+                        <CustomLoader
+                            size={'5rem'}
+                            type={'circular'}
+                        />
+                    </div>
+                )}
+                {!loadingGraph && !graphUnavailable && topOfBookItems.length !== 0 && (
+                    <TopOfBookGraphWrapper
+                        className={classes.graph}
+                        onTimeSelect={this.handleSelectGraphDateTime}
+                        handlePanAndZoom={this.updateGraphData}
+                        topOfBookItems={topOfBookItems}
+                    />
+                )}
+            </Card>
+        );
+    }
+
+    /**
+     * @desc Renders the orderbook and message list portions of the component
+     */
+    renderOrderBookAndMessages = () => {
+        const { classes, currentOrderbookTimestamp } = this.props;
         const {
             listItems,
             maxQuantity,
-            selectedDateNano,
-            datePickerValue,
-            selectedTimeString,
             lastSodOffset,
             selectedInstrument,
-            instruments,
-            topOfBookItems,
-            loadingInstruments,
             loadingOrderbook,
-            loadingGraph,
-            graphUnavailable,
-            playback,
+            clickedGraph,
+        } = this.state;
+        const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
+        return (clickedGraph ? (
+            <div>
+                <Card>
+                    <TimestampOrderBookScroller
+                        listItems={listItems}
+                        maxQuantity={maxQuantity}
+                        lastSodOffset={lastSodOffset}
+                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
+                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                        instrument={selectedInstrument}
+                        loading={loadingOrderbook}
+                        timestamp={selectedDateTimeNano}
+                    />
+                </Card>
+                {(lastSodOffset.neq(0)) && (
+                    <Card className={classes.messageListCard}>
+                        <MessageList
+                            lastSodOffset={lastSodOffset}
+                            instrument={selectedInstrument}
+                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
+                            loading={loadingOrderbook}
+                        />
+                    </Card>
+                )}
+            </div>
+        ) : <div />);
+    }
+
+    render() {
+        const {
+            classes,
+            orderDetails,
+            showOrderInfoDrawer,
+            currentOrderbookTimestamp,
+        } = this.props;
+        const {
+            lastSodOffset,
+            selectedInstrument,
         } = this.state;
         const selectedDateTimeNano = bigInt(currentOrderbookTimestamp);
         let messageText;
@@ -558,163 +655,27 @@ class OrderBookSnapshot extends Component<Props, State> {
                         </Typography>
                     )}
                     <FormControl className={classes.formControl}>
-
                         <div
                             className={classes.spaceBetween}
                         >
-                            <div>
-                                <Typography
-                                    variant={'body1'}
-                                    className={classes.inputLabel}
-                                    color={'textSecondary'}
-                                >
-                                    {'Instrument'}
-                                </Typography>
-                                {loadingInstruments ? (
-                                    <div className={classes.inlineFlex}>
-                                        <CustomLoader
-                                            size={'1rem'}
-                                            type={'circular'}
-                                        />
-                                    </div>
-                                ) : (
-                                    <Select
-                                        id={'instrumentSelector'}
-                                        value={selectedInstrument}
-                                        onChange={this.handleInstrumentChange}
-                                        className={classes.selectInstrumentInput}
-                                        disabled={playback}
-                                    >
-                                        {
-                                            instruments.map(value => {
-                                                return (
-                                                    <MenuItem
-                                                        key={`menuitem-${value}`}
-                                                        value={value}
-                                                    >
-                                                        {value}
-                                                    </MenuItem>
-
-                                                );
-                                            })
-                                        }
-                                    </Select>
-                                )}
-                            </div>
+                            {this.renderInstrumentPicker()}
                             <PlaybackControl
                                 selectedDateTimeNano={selectedDateTimeNano}
                                 lastSodOffset={lastSodOffset}
                                 selectedInstrument={selectedInstrument}
                                 handlePlaybackModifications={this.handlePlaybackModifications}
                                 handlePlayback={this.handlePlayback}
-                                playback={playback}
                             />
-                            <div
-                                className={classes.dateTimeSelect}
-                            >
-                                <div
-                                    className={classes.inputSelect}
-                                >
-                                    <Typography
-                                        variant={'body1'}
-                                        className={classes.inputLabel}
-                                        color={'textSecondary'}
-                                    >
-                                        {'Date'}
-                                    </Typography>
-                                    <KeyboardDatePicker
-                                        value={datePickerValue}
-                                        onChange={date => this.handleChangeDate(date)}
-                                        placeholder={'MM/DD/YYYY'}
-                                        format={'MM/DD/YYYY'}
-                                        views={['year', 'month', 'date']}
-                                        openTo={'year'}
-                                        disabled={selectedInstrument.length === 0 || playback}
-                                        invalidDateMessage={'invalid date'}
-                                        disableFuture
-                                        autoOk
-                                    />
-                                </div>
-                                <div className={classes.inlineFlexEnd}>
-                                    <Typography
-                                        variant={'body1'}
-                                        className={classes.inputLabel}
-                                        color={'textSecondary'}
-                                    >
-                                        {'Time'}
-                                    </Typography>
-                                    <Typography
-                                        variant={'body1'}
-                                        className={classes.timestampDisplay}
-                                        color={selectedInstrument.length !== 0 ? 'textPrimary' : 'textSecondary'}
-                                    >
-                                        {selectedTimeString}
-                                    </Typography>
-                                </div>
-                            </div>
+                            {this.renderDateTimePicker()}
                         </div>
                     </FormControl>
-                    {selectedInstrument.length !== 0
-                        && (
-                            <div>
-                                <Card className={classes.graphCard}>
-                                    {graphUnavailable && (
-                                        <Typography
-                                            className={classes.noDataMessage}
-                                            variant={'body1'}
-                                            color={'textPrimary'}
-                                        >
-                                            {'Could not retrieve graph for this day.'}
-                                        </Typography>
-                                    )}
-                                    {loadingGraph && (
-                                        <div className={classes.graphLoader}>
-                                            <CustomLoader
-                                                size={'5rem'}
-                                                type={'circular'}
-                                            />
-                                        </div>
-                                    )}
-                                    { !loadingGraph && !graphUnavailable && topOfBookItems.length !== 0 && (
-                                        <TopOfBookGraphWrapper
-                                            className={classes.graph}
-                                            onTimeSelect={this.handleSelectGraphDateTime}
-                                            handlePanAndZoom={this.handlePanAndZoom}
-                                            selectedDateTimeNano={selectedDateTimeNano}
-                                            startOfDay={selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS)}
-                                            endOfDay={selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS)}
-                                            topOfBookItems={topOfBookItems}
-                                            playback={playback}
-                                        />
-                                    )}
-                                </Card>
-                                <Card>
-                                    <TimestampOrderBookScroller
-                                        listItems={listItems}
-                                        maxQuantity={maxQuantity}
-                                        lastSodOffset={lastSodOffset}
-                                        timeOrDateIsNotSet={selectedDateTimeNano.equals(0)}
-                                        handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                                        instrument={selectedInstrument}
-                                        loading={loadingOrderbook}
-                                        timestamp={selectedDateTimeNano}
-                                        playback={playback}
-                                    />
-                                </Card>
-                                {(lastSodOffset.neq(0)) && (
-                                    <Card className={classes.messageListCard}>
-                                        <MessageList
-                                            lastSodOffset={lastSodOffset}
-                                            instrument={selectedInstrument}
-                                            handleUpdateWithDeltas={this.handleUpdateWithDeltas}
-                                            loading={loadingOrderbook}
-                                            playback={playback}
-                                        />
-                                    </Card>
-                                )}
-                            </div>
-                        )}
-                    { orderDetails && showOrderInfoDrawer && (
+                    {selectedInstrument.length !== 0 && currentOrderbookTimestamp !== '' && (
+                        <div>
+                            {this.renderGraph()}
+                            {this.renderOrderBookAndMessages()}
+                        </div>
+                    )}
+                    {orderDetails && showOrderInfoDrawer && (
                         <OrderInformation
                             orderId={orderDetails.id}
                             quantity={orderDetails.quantity}
@@ -735,11 +696,18 @@ const mapStateToProps = (state: RootState) => ({
     orderDetails: state.general.orderDetails,
     currentOrderbookTimestamp: state.general.currentOrderbookTimestamp,
     lastModificationType: state.general.lastModificationType,
+    timeString: state.general.timeString,
+    selectedDateNano: state.general.selectedDateNano,
+    playback: state.general.playback,
+    instruments: state.general.instruments,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
     onTimestampSelected: (selectedTimestampInfo: SelectedTimestampInfo) => dispatch(
         saveOrderbookTimestampInfo(selectedTimestampInfo),
+    ),
+    onPlayback: (playback: boolean) => dispatch(
+        setPlayback(playback),
     ),
 });
 

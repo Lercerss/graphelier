@@ -12,6 +12,8 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import MenuIcon from '@material-ui/icons/Menu';
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import logo from '../../assets/graphelierLogoWhite.png';
 import { mainListItems } from './listItems';
 import OrderBookSnapshot from '../OrderBookSnapshot';
@@ -19,10 +21,16 @@ import NewsTimeline from '../NewsTimeline';
 import Home from '../Home';
 import NotFound from '../NotFound';
 import { Styles } from '../../styles/Dashboard';
+import OrderBookService from '../../services/OrderBookService';
+import { RootState } from '../../store';
+import { saveInstruments } from '../../actions/actions';
+
 
 const styles = theme => createStyles(Styles(theme));
 
-interface Props extends WithStyles<typeof styles> {}
+interface Props extends WithStyles<typeof styles> {
+    onInstrumentsReceived: Function,
+}
 
 interface State {
     open: boolean
@@ -37,6 +45,10 @@ class Dashboard extends Component<Props, State> {
         };
     }
 
+    componentDidMount = () => {
+        this.fetchInstruments();
+    }
+
     /**
      * @description Handles opening the left menu drawer
      */
@@ -44,6 +56,19 @@ class Dashboard extends Component<Props, State> {
         const { open } = this.state;
         this.setState({ open: !open });
     };
+
+    /**
+     * @desc Fetches instruments to store into redux
+     */
+    fetchInstruments = () => {
+        const { onInstrumentsReceived } = this.props;
+        OrderBookService.getInstrumentsList()
+            .then(response => {
+                onInstrumentsReceived(response.data);
+            }).catch(err => {
+                console.warn(err);
+            });
+    }
 
     render() {
         const { open } = this.state;
@@ -135,4 +160,12 @@ class Dashboard extends Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(Dashboard);
+const mapStateToProps = (state: RootState) => ({});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+    onInstrumentsReceived: (instruments: Array<string>) => dispatch(
+        saveInstruments(instruments),
+    ),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Dashboard));
