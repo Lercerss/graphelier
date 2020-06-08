@@ -7,13 +7,14 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Box } from '@material-ui/core';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
+import _ from 'lodash';
 import { Styles } from '../styles/PriceLevel';
 import Order from './Order';
-import { ordersEquals } from '../utils/order-book-utils';
 import { roundNumber } from '../utils/number-utils';
 import { TransactionType, Order as OrderType } from '../models/OrderBook';
 import { RootState } from '../store';
 import { ANIMATION_TIME } from '../constants/Constants';
+
 
 const styles = createStyles(Styles);
 
@@ -34,8 +35,10 @@ class PriceLevel extends Component<Props> {
             orders, maxQuantity, playback, disableTransitions,
         } = this.props;
 
-        return !ordersEquals(orders, nextProps.orders) || maxQuantity !== nextProps.maxQuantity
-            || playback !== nextProps.playback || disableTransitions !== nextProps.disableTransitions;
+        return maxQuantity !== nextProps.maxQuantity
+            || playback !== nextProps.playback
+            || disableTransitions !== nextProps.disableTransitions
+            || !_.isEqual(orders, nextProps.orders);
     }
 
     render() {

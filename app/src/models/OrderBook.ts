@@ -4,7 +4,7 @@ import bigInt from 'big-integer';
 
 export enum TransactionType { Ask, Bid }
 
-export enum LastModificationType { 'MESSAGE', 'FORCE_REFRESH', 'GRAPH'}
+export enum LastModificationType { 'MESSAGE', 'FORCE_REFRESH', 'GRAPH', 'PLAYBACK'}
 
 export interface Order {
     id: number,
@@ -96,8 +96,12 @@ export interface PlaybackModification {
 }
 export interface SelectedTimestampInfo {
     currentOrderbookTimestamp: string,
-    lastModificationType?: LastModificationType.MESSAGE | LastModificationType.GRAPH |
-        LastModificationType.FORCE_REFRESH,
+    lastModificationType?: LastModificationType,
+}
+
+export interface GlobalSelectedTimestampInfo extends SelectedTimestampInfo {
+    timeString?: string,
+    selectedDateNano?: bigInt.BigInteger,
 }
 
 export interface SplitNanosecondTimestamp {

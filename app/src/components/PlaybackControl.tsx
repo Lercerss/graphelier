@@ -282,6 +282,7 @@ class PlaybackControl extends PureComponent<PlaybackProps, PlaybackState> {
 export const NonConnectedPlaybackControl = withStyles(styles)(PlaybackControl);
 
 const mapStateToProps = (state: RootState) => ({
+    playback: state.general.playback,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

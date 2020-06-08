@@ -5,7 +5,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { createStyles, WithStyles } from '@material-ui/styles';
 import MomentUtils from '@date-io/moment';
-
+import { connect } from 'react-redux';
 import {
     Timeline,
     Events,
@@ -20,6 +20,7 @@ import moment from 'moment';
 
 import bigInt from 'big-integer';
 import { debounce } from 'lodash';
+import { RootState } from '../store';
 import { Styles } from '../styles/NewsTimeline';
 
 import {
@@ -34,11 +35,12 @@ import MultiDirectionalScroll from './MultiDirectionalScroll';
 import { NANOSECONDS_IN_ONE_SECOND } from '../constants/Constants';
 import { LightThemeColors } from '../styles/App';
 import NewsService from '../services/NewsService';
-import OrderBookService from '../services/OrderBookService';
 
 const styles = theme => createStyles(Styles(theme));
 
-interface Props extends WithStyles<typeof styles> {}
+interface Props extends WithStyles<typeof styles> {
+    instruments: Array<string>,
+}
 
 interface State {
     articleClusters: Array<ArticleCluster>,
@@ -47,7 +49,6 @@ interface State {
     datePickerIsOpen: boolean,
     newestTimestamp: string | null,
     oldestTimestamp: string | null,
-    instruments: Array<string>,
 }
 
 class NewsTimeline extends Component<Props, State> {
@@ -107,16 +108,7 @@ class NewsTimeline extends Component<Props, State> {
             datePickerIsOpen: false,
             newestTimestamp: null,
             oldestTimestamp: null,
-            instruments: [],
         };
-    }
-
-    componentDidMount() {
-        OrderBookService.getInstrumentsList().then(response => {
-            this.setState({ instruments: response.data });
-        }).catch(err => {
-            console.log(err);
-        });
     }
 
     /**
@@ -160,13 +152,12 @@ class NewsTimeline extends Component<Props, State> {
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, instruments } = this.props;
         const {
             articleClusters,
             loadingTimeline,
             datePickerValue,
             datePickerIsOpen,
-            instruments,
         } = this.state;
 
         let lastArticleClusterDateString = '';
@@ -305,4 +296,8 @@ class NewsTimeline extends Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(NewsTimeline);
+const mapStateToProps = (state: RootState) => ({
+    instruments: state.general.instruments,
+});
+
+export default connect(mapStateToProps)(withStyles(styles)(NewsTimeline));

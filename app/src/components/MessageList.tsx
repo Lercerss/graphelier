@@ -7,6 +7,8 @@ import classNames from 'classnames';
 import Button from '@material-ui/core/Button';
 import bigInt from 'big-integer';
 
+import NanoDate from 'nano-date';
+import { connect } from 'react-redux';
 import OrderBookService from '../services/OrderBookService';
 import {
     MESSAGE_LIST_DEFAULT_PAGE_SIZE, TILDE_KEY_CODE,
@@ -17,11 +19,11 @@ import { roundNumber } from '../utils/number-utils';
 import { getMessageDirection } from '../utils/order-book-utils';
 import { MESSAGE_TYPE_ENUM } from '../constants/Enums';
 import {
-    nanosecondsToString,
-    splitNanosecondEpochTimestamp,
-    convertNanosecondsUTCToCurrentTimezone,
+    applyDSTOffset,
+    buildTimeInTheDayStringFromNanoDate,
 } from '../utils/date-utils';
 import { Message } from '../models/OrderBook';
+import { RootState } from '../store/index';
 
 const styles = createStyles(Styles);
 
@@ -239,8 +241,9 @@ class MessageList extends Component<Props, State> {
                 timestamp, message_type, order_id, share_qty, price, direction, sod_offset,
             } = message;
 
-            const { timeNanoseconds } = splitNanosecondEpochTimestamp(bigInt(timestamp));
-            const time = nanosecondsToString(convertNanosecondsUTCToCurrentTimezone(bigInt(timeNanoseconds)).valueOf());
+            const tzTimestampNum = applyDSTOffset(bigInt(timestamp));
+            const nanoDateObj: NanoDate = new NanoDate(tzTimestampNum.toString());
+            const time: string = buildTimeInTheDayStringFromNanoDate(nanoDateObj);
 
             if (lastSodOffset.toString() === sod_offset) {
                 // TODO look into reference callbacks for Typescript
@@ -303,6 +306,10 @@ class MessageList extends Component<Props, State> {
     }
 }
 
+const mapStateToProps = (state: RootState) => ({
+    playback: state.general.playback,
+});
+
 export const NonConnectedMessageList = withStyles(styles)(MessageList);
 
-export default withStyles(styles)(MessageList);
+export default withStyles(styles)(connect(mapStateToProps)(MessageList));

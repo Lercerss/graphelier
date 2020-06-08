@@ -8,6 +8,7 @@ import ChevronLeftSharpIcon from '@material-ui/icons/ChevronLeftSharp';
 import ChevronRightSharpIcon from '@material-ui/icons/ChevronRightSharp';
 import bigInt from 'big-integer';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { connect } from 'react-redux';
 import { Styles } from '../styles/TimestampOrderBookScroller';
 import MultiDirectionalScroll from './MultiDirectionalScroll';
 import PriceLevel from './PriceLevel';
@@ -16,6 +17,7 @@ import { getOrderBookListItemsAsArray, listItemsEquals } from '../utils/order-bo
 import { LEFT_ARROW_KEY_CODE, RIGHT_ARROW_KEY_CODE, ANIMATION_TIME } from '../constants/Constants';
 import OrderBookService from '../services/OrderBookService';
 import { ListItems } from '../models/OrderBook';
+import { RootState } from '../store/index';
 
 const MIN_PERCENTAGE_FACTOR_FOR_BOX_SPACE = 0.35;
 
@@ -235,6 +237,11 @@ class TimestampOrderBookScroller extends Component<Props> {
         );
     }
 }
+
+const mapStateToProps = (state: RootState) => ({
+    playback: state.general.playback,
+});
+
 export const NonConnectedTimestampOrderBookScroller = withStyles(styles)(TimestampOrderBookScroller);
 
-export default withStyles(styles)(TimestampOrderBookScroller);
+export default withStyles(styles)(connect(mapStateToProps)(TimestampOrderBookScroller));
