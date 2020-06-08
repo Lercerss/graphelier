@@ -137,12 +137,14 @@ class OrderBookSnapshot extends Component<Props, State> {
         this.setState({
             selectedInstrument: event.target.value,
         }, () => {
-            const { selectedDateNano } = this.props;
+            const { selectedDateNano, currentOrderbookTimestamp } = this.props;
             if (selectedDateNano.neq(0)) {
                 const graphStartTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_NINE_AND_A_HALF_HOURS);
                 const graphEndTime: bigInt.BigInteger = selectedDateNano.plus(NANOSECONDS_IN_SIXTEEN_HOURS);
                 this.updateGraphData(graphStartTime, graphEndTime);
-                this.handleNewTimestamp();
+                if (currentOrderbookTimestamp !== '') {
+                    this.handleNewTimestamp();
+                }
             }
         });
     };

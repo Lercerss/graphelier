@@ -168,4 +168,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     ),
 });
 
+export const NonConnectedDashboard = withStyles(styles)(Dashboard);
+
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Dashboard));
