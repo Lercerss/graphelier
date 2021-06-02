@@ -38,5 +38,5 @@ sure==1.4.11
 tinysegmenter==0.3
 tldextract==2.2.2
 typed-ast==1.4.1
-urllib3==1.25.8
+urllib3==1.26.5
 wrapt==1.11.2
