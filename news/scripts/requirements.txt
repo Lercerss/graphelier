@@ -20,7 +20,7 @@ mock==4.0.2
 mockito==1.2.1
 newspaper3k==0.2.8
 nltk==3.4.5
-numpy==1.18.2
+numpy==1.22.0
 pandas==1.0.3
 Pillow==7.0.0
 pylint==2.4.4
