@@ -11,7 +11,7 @@ feedparser==5.2.1
 idna==2.9
 isort==4.3.21
 jieba3k==0.35.1
-joblib==0.14.1
+joblib==1.2.0
 lazy-object-proxy==1.4.3
 lxml==4.5.0
 mamba==0.10
